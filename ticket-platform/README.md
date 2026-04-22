@@ -23,7 +23,7 @@ ticket-platform/
 ## 진행 상황
 
 - [x] **1단계** 프로젝트 초기화 (폴더 구조, 프론트/백/Prisma/Hardhat 스캐폴딩)
-- [ ] 2단계 스마트컨트랙트 (TicketNFT.sol)
+- [x] **2단계** 스마트컨트랙트 (TicketNFT.sol) — 컴파일 및 ABI 추출 완료
 - [ ] 3단계 실명인증 + 지갑 생성 + JWT
 - [ ] 4단계 공연 등록 / 민팅 (어드민)
 - [ ] 5단계 내 티켓 + 동적 QR(30초) + 스태프 스캔
@@ -47,11 +47,29 @@ npm install
 npm run dev                     # http://localhost:5173
 ```
 
-## 컨트랙트 (2단계에서 작성)
+## 컨트랙트
+
+ERC-721 기반, 플랫폼 운영자(owner)만 민팅/전송/소각 가능. 외부 EOA가 `transferFrom`을 직접 호출하면 `ExternalTransferForbidden()`로 revert. 전송 시 `pricePaid > price` 또는 `block.timestamp >= lockDate`면 revert.
 
 ```bash
 cd ticket-platform
 npm install
-npx hardhat compile
+
+# 번들된 solc-js로 컴파일 (샌드박스/오프라인에서도 동작).
+# artifacts/ 에 결과물이, backend/src/abi/TicketNFT.json 에 ABI가 나온다.
+npm run compile
+
+# Polygon Mumbai 배포 (DEPLOYER_PRIVATE_KEY 필요)
 npx hardhat run scripts/deploy.ts --network mumbai
 ```
+
+주요 외부 함수:
+
+| 함수 | 설명 |
+| --- | --- |
+| `mint(to, eventId, seatId, price, lockDate)` | 티켓 NFT 발행 (owner 전용) |
+| `batchMint(recipients[], eventId, seatIds[], price, lockDate)` | 일괄 민팅 |
+| `platformTransfer(tokenId, to, pricePaid)` | 정가 초과/lockDate 검증하고 이전 |
+| `burnByPlatform(tokenId)` | 입장 후 소각 |
+| `setLockDate(tokenId, lockDate)` | 공연 일정 변경 대응 |
+| `getTicketInfo(tokenId)` | `(eventId, seatId, price, lockDate, mintedAt)` |
