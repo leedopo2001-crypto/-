@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  phone         String    @unique
+  walletAddress String    @unique
+  privateKeyEnc String
+  createdAt     DateTime  @default(now())
+  tickets       Ticket[]
+  listings      Listing[]
+}
+
+model Event {
+  id           String      @id @default(uuid())
+  name         String
+  venue        String
+  eventDate    DateTime
+  lockDate     DateTime
+  contractAddr String
+  status       String      @default("active")
+  createdAt    DateTime    @default(now())
+  tickets      Ticket[]
+  seatGrades   SeatGrade[]
+}
+
+model SeatGrade {
+  id         String @id @default(uuid())
+  eventId    String
+  grade      String
+  price      Int
+  totalCount Int
+  event      Event  @relation(fields: [eventId], references: [id])
+}
+
+model Ticket {
+  id       String   @id @default(uuid())
+  tokenId  String   @unique
+  eventId  String
+  userId   String
+  seatId   String
+  grade    String
+  price    Int
+  status   String   @default("issued")
+  isLocked Boolean  @default(false)
+  mintedAt DateTime @default(now())
+  event    Event    @relation(fields: [eventId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+  listing  Listing?
+}
+
+model Listing {
+  id        String   @id @default(uuid())
+  ticketId  String   @unique
+  sellerId  String
+  price     Int
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  seller    User     @relation(fields: [sellerId], references: [id])
+}
+
+model Transaction {
+  id         String   @id @default(uuid())
+  ticketId   String
+  fromUserId String?
+  toUserId   String
+  price      Int
+  fee        Int
+  txHash     String?
+  createdAt  DateTime @default(now())
+}
