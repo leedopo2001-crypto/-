@@ -1,4 +1,7 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './lib/auth';
+import Onboarding from './pages/Onboarding';
+import Home from './pages/Home';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -11,17 +14,56 @@ function Placeholder({ title }: { title: string }) {
   );
 }
 
+function RequireAuth({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-slate-400">
+        로딩 중…
+      </div>
+    );
+  }
+  if (!user) {
+    return <Navigate to="/onboarding" replace state={{ from: location.pathname }} />;
+  }
+  return <>{children}</>;
+}
+
+function Public({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/home" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to="/home" replace />} />
-      <Route path="/onboarding" element={<Placeholder title="온보딩 (3단계에서 구현)" />} />
-      <Route path="/home" element={<Placeholder title="NFT 티켓 플랫폼 — 1단계 완료" />} />
-      <Route path="/ticket/:id" element={<Placeholder title="티켓 상세 (5단계)" />} />
-      <Route path="/market" element={<Placeholder title="마켓 (7단계)" />} />
-      <Route path="/admin" element={<Placeholder title="어드민 (4단계)" />} />
-      <Route path="/staff" element={<Placeholder title="스태프 스캐너 (5단계)" />} />
-      <Route path="*" element={<Placeholder title="404" />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route
+          path="/onboarding"
+          element={
+            <Public>
+              <Onboarding />
+            </Public>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <RequireAuth>
+              <Home />
+            </RequireAuth>
+          }
+        />
+        <Route path="/ticket/:id" element={<Placeholder title="티켓 상세 (5단계)" />} />
+        <Route path="/market" element={<Placeholder title="마켓 (7단계)" />} />
+        <Route path="/admin" element={<Placeholder title="어드민 (4단계)" />} />
+        <Route path="/staff" element={<Placeholder title="스태프 스캐너 (5단계)" />} />
+        <Route path="*" element={<Placeholder title="404" />} />
+      </Routes>
+    </AuthProvider>
   );
 }
