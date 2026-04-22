@@ -13,17 +13,23 @@ import * as Location from 'expo-location';
 import * as SMS from 'expo-sms';
 import Svg, { Circle } from 'react-native-svg';
 
+import { renderTemplate } from '../storage';
+
 const HOLD_DURATION_MS = 2000;
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-const BUTTON_SIZE = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.5;
+const BUTTON_SIZE = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT) * 0.45;
 const STROKE_WIDTH = 10;
 const RADIUS = (BUTTON_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-export default function HomeScreen({ settings, onOpenSettings }) {
+export default function HomeScreen({
+  settings,
+  onOpenSettings,
+  onStartTracking,
+}) {
   const [locationGranted, setLocationGranted] = useState(false);
   const [permissionMessage, setPermissionMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
@@ -64,25 +70,12 @@ export default function HomeScreen({ settings, onOpenSettings }) {
     }
   };
 
-  const buildMessage = (locationText) => {
-    const name = settings.userName ? `[${settings.userName}] ` : '[here] ';
-    return `🆘 ${name}긴급상황! 현재 위치: ${locationText}`;
-  };
-
   const showToastMessage = () => {
     setShowToast(true);
     Animated.sequence([
-      Animated.timing(toastOpacity, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }),
+      Animated.timing(toastOpacity, { toValue: 1, duration: 200, useNativeDriver: true }),
       Animated.delay(1800),
-      Animated.timing(toastOpacity, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
+      Animated.timing(toastOpacity, { toValue: 0, duration: 300, useNativeDriver: true }),
     ]).start(() => setShowToast(false));
   };
 
@@ -95,7 +88,10 @@ export default function HomeScreen({ settings, onOpenSettings }) {
     setIsSending(true);
     try {
       const locationText = await getLocationText();
-      const message = buildMessage(locationText);
+      const message = renderTemplate(settings.messageTemplate, {
+        이름: settings.userName || 'here',
+        위치: locationText,
+      });
 
       const smsAvailable = await SMS.isAvailableAsync();
       if (!smsAvailable) {
@@ -136,9 +132,7 @@ export default function HomeScreen({ settings, onOpenSettings }) {
 
   const handlePressOut = () => {
     if (completedRef.current) return;
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
+    if (animationRef.current) animationRef.current.stop();
     Animated.timing(progress, {
       toValue: 0,
       duration: 200,
@@ -146,7 +140,23 @@ export default function HomeScreen({ settings, onOpenSettings }) {
     }).start();
   };
 
+  const handleTracking = () => {
+    if (!settings.contacts || settings.contacts.length === 0) {
+      Alert.alert('연락처 없음', '먼저 설정에서 긴급 연락처를 추가해주세요.');
+      return;
+    }
+    Alert.alert(
+      '실시간 추적 시작',
+      `${settings.trackingIntervalMinutes || 5}분마다 위치를 전송합니다.\n수신자에게 링크 한 번만 보내면 됩니다. 시작할까요?`,
+      [
+        { text: '취소', style: 'cancel' },
+        { text: '시작', style: 'destructive', onPress: onStartTracking },
+      ],
+    );
+  };
+
   const contactCount = settings.contacts?.length || 0;
+  const canSend = !isSending && contactCount > 0;
 
   return (
     <View style={styles.container}>
@@ -191,11 +201,11 @@ export default function HomeScreen({ settings, onOpenSettings }) {
           <Pressable
             onPressIn={handlePressIn}
             onPressOut={handlePressOut}
-            disabled={isSending || contactCount === 0}
+            disabled={!canSend}
             style={({ pressed }) => [
               styles.sosButton,
               pressed && styles.sosButtonPressed,
-              (isSending || contactCount === 0) && styles.sosButtonDisabled,
+              !canSend && styles.sosButtonDisabled,
             ]}
           >
             <Text style={styles.sosText}>SOS</Text>
@@ -207,14 +217,32 @@ export default function HomeScreen({ settings, onOpenSettings }) {
             ? '전송 중...'
             : contactCount === 0
             ? '설정에서 연락처를 추가해주세요'
-            : '2초간 누르면 위치가 전송됩니다'}
+            : '2초간 누르면 현재 위치가 전송됩니다'}
         </Text>
 
         {contactCount > 0 && (
-          <Text style={styles.contactCount}>
-            {contactCount}명에게 전송됩니다
-          </Text>
+          <Text style={styles.contactCount}>{contactCount}명에게 전송됩니다</Text>
         )}
+
+        <View style={styles.divider} />
+
+        <Pressable
+          style={[
+            styles.trackingButton,
+            contactCount === 0 && styles.trackingButtonDisabled,
+          ]}
+          onPress={handleTracking}
+          disabled={contactCount === 0}
+        >
+          <Text style={styles.trackingIcon}>📍</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.trackingTitle}>실시간 위치 추적</Text>
+            <Text style={styles.trackingSubtitle}>
+              {settings.trackingIntervalMinutes || 5}분마다 새 위치가 전송됩니다
+            </Text>
+          </View>
+          <Text style={styles.trackingArrow}>›</Text>
+        </Pressable>
 
         {permissionMessage ? (
           <Text style={styles.permissionText}>{permissionMessage}</Text>
@@ -231,10 +259,7 @@ export default function HomeScreen({ settings, onOpenSettings }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-  },
+  container: { flex: 1, backgroundColor: '#ffffff' },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -243,25 +268,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 8,
   },
-  appName: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
-    letterSpacing: 2,
-  },
-  gear: {
-    padding: 4,
-  },
-  gearIcon: {
-    fontSize: 26,
-    color: '#666',
-  },
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
+  appName: { fontSize: 20, fontWeight: '600', color: '#333', letterSpacing: 2 },
+  gear: { padding: 4 },
+  gearIcon: { fontSize: 26, color: '#666' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
   buttonWrapper: {
     width: BUTTON_SIZE,
     height: BUTTON_SIZE,
@@ -281,12 +291,8 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  sosButtonPressed: {
-    backgroundColor: '#B71C1C',
-  },
-  sosButtonDisabled: {
-    backgroundColor: '#9E9E9E',
-  },
+  sosButtonPressed: { backgroundColor: '#B71C1C' },
+  sosButtonDisabled: { backgroundColor: '#9E9E9E' },
   sosText: {
     color: '#ffffff',
     fontSize: BUTTON_SIZE * 0.22,
@@ -294,16 +300,32 @@ const styles = StyleSheet.create({
     letterSpacing: 4,
   },
   helperText: {
-    marginTop: 32,
-    fontSize: 16,
+    marginTop: 24,
+    fontSize: 15,
     color: '#555',
     textAlign: 'center',
   },
-  contactCount: {
-    marginTop: 8,
-    fontSize: 13,
-    color: '#999',
+  contactCount: { marginTop: 6, fontSize: 13, color: '#999' },
+  divider: {
+    width: '80%',
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#ddd',
+    marginVertical: 20,
   },
+  trackingButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF8E1',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    borderRadius: 14,
+    width: '100%',
+  },
+  trackingButtonDisabled: { opacity: 0.5 },
+  trackingIcon: { fontSize: 24, marginRight: 12 },
+  trackingTitle: { fontSize: 15, fontWeight: '600', color: '#E65100' },
+  trackingSubtitle: { fontSize: 12, color: '#8D6E63', marginTop: 2 },
+  trackingArrow: { fontSize: 24, color: '#E65100' },
   permissionText: {
     marginTop: 16,
     fontSize: 13,
@@ -319,9 +341,5 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 24,
   },
-  toastText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
+  toastText: { color: '#ffffff', fontSize: 16, fontWeight: '600' },
 });

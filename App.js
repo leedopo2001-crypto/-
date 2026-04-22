@@ -6,6 +6,7 @@ import { loadSettings, saveSettings } from './src/storage';
 import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import HomeScreen from './src/screens/HomeScreen';
+import TrackingScreen from './src/screens/TrackingScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('loading');
@@ -15,11 +16,7 @@ export default function App() {
     (async () => {
       const loaded = await loadSettings();
       setSettings(loaded);
-      if (!loaded.onboarded) {
-        setScreen('onboarding');
-      } else {
-        setScreen('home');
-      }
+      setScreen(loaded.onboarded ? 'home' : 'onboarding');
     })();
   }, []);
 
@@ -32,8 +29,9 @@ export default function App() {
   };
 
   const handleCancelSettings = () => setScreen('home');
-
   const handleOpenSettings = () => setScreen('settings');
+  const handleStartTracking = () => setScreen('tracking');
+  const handleStopTracking = () => setScreen('home');
 
   if (screen === 'loading' || !settings) {
     return (
@@ -60,17 +58,18 @@ export default function App() {
         <HomeScreen
           settings={settings}
           onOpenSettings={handleOpenSettings}
+          onStartTracking={handleStartTracking}
         />
+      )}
+      {screen === 'tracking' && (
+        <TrackingScreen settings={settings} onStop={handleStopTracking} />
       )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   loading: {
     flex: 1,
     backgroundColor: '#fff',

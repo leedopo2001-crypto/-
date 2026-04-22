@@ -11,3 +11,5 @@ npm-debug.*
 web-build/
 .DS_Store
 .env
+.env.local
+.vercel

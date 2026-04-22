@@ -10,7 +10,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { formatPhoneDisplay, normalizePhone } from '../storage';
+import {
+  DEFAULT_MESSAGE_TEMPLATE,
+  DEFAULT_TRACKING_MESSAGE_TEMPLATE,
+  INTERVAL_OPTIONS,
+  formatPhoneDisplay,
+  normalizePhone,
+} from '../storage';
 
 export default function SettingsScreen({
   initialSettings,
@@ -20,56 +26,56 @@ export default function SettingsScreen({
 }) {
   const [userName, setUserName] = useState(initialSettings.userName || '');
   const [contacts, setContacts] = useState(initialSettings.contacts || []);
+  const [messageTemplate, setMessageTemplate] = useState(
+    initialSettings.messageTemplate || DEFAULT_MESSAGE_TEMPLATE,
+  );
+  const [trackingMessageTemplate, setTrackingMessageTemplate] = useState(
+    initialSettings.trackingMessageTemplate || DEFAULT_TRACKING_MESSAGE_TEMPLATE,
+  );
+  const [intervalMinutes, setIntervalMinutes] = useState(
+    initialSettings.trackingIntervalMinutes || 5,
+  );
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
 
   const addContact = () => {
     const name = newName.trim();
     const phone = normalizePhone(newPhone);
-    if (!name) {
-      Alert.alert('입력 오류', '이름을 입력해주세요.');
-      return;
-    }
+    if (!name) return Alert.alert('입력 오류', '이름을 입력해주세요.');
     if (!phone || phone.replace(/\D/g, '').length < 9) {
-      Alert.alert('입력 오류', '올바른 전화번호를 입력해주세요.');
-      return;
+      return Alert.alert('입력 오류', '올바른 전화번호를 입력해주세요.');
     }
     if (contacts.some((c) => c.phone === phone)) {
-      Alert.alert('중복', '이미 추가된 번호입니다.');
-      return;
+      return Alert.alert('중복', '이미 추가된 번호입니다.');
     }
-    setContacts([
-      ...contacts,
-      { id: String(Date.now()), name, phone },
-    ]);
+    setContacts([...contacts, { id: String(Date.now()), name, phone }]);
     setNewName('');
     setNewPhone('');
   };
 
   const removeContact = (id) => {
     const target = contacts.find((c) => c.id === id);
-    Alert.alert(
-      '연락처 삭제',
-      `"${target?.name}" 을(를) 삭제할까요?`,
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => setContacts(contacts.filter((c) => c.id !== id)),
-        },
-      ],
-    );
+    Alert.alert('연락처 삭제', `"${target?.name}" 을(를) 삭제할까요?`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '삭제',
+        style: 'destructive',
+        onPress: () => setContacts(contacts.filter((c) => c.id !== id)),
+      },
+    ]);
   };
 
   const handleSave = () => {
     if (contacts.length === 0) {
-      Alert.alert('연락처 필요', '긴급 연락처를 최소 1명 추가해주세요.');
-      return;
+      return Alert.alert('연락처 필요', '긴급 연락처를 최소 1명 추가해주세요.');
     }
     onSave({
       userName: userName.trim(),
       contacts,
+      messageTemplate: messageTemplate.trim() || DEFAULT_MESSAGE_TEMPLATE,
+      trackingMessageTemplate:
+        trackingMessageTemplate.trim() || DEFAULT_TRACKING_MESSAGE_TEMPLATE,
+      trackingIntervalMinutes: intervalMinutes,
       onboarded: true,
     });
   };
@@ -80,14 +86,14 @@ export default function SettingsScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.header}>
-        {!isFirstRun && (
+        {!isFirstRun ? (
           <Pressable onPress={onCancel} hitSlop={12}>
             <Text style={styles.headerBack}>‹ 취소</Text>
           </Pressable>
+        ) : (
+          <View style={{ minWidth: 60 }} />
         )}
-        <Text style={styles.headerTitle}>
-          {isFirstRun ? '초기 설정' : '설정'}
-        </Text>
+        <Text style={styles.headerTitle}>{isFirstRun ? '초기 설정' : '설정'}</Text>
         <Pressable onPress={handleSave} hitSlop={12}>
           <Text style={styles.headerSave}>저장</Text>
         </Pressable>
@@ -106,9 +112,6 @@ export default function SettingsScreen({
           placeholderTextColor="#aaa"
           maxLength={20}
         />
-        <Text style={styles.hint}>
-          메시지에 "[홍길동] 긴급상황!" 처럼 표시됩니다.
-        </Text>
 
         <View style={styles.separator} />
 
@@ -164,17 +167,76 @@ export default function SettingsScreen({
           </Pressable>
         </View>
 
-        <View style={{ height: 40 }} />
+        <View style={styles.separator} />
+
+        <Text style={styles.sectionLabel}>즉시 SOS 문구</Text>
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={messageTemplate}
+          onChangeText={setMessageTemplate}
+          placeholder={DEFAULT_MESSAGE_TEMPLATE}
+          placeholderTextColor="#aaa"
+          multiline
+          maxLength={200}
+        />
+        <Text style={styles.hint}>
+          사용 가능한 치환어: <Text style={styles.code}>{'{이름}'}</Text>,{' '}
+          <Text style={styles.code}>{'{위치}'}</Text>
+        </Text>
+
+        <View style={{ height: 16 }} />
+
+        <Text style={styles.sectionLabel}>실시간 추적 문구</Text>
+        <TextInput
+          style={[styles.input, styles.multilineInput]}
+          value={trackingMessageTemplate}
+          onChangeText={setTrackingMessageTemplate}
+          placeholder={DEFAULT_TRACKING_MESSAGE_TEMPLATE}
+          placeholderTextColor="#aaa"
+          multiline
+          maxLength={200}
+        />
+        <Text style={styles.hint}>
+          사용 가능한 치환어: <Text style={styles.code}>{'{이름}'}</Text>,{' '}
+          <Text style={styles.code}>{'{링크}'}</Text>
+        </Text>
+
+        <View style={styles.separator} />
+
+        <Text style={styles.sectionLabel}>실시간 추적 주기</Text>
+        <View style={styles.intervalRow}>
+          {INTERVAL_OPTIONS.map((min) => (
+            <Pressable
+              key={min}
+              onPress={() => setIntervalMinutes(min)}
+              style={[
+                styles.intervalPill,
+                intervalMinutes === min && styles.intervalPillActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.intervalText,
+                  intervalMinutes === min && styles.intervalTextActive,
+                ]}
+              >
+                {min}분
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.hint}>
+          짧을수록 배터리 소모가 커집니다. 5분이 권장값입니다.
+        </Text>
+
+        <View style={{ height: 60 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -185,16 +247,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#ddd',
   },
-  headerBack: {
-    fontSize: 17,
-    color: '#E53935',
-    minWidth: 60,
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: '#222',
-  },
+  headerBack: { fontSize: 17, color: '#E53935', minWidth: 60 },
+  headerTitle: { fontSize: 17, fontWeight: '600', color: '#222' },
   headerSave: {
     fontSize: 17,
     fontWeight: '600',
@@ -202,9 +256,7 @@ const styles = StyleSheet.create({
     minWidth: 60,
     textAlign: 'right',
   },
-  scrollContent: {
-    padding: 20,
-  },
+  scrollContent: { padding: 20 },
   sectionLabel: {
     fontSize: 13,
     fontWeight: '600',
@@ -225,16 +277,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
     marginBottom: 8,
   },
-  hint: {
+  multilineInput: { minHeight: 80, textAlignVertical: 'top' },
+  hint: { fontSize: 12, color: '#999', marginTop: 4, lineHeight: 18 },
+  code: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    color: '#1976D2',
     fontSize: 12,
-    color: '#999',
-    marginTop: 4,
   },
-  separator: {
-    height: 1,
-    backgroundColor: '#eee',
-    marginVertical: 24,
-  },
+  separator: { height: 1, backgroundColor: '#eee', marginVertical: 24 },
   emptyText: {
     fontSize: 14,
     color: '#999',
@@ -251,42 +301,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 8,
   },
-  contactInfo: {
-    flex: 1,
-  },
-  contactName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#222',
-  },
-  contactPhone: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
+  contactInfo: { flex: 1 },
+  contactName: { fontSize: 16, fontWeight: '600', color: '#222' },
+  contactPhone: { fontSize: 14, color: '#666', marginTop: 2 },
   removeButton: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
     backgroundColor: '#fee',
   },
-  removeButtonText: {
-    color: '#E53935',
-    fontSize: 14,
-    fontWeight: '600',
-  },
+  removeButtonText: { color: '#E53935', fontSize: 14, fontWeight: '600' },
   addBox: {
     marginTop: 16,
     padding: 16,
     backgroundColor: '#f5f5f5',
     borderRadius: 12,
   },
-  addTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#444',
-    marginBottom: 10,
-  },
+  addTitle: { fontSize: 15, fontWeight: '600', color: '#444', marginBottom: 10 },
   addButton: {
     backgroundColor: '#E53935',
     paddingVertical: 12,
@@ -294,9 +325,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 4,
   },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '600',
+  addButtonText: { color: '#fff', fontSize: 15, fontWeight: '600' },
+  intervalRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+  intervalPill: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: '#f5f5f5',
+    borderWidth: 1,
+    borderColor: '#eee',
+    alignItems: 'center',
   },
+  intervalPillActive: { backgroundColor: '#E53935', borderColor: '#E53935' },
+  intervalText: { fontSize: 15, fontWeight: '600', color: '#555' },
+  intervalTextActive: { color: '#fff' },
 });
