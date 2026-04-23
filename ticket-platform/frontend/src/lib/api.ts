@@ -165,6 +165,50 @@ export const qrApi = {
   },
 };
 
+export interface PrepareOrderResponse {
+  orderId: string;
+  amount: number;
+  orderName: string;
+  customerKey: string;
+  customerName: string;
+  clientKey: string;
+  successUrl: string;
+  failUrl: string;
+}
+
+export interface ConfirmResponse {
+  ok: true;
+  order: { id: string; status: string };
+  toss: { paymentKey: string; method?: string; approvedAt?: string; mocked: boolean };
+  settle: {
+    ticketId: string;
+    listingId: string;
+    price: number;
+    fee: number;
+    txHash: string;
+    mocked: boolean;
+  } | null;
+}
+
+export const paymentApi = {
+  config: () => api<{ clientKey: string }>('/api/payment/config'),
+  prepare: (listingId: string) =>
+    api<PrepareOrderResponse>('/api/payment/prepare', {
+      method: 'POST',
+      body: JSON.stringify({ listingId }),
+    }),
+  confirm: (paymentKey: string, orderId: string, amount: number) =>
+    api<ConfirmResponse>('/api/payment/confirm', {
+      method: 'POST',
+      body: JSON.stringify({ paymentKey, orderId, amount }),
+    }),
+  fail: (orderId: string, code?: string, message?: string) =>
+    api<{ ok: boolean }>('/api/payment/fail', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, code, message }),
+    }),
+};
+
 export const adminApi = {
   listEvents: () => api<{ events: Event[] }>('/api/admin/events'),
   createEvent: (input: CreateEventInput) =>

@@ -77,3 +77,17 @@ model Transaction {
   txHash     String?
   createdAt  DateTime @default(now())
 }
+
+model Order {
+  id          String   @id @default(uuid())
+  buyerId     String
+  listingId   String?
+  amount      Int
+  orderName   String
+  status      String   @default("pending")
+  paymentKey  String?
+  failCode    String?
+  failMessage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

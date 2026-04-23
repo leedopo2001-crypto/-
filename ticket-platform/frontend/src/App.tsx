@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Ticket from './pages/Ticket';
 import Staff from './pages/Staff';
+import { PaymentSuccess, PaymentFail } from './pages/PaymentResult';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -83,6 +84,22 @@ export default function App() {
           element={
             <RequireAuth>
               <Staff />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/payment/success"
+          element={
+            <RequireAuth>
+              <PaymentSuccess />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/payment/fail"
+          element={
+            <RequireAuth>
+              <PaymentFail />
             </RequireAuth>
           }
         />
