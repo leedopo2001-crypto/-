@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { ticketsApi, type Ticket } from '../lib/api';
 import TicketCard from '../components/TicketCard';
+import BottomNav from '../components/BottomNav';
 
 export default function Home() {
   const { user, logout } = useAuth();
@@ -58,13 +58,7 @@ export default function Home() {
         ))}
       </div>
 
-      <nav className="fixed bottom-0 inset-x-0 border-t bg-white">
-        <div className="max-w-md mx-auto grid grid-cols-3 text-xs">
-          <Link to="/home" className="py-3 text-center text-brand font-medium">홈</Link>
-          <Link to="/market" className="py-3 text-center text-slate-500">마켓</Link>
-          <Link to="/admin" className="py-3 text-center text-slate-500">프로필/어드민</Link>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
   );
 }

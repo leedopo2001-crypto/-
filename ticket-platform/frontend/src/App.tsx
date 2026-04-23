@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
@@ -6,14 +6,16 @@ import Admin from './pages/Admin';
 import Ticket from './pages/Ticket';
 import Staff from './pages/Staff';
 import Market from './pages/Market';
+import Profile from './pages/Profile';
 import { PaymentSuccess, PaymentFail } from './pages/PaymentResult';
 
-function Placeholder({ title }: { title: string }) {
+function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center px-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-800">{title}</h1>
-        <p className="mt-2 text-slate-500">이 화면은 다음 단계에서 구현됩니다.</p>
+        <div className="text-5xl">🙈</div>
+        <h1 className="mt-4 text-xl font-bold text-slate-800">페이지를 찾을 수 없습니다</h1>
+        <Link to="/home" className="mt-4 inline-block text-sm text-brand">홈으로 돌아가기</Link>
       </div>
     </div>
   );
@@ -80,6 +82,14 @@ export default function App() {
           }
         />
         <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
           path="/admin"
           element={
             <RequireAuth>
@@ -111,7 +121,7 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="*" element={<Placeholder title="404" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );

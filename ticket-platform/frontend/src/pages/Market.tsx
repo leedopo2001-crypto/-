@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ApiError, marketApi, type Listing } from '../lib/api';
 import { requestTossPayment } from '../lib/toss';
 import { useAuth } from '../lib/auth';
+import BottomNav from '../components/BottomNav';
 
 type Tab = 'all' | 'mine';
 
@@ -158,13 +159,7 @@ export default function Market() {
         })}
       </div>
 
-      <nav className="fixed bottom-0 inset-x-0 border-t bg-white">
-        <div className="max-w-md mx-auto grid grid-cols-3 text-xs">
-          <Link to="/home" className="py-3 text-center text-slate-500">홈</Link>
-          <Link to="/market" className="py-3 text-center text-brand font-medium">마켓</Link>
-          <Link to="/admin" className="py-3 text-center text-slate-500">프로필/어드민</Link>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
   );
 }
