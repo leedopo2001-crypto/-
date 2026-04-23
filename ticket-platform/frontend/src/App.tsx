@@ -3,6 +3,8 @@ import { AuthProvider, useAuth } from './lib/auth';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
 import Admin from './pages/Admin';
+import Ticket from './pages/Ticket';
+import Staff from './pages/Staff';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -59,7 +61,14 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/ticket/:id" element={<Placeholder title="티켓 상세 (5단계)" />} />
+        <Route
+          path="/ticket/:id"
+          element={
+            <RequireAuth>
+              <Ticket />
+            </RequireAuth>
+          }
+        />
         <Route path="/market" element={<Placeholder title="마켓 (7단계)" />} />
         <Route
           path="/admin"
@@ -69,7 +78,14 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/staff" element={<Placeholder title="스태프 스캐너 (5단계)" />} />
+        <Route
+          path="/staff"
+          element={
+            <RequireAuth>
+              <Staff />
+            </RequireAuth>
+          }
+        />
         <Route path="*" element={<Placeholder title="404" />} />
       </Routes>
     </AuthProvider>

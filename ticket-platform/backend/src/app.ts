@@ -3,6 +3,8 @@ import express from 'express';
 import cors from 'cors';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
+import ticketsRouter from './routes/tickets.js';
+import qrRouter from './routes/qr.js';
 
 const app = express();
 
@@ -15,6 +17,8 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/tickets', ticketsRouter);
+app.use('/api/qr', qrRouter);
 
 const PORT = Number(process.env.PORT) || 3000;
 

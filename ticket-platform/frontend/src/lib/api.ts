@@ -96,6 +96,75 @@ export interface MintAssignment {
   walletAddress: string;
 }
 
+export interface Ticket {
+  id: string;
+  tokenId: string;
+  eventId: string;
+  userId: string;
+  seatId: string;
+  grade: string;
+  price: number;
+  status: string;
+  isLocked: boolean;
+  mintedAt: string;
+  event: {
+    id: string;
+    name: string;
+    venue: string;
+    eventDate: string;
+    lockDate: string;
+    contractAddr: string;
+  };
+  listing: unknown | null;
+}
+
+export interface QrResponse {
+  token: string;
+  qrDataUrl: string;
+  expiresAt: number;
+  ttlSeconds: number;
+}
+
+export const ticketsApi = {
+  my: () => api<{ tickets: Ticket[] }>('/api/tickets/my'),
+  one: (id: string) => api<{ ticket: Ticket }>(`/api/tickets/${id}`),
+  qr: (id: string) => api<QrResponse>(`/api/tickets/${id}/qr`),
+};
+
+export interface VerifyOk {
+  ok: true;
+  ticket: {
+    id: string;
+    seatId: string;
+    grade: string;
+    event: { id: string; name: string; venue: string; eventDate: string };
+    holderNameMasked: string;
+  };
+  burn: { txHash: string; mocked: boolean };
+}
+
+export interface VerifyFail {
+  ok: false;
+  reason: string;
+}
+
+export const qrApi = {
+  verify: async (token: string): Promise<VerifyOk | VerifyFail> => {
+    // /api/qr/verify returns 200 on success and 4xx on failure — normalize
+    // both into the same discriminated response shape the UI expects.
+    const res = await fetch('/api/qr/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${getToken() ?? ''}`,
+      },
+      body: JSON.stringify({ token }),
+    });
+    const body = await res.json().catch(() => ({ ok: false, reason: 'malformed' }));
+    return body as VerifyOk | VerifyFail;
+  },
+};
+
 export const adminApi = {
   listEvents: () => api<{ events: Event[] }>('/api/admin/events'),
   createEvent: (input: CreateEventInput) =>
