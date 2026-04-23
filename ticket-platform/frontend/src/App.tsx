@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Admin from './pages/Admin';
 import Ticket from './pages/Ticket';
 import Staff from './pages/Staff';
+import Market from './pages/Market';
 import { PaymentSuccess, PaymentFail } from './pages/PaymentResult';
 
 function Placeholder({ title }: { title: string }) {
@@ -70,7 +71,14 @@ export default function App() {
             </RequireAuth>
           }
         />
-        <Route path="/market" element={<Placeholder title="마켓 (7단계)" />} />
+        <Route
+          path="/market"
+          element={
+            <RequireAuth>
+              <Market />
+            </RequireAuth>
+          }
+        />
         <Route
           path="/admin"
           element={

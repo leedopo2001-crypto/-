@@ -190,6 +190,44 @@ export interface ConfirmResponse {
   } | null;
 }
 
+export interface Listing {
+  id: string;
+  ticketId: string;
+  sellerId: string;
+  price: number;
+  status: string;
+  createdAt: string;
+  ticket: {
+    id: string;
+    tokenId: string;
+    seatId: string;
+    grade: string;
+    price: number;
+    event: {
+      id: string;
+      name: string;
+      venue: string;
+      eventDate: string;
+      lockDate: string;
+    };
+  };
+  seller?: { id: string; name: string };
+}
+
+export const marketApi = {
+  list: () => api<{ listings: Listing[] }>('/api/market'),
+  myListings: () => api<{ listings: Listing[] }>('/api/market/my'),
+  sell: (ticketId: string) =>
+    api<{ listing: Listing }>('/api/market/list', {
+      method: 'POST',
+      body: JSON.stringify({ ticketId }),
+    }),
+  buy: (listingId: string) =>
+    api<PrepareOrderResponse>(`/api/market/buy/${listingId}`, { method: 'POST' }),
+  cancel: (listingId: string) =>
+    api<{ ok: boolean }>(`/api/market/${listingId}`, { method: 'DELETE' }),
+};
+
 export const paymentApi = {
   config: () => api<{ clientKey: string }>('/api/payment/config'),
   prepare: (listingId: string) =>

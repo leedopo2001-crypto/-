@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ticketsApi, type Ticket } from '../lib/api';
+import { ApiError, marketApi, ticketsApi, type Ticket } from '../lib/api';
 import QRDisplay from '../components/QRDisplay';
 
 export default function TicketPage() {
@@ -8,6 +8,8 @@ export default function TicketPage() {
   const navigate = useNavigate();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [listing, setListing] = useState(false);
+  const [listError, setListError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -19,6 +21,33 @@ export default function TicketPage() {
       cancelled = true;
     };
   }, [id]);
+
+  async function onList() {
+    if (!ticket) return;
+    if (!confirm(`정가 ${ticket.price.toLocaleString('ko-KR')}원에 마켓에 판매 등록합니다. 계속할까요?`)) return;
+    setListing(true);
+    setListError(null);
+    try {
+      await marketApi.sell(ticket.id);
+      navigate('/market?mine=1');
+    } catch (e) {
+      if (e instanceof ApiError) {
+        setListError(
+          e.code === 'already_listed'
+            ? '이미 판매 등록된 티켓입니다.'
+            : e.code === 'ticket_not_listable'
+            ? '판매할 수 없는 상태입니다.'
+            : e.code === 'lock_passed'
+            ? '공연 일정에 따라 양도가 잠겼습니다.'
+            : `판매 등록 실패: ${e.code}`,
+        );
+      } else {
+        setListError('판매 등록 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setListing(false);
+    }
+  }
 
   if (error) {
     return (
@@ -77,14 +106,20 @@ export default function TicketPage() {
         <div>양도 잠금: {new Date(ticket.event.lockDate).toLocaleString('ko-KR')}</div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-2">
         {!used && !lockPassed && (
-          <Link
-            to={`/market?list=${ticket.id}`}
-            className="block w-full text-center rounded-md border border-slate-300 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
+          <button
+            onClick={onList}
+            disabled={listing}
+            className="block w-full text-center rounded-md border border-slate-300 py-2.5 text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
           >
-            양도하기 (마켓에 등록)
-          </Link>
+            {listing ? '등록 중…' : `마켓에 ${ticket.price.toLocaleString('ko-KR')}원으로 판매 등록`}
+          </button>
+        )}
+        {listError && (
+          <div className="text-sm text-red-700 rounded-md bg-red-50 border border-red-200 px-3 py-2">
+            {listError}
+          </div>
         )}
         {lockPassed && !used && (
           <p className="text-center text-xs text-slate-400">공연 일정에 따라 양도가 잠겼습니다.</p>

@@ -6,6 +6,7 @@ import adminRouter from './routes/admin.js';
 import ticketsRouter from './routes/tickets.js';
 import qrRouter from './routes/qr.js';
 import paymentRouter from './routes/payment.js';
+import marketRouter from './routes/market.js';
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/tickets', ticketsRouter);
 app.use('/api/qr', qrRouter);
 app.use('/api/payment', paymentRouter);
+app.use('/api/market', marketRouter);
 
 const PORT = Number(process.env.PORT) || 3000;
 
