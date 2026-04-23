@@ -2,6 +2,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './lib/auth';
 import Onboarding from './pages/Onboarding';
 import Home from './pages/Home';
+import Admin from './pages/Admin';
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -60,7 +61,14 @@ export default function App() {
         />
         <Route path="/ticket/:id" element={<Placeholder title="티켓 상세 (5단계)" />} />
         <Route path="/market" element={<Placeholder title="마켓 (7단계)" />} />
-        <Route path="/admin" element={<Placeholder title="어드민 (4단계)" />} />
+        <Route
+          path="/admin"
+          element={
+            <RequireAuth>
+              <Admin />
+            </RequireAuth>
+          }
+        />
         <Route path="/staff" element={<Placeholder title="스태프 스캐너 (5단계)" />} />
         <Route path="*" element={<Placeholder title="404" />} />
       </Routes>

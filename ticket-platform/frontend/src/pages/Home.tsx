@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 
 export default function Home() {
@@ -28,6 +29,12 @@ export default function Home() {
         아직 보유한 티켓이 없습니다.
         <br />
         <span className="text-xs">5단계에서 티켓 카드가 렌더링됩니다.</span>
+      </div>
+
+      <div className="mt-8 flex flex-wrap gap-3 text-sm">
+        <Link to="/admin" className="text-slate-500 hover:text-slate-700">기획사 어드민 →</Link>
+        <Link to="/market" className="text-slate-500 hover:text-slate-700">재판매 마켓 →</Link>
+        <Link to="/staff" className="text-slate-500 hover:text-slate-700">스태프 스캐너 →</Link>
       </div>
     </div>
   );

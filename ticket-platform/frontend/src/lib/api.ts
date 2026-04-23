@@ -61,3 +61,51 @@ export const authApi = {
     }),
   me: () => api<{ user: User }>('/api/auth/me'),
 };
+
+export interface SeatGrade {
+  id: string;
+  eventId: string;
+  grade: string;
+  price: number;
+  totalCount: number;
+}
+
+export interface Event {
+  id: string;
+  name: string;
+  venue: string;
+  eventDate: string;
+  lockDate: string;
+  contractAddr: string;
+  status: string;
+  createdAt: string;
+  seatGrades: SeatGrade[];
+  _count?: { tickets: number };
+}
+
+export interface CreateEventInput {
+  name: string;
+  venue: string;
+  eventDate: string;
+  lockDate: string;
+  seatGrades: Array<{ grade: string; price: number; totalCount: number }>;
+}
+
+export interface MintAssignment {
+  grade: string;
+  walletAddress: string;
+}
+
+export const adminApi = {
+  listEvents: () => api<{ events: Event[] }>('/api/admin/events'),
+  createEvent: (input: CreateEventInput) =>
+    api<{ event: Event; deploy: { txHash: string; mocked: boolean } }>(
+      '/api/admin/events',
+      { method: 'POST', body: JSON.stringify(input) },
+    ),
+  mint: (eventId: string, assignments: MintAssignment[]) =>
+    api<{ tickets: unknown[] }>(`/api/admin/events/${eventId}/mint`, {
+      method: 'POST',
+      body: JSON.stringify({ assignments }),
+    }),
+};
