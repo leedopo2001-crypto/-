@@ -1,0 +1,56 @@
+# 커뮤니티 소스 정의 — 발굴팀(community-scout)이 참조
+# access_note는 2026-07-06 원격 환경 기준 관찰. 환경 네트워크 정책에 따라 달라짐.
+
+sites:
+  fmkorea:
+    name: 에펨코리아
+    boards:
+      - name: 포텐 터짐
+        url: https://www.fmkorea.com/best
+      - name: 포텐 터짐 (일간)
+        url: https://www.fmkorea.com/index.php?mid=best&listStyle=list
+    hot_signals: [추천수, 댓글수, 포텐 등록 시각]
+    access_note: 안티봇 매우 강함. 요청 간격 3초 이상, 차단 시 즉시 검색 폴백.
+
+  ruliweb:
+    name: 루리웹
+    boards:
+      - name: 베스트 (유머 BEST)
+        url: https://bbs.ruliweb.com/best/humor
+      - name: 베스트 전체
+        url: https://bbs.ruliweb.com/best
+    hot_signals: [추천수, 댓글수]
+    access_note: 비교적 접근 쉬운 편.
+
+  dcinside:
+    name: 디시인사이드
+    boards:
+      - name: 실시간 베스트
+        url: https://gall.dcinside.com/board/lists/?id=dcbest
+      - name: 초개념 갤러리
+        url: https://gall.dcinside.com/board/lists/?id=superidea
+    hot_signals: [개념글 등록, 댓글수, 조회수]
+    access_note: UA 없는 요청은 차단. 데스크톱 브라우저 UA 필수.
+
+  bboom:
+    name: 네이버 뿜
+    boards:
+      - name: 뿜 메인
+        url: https://bboom.naver.com
+    hot_signals: [공감수, 댓글수]
+    access_note: 서비스 종료 가능성 높음. 접속 불가 확인 시 failed 보고.
+      대체 소스 후보(사용자 승인 후 추가): 네이트판 톡커들의선택, 더쿠 핫게, 인스티즈.
+
+  blind:
+    name: 블라인드
+    boards:
+      - name: 토픽 (공개 웹)
+        url: https://www.teamblind.com/kr/topics
+    hot_signals: [좋아요, 댓글수]
+    access_note: 로그인 필수 서비스. 공개 미리보기 + WebSearch 간접 수집만.
+      로그인 우회·계정 사용 금지. 수집량이 적은 것이 정상.
+
+selection:
+  per_site_candidates: 6   # 사이트당 후보 수
+  final_count: 8           # 최종 선정 수
+  categories: [인기글, vs논쟁, 댓글유발]
