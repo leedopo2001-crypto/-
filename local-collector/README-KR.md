@@ -22,6 +22,24 @@ Python이 없다고 나오면 [python.org](https://python.org)에서 설치하�
 
 블라인드는 로그인 필수 서비스라 지원하지 않습니다.
 
+에펨코리아는 Cloudflare 차단이 있어서 **cloudscraper**로 우회합니다 (requirements에 포함). 그래도 막히면 "Cloudflare 차단" 메시지가 뜨는데, 잠시 후 소량씩 재시도하면 대부분 통과합니다.
+
+## 같이 들어있는 것
+
+| 파일 | 용도 |
+|---|---|
+| `app.py` + `start.bat` | 브라우저 UI 수집기 (더블클릭 실행) |
+| `community_scraper.py` | 명령줄(CLI) 수집기 — `python community_scraper.py <주소>` |
+| `ocr_images.py` | 다운받은 이미지 폴더에서 글자 추출 (짤방·표 안 글자) |
+
+CLI/OCR 사용 예:
+```
+python community_scraper.py https://gall.dcinside.com/board/view/?id=dcbest&no=...
+pip install easyocr pillow
+python ocr_images.py "글제목_images"
+```
+OCR은 CPU에서 이미지 한 장당 몇 초 걸립니다(정상). GPU 있으면 `ocr_images.py`에서 `gpu=True`로.
+
 ## 진짜 .exe 파일로 만들기 (선택)
 
 Python 설치 없이 아무 PC에서나 실행되는 exe가 필요하면, 본인 PC 명령프롬프트에서:

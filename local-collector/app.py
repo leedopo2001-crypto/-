@@ -15,18 +15,36 @@ import requests
 from bs4 import BeautifulSoup
 from flask import Flask, request, jsonify, render_template_string
 
+try:
+    import cloudscraper
+    HAS_CLOUD = True
+except ImportError:
+    HAS_CLOUD = False
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 OUT_ROOT = os.path.join(BASE, "collected")
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
+      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
 
 app = Flask(__name__)
 
 
+def make_session():
+    """에펨코리아 Cloudflare 우회용. cloudscraper 있으면 사용."""
+    if HAS_CLOUD:
+        return cloudscraper.create_scraper(
+            browser={"browser": "chrome", "platform": "windows", "mobile": False}
+        )
+    return requests.Session()
+
+
+SESSION = make_session()
+
+
 # ──────────────────────────────── 공통 유틸
 
-def fetch(url, referer=None, timeout=20):
+def fetch(url, referer=None, timeout=25):
     headers = {
         "User-Agent": UA,
         "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.5",
@@ -34,10 +52,14 @@ def fetch(url, referer=None, timeout=20):
     }
     if referer:
         headers["Referer"] = referer
-    r = requests.get(url, headers=headers, timeout=timeout)
+    r = SESSION.get(url, headers=headers, timeout=timeout)
     r.raise_for_status()
     if not r.encoding or r.encoding.lower() == "iso-8859-1":
         r.encoding = r.apparent_encoding
+    # Cloudflare 챌린지 감지 (cloudscraper로도 못 뚫은 경우)
+    head = r.text[:3000]
+    if "Just a moment" in head or "Checking your browser" in head:
+        raise RuntimeError("Cloudflare 차단에 막힘 (잠시 후 재시도하거나 소량씩 수집)")
     return r
 
 
@@ -140,35 +162,45 @@ def scrape_naver_blog(url):
 
 def scrape_dcinside(url):
     soup = BeautifulSoup(fetch(url, referer="https://gall.dcinside.com/").text, "lxml")
-    t = soup.select_one("span.title_subject") or soup.select_one("title")
-    title = t.get_text(strip=True) if t else "dcinside_post"
-    body = soup.select_one("div.write_div")
+    t = (soup.select_one("span.title_subject") or soup.select_one("h3.title .title_subject")
+         or soup.select_one("meta[property='og:title']") or soup.select_one("title"))
+    title = (t.get("content") if t and t.name == "meta" else t.get_text(strip=True)) if t else "dcinside_post"
+    body = soup.select_one("div.write_div") or soup.select_one("div.writing_view_box")
     if not body:
         raise ValueError("본문(write_div)을 찾지 못했습니다")
     text = clean_text(body.get_text("\n"))
-    imgs = [i.get("src") or i.get("data-original") or "" for i in body.select("img")]
-    imgs = [u if u.startswith("http") else "https:" + u for u in imgs if u]
+    imgs = extract_images(body)
     return {"title": title, "url": url, "text": text, "images": imgs,
             "referer": "https://gall.dcinside.com/"}
 
 
+def extract_images(body, is_naver=False, base_host=None):
+    """검증된 lazy-load 대응: data-lazy-src > data-original > src, blank 제외"""
+    imgs = []
+    for img in body.select("img"):
+        src = (img.get("data-lazy-src") or img.get("data-original")
+               or img.get("src") or "")
+        if src.startswith("//"):
+            src = "https:" + src
+        elif src.startswith("/") and base_host:
+            src = base_host + src
+        if src.startswith("http") and "blank" not in src:
+            imgs.append(src.split("?")[0] if is_naver else src)
+    return imgs
+
+
 def scrape_fmkorea(url):
     soup = BeautifulSoup(fetch(url, referer="https://www.fmkorea.com/").text, "lxml")
-    t = soup.select_one("h1 .np_18px_span") or soup.select_one("h1") or soup.select_one("title")
-    title = t.get_text(strip=True) if t else "fmkorea_post"
-    body = soup.select_one("article .xe_content") or soup.select_one(".xe_content")
+    t = (soup.select_one("h1.np_18px") or soup.select_one("meta[property='og:title']")
+         or soup.select_one("h1") or soup.select_one("title"))
+    title = (t.get("content") if t and t.name == "meta" else t.get_text(strip=True)) if t else "fmkorea_post"
+    body = (soup.select_one("div.rd_body article .xe_content")
+            or soup.select_one("article .xe_content")
+            or soup.select_one("div.xe_content"))
     if not body:
         raise ValueError("본문(xe_content)을 찾지 못했습니다 — 차단 페이지일 수 있음")
     text = clean_text(body.get_text("\n"))
-    imgs = []
-    for i in body.select("img"):
-        src = i.get("data-original") or i.get("src") or ""
-        if src.startswith("//"):
-            src = "https:" + src
-        elif src.startswith("/"):
-            src = "https://www.fmkorea.com" + src
-        if src.startswith("http"):
-            imgs.append(src)
+    imgs = extract_images(body, base_host="https://www.fmkorea.com")
     return {"title": title, "url": url, "text": text, "images": imgs,
             "referer": "https://www.fmkorea.com/"}
 
