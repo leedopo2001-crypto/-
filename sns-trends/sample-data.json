@@ -1,0 +1,50 @@
+{
+  "demo": true,
+  "googleTrends": [
+    { "rank": 1, "keyword": "월드컵 예선", "trafficLabel": "500,000+", "traffic": 500000, "picture": null, "pubDate": null, "news": [ { "title": "한국, 월드컵 최종예선 첫 경기 승리", "url": "https://news.google.com", "source": "샘플 뉴스" }, { "title": "손흥민 결승골… 팬들 열광", "url": "https://news.google.com", "source": "샘플 스포츠" } ] },
+    { "rank": 2, "keyword": "아이폰 신제품", "trafficLabel": "200,000+", "traffic": 200000, "picture": null, "pubDate": null, "news": [ { "title": "애플, 신형 아이폰 공개 행사 일정 발표", "url": "https://news.google.com", "source": "샘플 IT" } ] },
+    { "rank": 3, "keyword": "태풍 경로", "trafficLabel": "100,000+", "traffic": 100000, "picture": null, "pubDate": null, "news": [ { "title": "제5호 태풍 북상… 주말 전국 영향", "url": "https://news.google.com", "source": "샘플 날씨" } ] },
+    { "rank": 4, "keyword": "신작 드라마", "trafficLabel": "50,000+", "traffic": 50000, "picture": null, "pubDate": null, "news": [ { "title": "넷플릭스 신작, 공개 직후 1위", "url": "https://news.google.com", "source": "샘플 연예" } ] },
+    { "rank": 5, "keyword": "비트코인 시세", "trafficLabel": "50,000+", "traffic": 50000, "picture": null, "pubDate": null, "news": [ { "title": "비트코인 급등… 사상 최고가 근접", "url": "https://news.google.com", "source": "샘플 경제" } ] },
+    { "rank": 6, "keyword": "걸그룹 컴백", "trafficLabel": "20,000+", "traffic": 20000, "picture": null, "pubDate": null, "news": [ { "title": "인기 걸그룹, 새 앨범 발매 첫날 신기록", "url": "https://news.google.com", "source": "샘플 음악" } ] },
+    { "rank": 7, "keyword": "프로야구 순위", "trafficLabel": "20,000+", "traffic": 20000, "picture": null, "pubDate": null, "news": [] },
+    { "rank": 8, "keyword": "전기차 보조금", "trafficLabel": "10,000+", "traffic": 10000, "picture": null, "pubDate": null, "news": [] },
+    { "rank": 9, "keyword": "로또 당첨번호", "trafficLabel": "10,000+", "traffic": 10000, "picture": null, "pubDate": null, "news": [] },
+    { "rank": 10, "keyword": "챗GPT 업데이트", "trafficLabel": "10,000+", "traffic": 10000, "picture": null, "pubDate": null, "news": [] }
+  ],
+  "wikipediaTop": {
+    "lang": "ko",
+    "date": "샘플",
+    "articles": [
+      { "rank": 1, "title": "대한민국 축구 국가대표팀", "views": 182000, "url": "https://ko.wikipedia.org" },
+      { "rank": 2, "title": "아이폰", "views": 95000, "url": "https://ko.wikipedia.org" },
+      { "rank": 3, "title": "태풍", "views": 71000, "url": "https://ko.wikipedia.org" },
+      { "rank": 4, "title": "비트코인", "views": 54000, "url": "https://ko.wikipedia.org" },
+      { "rank": 5, "title": "손흥민", "views": 48000, "url": "https://ko.wikipedia.org" },
+      { "rank": 6, "title": "넷플릭스", "views": 33000, "url": "https://ko.wikipedia.org" },
+      { "rank": 7, "title": "KBO 리그", "views": 29000, "url": "https://ko.wikipedia.org" },
+      { "rank": 8, "title": "챗GPT", "views": 25000, "url": "https://ko.wikipedia.org" }
+    ]
+  },
+  "youtubeTrending": {
+    "videos": [
+      { "rank": 1, "id": "sample1", "title": "[하이라이트] 월드컵 예선 대한민국 vs 상대팀 풀영상", "channel": "샘플 스포츠 채널", "thumbnail": "", "views": 3200000, "publishedAt": null, "url": "https://www.youtube.com" },
+      { "rank": 2, "id": "sample2", "title": "아이폰 신제품 언박싱 & 첫인상 리뷰", "channel": "샘플 테크 리뷰", "thumbnail": "", "views": 1800000, "publishedAt": null, "url": "https://www.youtube.com" },
+      { "rank": 3, "id": "sample3", "title": "신작 드라마 1화 몰아보기 요약", "channel": "샘플 드라마 요약", "thumbnail": "", "views": 950000, "publishedAt": null, "url": "https://www.youtube.com" },
+      { "rank": 4, "id": "sample4", "title": "걸그룹 컴백 무대 직캠 4K", "channel": "샘플 음악 방송", "thumbnail": "", "views": 720000, "publishedAt": null, "url": "https://www.youtube.com" },
+      { "rank": 5, "id": "sample5", "title": "비트코인 지금 사도 될까? 전문가 분석", "channel": "샘플 경제 채널", "thumbnail": "", "views": 410000, "publishedAt": null, "url": "https://www.youtube.com" }
+    ]
+  },
+  "keywordSample": {
+    "news": {
+      "sampled": 100,
+      "last24h": 34,
+      "last7d": 87,
+      "latest": [
+        { "title": "샘플 기사: 해당 키워드 관련 최신 소식", "url": "https://news.google.com", "source": "샘플 뉴스", "pubDate": "" },
+        { "title": "샘플 기사: 업계 반응 정리", "url": "https://news.google.com", "source": "샘플 미디어", "pubDate": "" }
+      ]
+    },
+    "youtube": { "last24h": 1200, "last7d": 8400 }
+  }
+}
