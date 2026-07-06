@@ -21,7 +21,10 @@ const SITES = [
   { key: 'fmkorea', name: '에펨코리아', note: '포텐 터짐 게시판 중심. 안티봇 강함 — 차단 시 검색 폴백' },
   { key: 'ruliweb', name: '루리웹', note: '베스트(유머 BEST) 게시판 중심' },
   { key: 'dcinside', name: '디시인사이드', note: '실시간 베스트(dcbest) 중심' },
-  { key: 'bboom', name: '네이버 뿜', note: '서비스 종료 가능성 있음 — 접속 불가면 failed로 보고하고 대체 소스(네이트판 톡커들의선택 등)를 제안만' },
+  { key: 'nate', name: '네이트판', note: '오늘의 톡 랭킹. 사연·썰·vs 논쟁의 본진 — 렉카 소재 1순위' },
+  { key: 'theqoo', name: '더쿠', note: '핫게시판. 연예·이슈 여초 커뮤, 논란 확산 빠름' },
+  { key: 'bobae', name: '보배드림', note: '베스트. 자동차·블랙박스 영상·사회 이슈, 남초 논쟁' },
+  { key: 'mlbpark', name: 'MLBPARK 불펜', note: '불펜. 야구+사회 이슈 남초 논쟁' },
   { key: 'blind', name: '블라인드', note: '로그인 필수 서비스 — 공개 웹 미리보기와 검색 폴백만 사용, 로그인 우회 금지' },
 ]
 

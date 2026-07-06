@@ -189,6 +189,16 @@ def extract_images(body, is_naver=False, base_host=None):
     return imgs
 
 
+def pick_title(soup, selectors, default):
+    for sel in selectors:
+        el = soup.select_one(sel)
+        if el:
+            val = el.get("content", "") if el.name == "meta" else el.get_text(strip=True)
+            if val and val.strip():
+                return val.strip()
+    return default
+
+
 def scrape_fmkorea(url):
     soup = BeautifulSoup(fetch(url, referer="https://www.fmkorea.com/").text, "lxml")
     t = (soup.select_one("h1.np_18px") or soup.select_one("meta[property='og:title']")
@@ -217,6 +227,57 @@ def scrape_ruliweb(url):
     imgs = [u if u.startswith("http") else "https:" + u for u in imgs if u]
     return {"title": title, "url": url, "text": text, "images": imgs,
             "referer": "https://bbs.ruliweb.com/"}
+
+
+# ── 아래 4개는 실전 미검증 셀렉터(사이트 구조 추정). 안 되면 F12로 본문 div class 확인 후 교체.
+
+def scrape_theqoo(url):
+    # 더쿠는 Rhymix/XE 기반이라 본문 구조가 에펨과 유사
+    soup = BeautifulSoup(fetch(url, referer="https://theqoo.net/").text, "lxml")
+    title = pick_title(soup, ["h1.title", ".rd_hd .title", "meta[property='og:title']", "title"], "theqoo_post")
+    body = (soup.select_one("div.rd_body article .xe_content")
+            or soup.select_one("article .xe_content")
+            or soup.select_one("div.xe_content"))
+    if not body:
+        raise ValueError("본문(xe_content)을 찾지 못했습니다 — 더쿠 구조 변경 가능")
+    return {"title": title, "url": url, "text": clean_text(body.get_text("\n")),
+            "images": extract_images(body), "referer": "https://theqoo.net/"}
+
+
+def scrape_nate(url):
+    soup = BeautifulSoup(fetch(url, referer="https://pann.nate.com/").text, "lxml")
+    title = pick_title(soup, [".post-tit-info h4", "#cts_ttl", ".tit", "meta[property='og:title']", "title"], "nate_pann")
+    body = (soup.select_one("#contentArea") or soup.select_one("div.usertxt")
+            or soup.select_one(".contentArea"))
+    if not body:
+        raise ValueError("본문(#contentArea)을 찾지 못했습니다 — 네이트판 구조 변경 가능")
+    return {"title": title, "url": url, "text": clean_text(body.get_text("\n")),
+            "images": extract_images(body, base_host="https://pann.nate.com"),
+            "referer": "https://pann.nate.com/"}
+
+
+def scrape_bobae(url):
+    soup = BeautifulSoup(fetch(url, referer="https://www.bobaedream.co.kr/").text, "lxml")
+    title = pick_title(soup, [".writerProfile .title", ".title-order", "meta[property='og:title']", "title"], "bobae_post")
+    body = (soup.select_one("div.bodyCont") or soup.select_one("#contentBody")
+            or soup.select_one(".content_txt"))
+    if not body:
+        raise ValueError("본문(div.bodyCont)을 찾지 못했습니다 — 보배드림 구조 변경 가능")
+    return {"title": title, "url": url, "text": clean_text(body.get_text("\n")),
+            "images": extract_images(body, base_host="https://www.bobaedream.co.kr"),
+            "referer": "https://www.bobaedream.co.kr/"}
+
+
+def scrape_mlbpark(url):
+    soup = BeautifulSoup(fetch(url, referer="https://mlbpark.donga.com/").text, "lxml")
+    title = pick_title(soup, [".titles", "#contentTitle", "meta[property='og:title']", "title"], "mlbpark_post")
+    body = (soup.select_one("div.ar_txt") or soup.select_one("#contentDetail")
+            or soup.select_one(".view_content"))
+    if not body:
+        raise ValueError("본문(div.ar_txt)을 찾지 못했습니다 — 엠팍 구조 변경 가능")
+    return {"title": title, "url": url, "text": clean_text(body.get_text("\n")),
+            "images": extract_images(body, base_host="https://mlbpark.donga.com"),
+            "referer": "https://mlbpark.donga.com/"}
 
 
 def scrape_generic(url):
@@ -249,6 +310,14 @@ def scrape(url):
         return scrape_fmkorea(url)
     if "ruliweb.com" in host:
         return scrape_ruliweb(url)
+    if "theqoo.net" in host:
+        return scrape_theqoo(url)
+    if "pann.nate.com" in host:
+        return scrape_nate(url)
+    if "bobaedream" in host:
+        return scrape_bobae(url)
+    if "mlbpark" in host:
+        return scrape_mlbpark(url)
     return scrape_generic(url)
 
 
@@ -312,10 +381,70 @@ def hot_fmkorea():
     return posts
 
 
+def _list_from_rows(html, base, link_pat, row_sel, title_sel, cmt_sel=None):
+    """게시판 리스트 공용 파서: 각 행에서 링크·제목·(댓글수) 추출. 미검증 사이트용."""
+    soup = BeautifulSoup(html, "lxml")
+    posts, seen = [], set()
+    for row in soup.select(row_sel):
+        a = row.select_one(title_sel)
+        if not a or not a.get("href"):
+            continue
+        href = urljoin(base, a["href"])
+        if link_pat and not re.search(link_pat, href):
+            continue
+        if href in seen:
+            continue
+        seen.add(href)
+        title = a.get_text(strip=True)
+        if not title:
+            continue
+        cmt = ""
+        if cmt_sel:
+            c = row.select_one(cmt_sel)
+            if c:
+                cmt = re.sub(r"[^\d]", "", c.get_text())
+        posts.append({"title": title, "url": href, "comments": cmt})
+    return posts
+
+
+def hot_theqoo():
+    html = fetch("https://theqoo.net/hot", referer="https://theqoo.net/").text
+    return _list_from_rows(html, "https://theqoo.net/", r"/hot/\d+",
+                           "table.theqoo_board tbody tr, tbody tr",
+                           "td.title a, a.title", "td.m_no, .replyNum")
+
+
+def hot_nate():
+    html = fetch("https://pann.nate.com/talk/ranking", referer="https://pann.nate.com/").text
+    return _list_from_rows(html, "https://pann.nate.com/", r"/talk/\d+",
+                           "ul.post-list li, tbody tr, li",
+                           "a.subject, dt a, a", ".count, .rp")
+
+
+def hot_bobae():
+    html = fetch("https://www.bobaedream.co.kr/board/bulletin/list.php?code=best",
+                 referer="https://www.bobaedream.co.kr/").text
+    return _list_from_rows(html, "https://www.bobaedream.co.kr/", r"view\.php",
+                           "table tbody tr, .bestList li",
+                           "a.bsubject, td.pl14 a, a.subject", "span.commentNum, .reply")
+
+
+def hot_mlbpark():
+    html = fetch("https://mlbpark.donga.com/mp/b.php?b=bullpen",
+                 referer="https://mlbpark.donga.com/").text
+    return _list_from_rows(html, "https://mlbpark.donga.com/", r"b\.php\?.*id=",
+                           "table tbody tr, .tblType01 tr",
+                           "a.txt, td.t_left a, a.bullpen", "span.replycnt, .num")
+
+
 HOT_SOURCES = {
     "dcinside": ("디시 실시간베스트", hot_dcinside),
     "ruliweb": ("루리웹 유머베스트", hot_ruliweb),
     "fmkorea": ("에펨 포텐", hot_fmkorea),
+    "theqoo": ("더쿠 핫게 (미검증)", hot_theqoo),
+    "nate": ("네이트판 랭킹 (미검증)", hot_nate),
+    "bobae": ("보배드림 베스트 (미검증)", hot_bobae),
+    "mlbpark": ("엠팍 불펜 (미검증)", hot_mlbpark),
 }
 
 
@@ -399,6 +528,10 @@ PAGE = """<!doctype html>
   <button onclick="loadHot('dcinside')">디시 실베</button>
   <button onclick="loadHot('ruliweb')">루리웹 베스트</button>
   <button onclick="loadHot('fmkorea')">에펨 포텐</button>
+  <button onclick="loadHot('theqoo')">더쿠 핫게</button>
+  <button onclick="loadHot('nate')">네이트판</button>
+  <button onclick="loadHot('bobae')">보배드림</button>
+  <button onclick="loadHot('mlbpark')">엠팍 불펜</button>
   <div id="hotStatus" class="hint" style="margin-top:8px"></div>
   <div id="hotList"></div>
   <div id="hotActions" style="display:none; margin-top:10px">

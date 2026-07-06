@@ -21,8 +21,13 @@ tools: Bash, WebFetch, Read, Write, Grep, Glob
 - **네이버 블로그**: `blog.naver.com/<id>/<no>`는 iframe이라 빈 껍데기. `blog.naver.com/PostView.naver?blogId=<id>&logNo=<no>`로 접근. 본문 `div.se-main-container`, 문단 `p.se-text-paragraph`, 제목 `div.se-title-text`
 - **에펨코리아**: Cloudflare 있음 → `cloudscraper` 사용. 본문 `div.rd_body article .xe_content` → `article .xe_content` → `div.xe_content`, 제목 `h1.np_18px`. "Just a moment" 뜨면 차단이니 소량 재시도
 - **디시인사이드**: 본문 `div.write_div` → `div.writing_view_box`, 제목 `span.title_subject`. UA·Referer(`https://gall.dcinside.com/`) 필수
-- **루리웹**: 본문 `div.view_content`, 제목 `span.subject_inner_text`
+- **루리웹**: 본문 `div.view_content`, 제목 `span.subject_inner_text` (미검증)
+- **더쿠**: Rhymix/XE 기반 → 에펨과 동일. 본문 `div.rd_body article .xe_content` → `.xe_content` (미검증)
+- **네이트판**: 본문 `#contentArea` → `div.usertxt`, 제목 `.post-tit-info h4` (미검증)
+- **보배드림**: 본문 `div.bodyCont` → `#contentBody`, 제목 `.writerProfile .title` (미검증)
+- **엠팍(MLBPARK)**: 본문 `div.ar_txt` → `#contentDetail`, 제목 `.titles` (미검증)
 - **이미지**: `data-lazy-src` → `data-original` → `src` 우선순위, `blank` 포함 URL 제외, `//`는 `https:` 보정, 네이버는 `?` 이후 제거
+- **(미검증) 표시 사이트**: 실제 페이지로 셀렉터 검증 전. 본문 못 잡으면 지어내지 말고 그 사실을 보고하고, `local-collector/`의 파서 결과나 사용자 F12 셀렉터로 교체 대기
 
 ## 규칙
 - **개인정보 보호**: 닉네임·프로필사진·전화번호·계정 등 개인 식별 정보는 저장 단계에서부터 마스킹하거나 제외
