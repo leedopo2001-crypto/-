@@ -41,6 +41,35 @@ def make_session():
 
 SESSION = make_session()
 
+try:
+    import anthropic
+    HAS_ANTHROPIC = True
+except ImportError:
+    HAS_ANTHROPIC = False
+
+KEY_FILE = os.path.join(BASE, "api_key.txt")
+ADAPT_MODEL = os.environ.get("RECKA_MODEL", "claude-opus-4-8")  # 바꾸려면 환경변수
+
+
+def get_api_key():
+    if os.path.exists(KEY_FILE):
+        try:
+            k = open(KEY_FILE, encoding="utf-8").read().strip()
+            if k:
+                return k
+        except OSError:
+            pass
+    return os.environ.get("ANTHROPIC_API_KEY", "").strip()
+
+
+def get_anthropic_client():
+    if not HAS_ANTHROPIC:
+        raise RuntimeError("anthropic 패키지가 없습니다. start.bat을 다시 실행해 설치하세요 (pip install anthropic).")
+    key = get_api_key()
+    if not key:
+        raise RuntimeError("Anthropic API 키가 없습니다. 화면 상단 'AI 설정'에서 키를 입력하세요.")
+    return anthropic.Anthropic(api_key=key)
+
 
 # ──────────────────────────────── 공통 유틸
 
@@ -508,6 +537,104 @@ def api_hot():
                     "pages": n, "posts": all_posts[:80]})
 
 
+def collect_one(url):
+    """글 1건 수집 → raw 저장. 수집 데이터/경로/이미지 반환."""
+    data = scrape(url)
+    out_dir = make_out_dir(data["title"])
+    with open(os.path.join(out_dir, "content.txt"), "w", encoding="utf-8") as f:
+        f.write(f"제목: {data['title']}\n주소: {data['url']}\n")
+        f.write("=" * 60 + "\n\n")
+        f.write(data["text"])
+        if data["images"]:
+            f.write("\n\n" + "=" * 60 + "\n[이미지 주소]\n")
+            f.write("\n".join(data["images"]))
+    saved_imgs = download_images(data["images"], out_dir, data["referer"])
+    with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as f:
+        json.dump({"title": data["title"], "url": url, "resolved_url": data["url"],
+                   "collected_at": datetime.datetime.now().isoformat(timespec="seconds"),
+                   "text_chars": len(data["text"]), "images_saved": saved_imgs},
+                  f, ensure_ascii=False, indent=2)
+    return {"data": data, "out_dir": out_dir, "images": saved_imgs}
+
+
+def site_label(url):
+    host = urlparse(url).netloc
+    for k, v in [("blog.naver", "네이버블로그"), ("dcinside", "디시인사이드"),
+                 ("fmkorea", "에펨코리아"), ("ruliweb", "루리웹"), ("theqoo", "더쿠"),
+                 ("pann.nate", "네이트판"), ("bobaedream", "보배드림"), ("mlbpark", "엠팍")]:
+        if k in host:
+            return v
+    return host
+
+
+STYLE_SYSTEM = """당신은 국내 커뮤니티 콘텐츠를 '나만의 콘텐츠'로 각색하는 작가입니다.
+원문을 그대로 복붙하지 말고, 반드시 본인 표현으로 재구성해서 두 가지 버전을 만듭니다.
+
+# 버전 A — 렉카체 (숏폼 나레이션, 45~60초 분량)
+이슈 유튜버 나레이션 톤. 구조 고정:
+1. 훅(첫 3초): 결론의 냄새만 풍기는 의문/도치형 한 문장 ("아니 이게 커뮤를 반으로 갈랐습니다")
+2. 상황 전개: 원문 상황을 3~4문장으로 압축. "~했다고 합니다" 전문(傳聞)체로, 단정하지 않기
+3. 반응: 여론이 갈리는 지점 묘사 ("근데 댓글 여론이 심상치 않습니다")
+4. 마무리: 시청자에게 공 넘기기 ("여러분이라면 어느 쪽이십니까?")
+톤: 과장 수식어(충격/난리/역대급) OK. 문장 짧게. "~인데요" "~습니다" 종결.
+
+# 버전 B — 커뮤체 (커뮤니티 재업로드용 글)
+- 음슴체 기본("~함" "~임" "~라는데" "~각임")
+- 제목 어그로+정보형 ("MBTI로 소개팅 거른 결말.jpg")
+- 본문: 상황 요약 → 핵심 장면 → 떡밥 질문으로 마무리 ("니들 생각은 어떰?")
+- ㅋㅋ 2~4개, 확장자 드립(.jpg .txt) 활용. 반말이되 조롱 아님
+
+# 절대 금지선
+- 실명·실존 인물/업체 특정 비방 (익명화해도 특정되면 금지)
+- 성별·지역·세대 집단 혐오 (vs 구도 '소개'는 OK, 한쪽 '조롱'은 금지)
+- 원문에 없는 사실·결말 창작 (형용사 과장은 OK, 없던 전개 지어내기 금지)
+- 원문 통짜 복붙 (직접 인용은 한두 줄까지)
+
+# 출력 형식 (마크다운)
+## 제목 후보
+- 후보 3개
+
+## 버전 A — 렉카체
+(내용)
+
+## 버전 B — 커뮤체
+(내용)
+
+한국어로만 작성하고, 위 마크다운 구조를 그대로 지키세요."""
+
+
+def adapt_with_claude(data):
+    """수집 데이터를 렉카체/커뮤체로 각색. 마크다운 문자열 반환."""
+    client = get_anthropic_client()
+    body = (data.get("text") or "")[:8000]  # 토큰 상한 방어
+    user = (f"아래 커뮤니티 글을 각색해줘.\n\n"
+            f"[출처] {data.get('site', '')} / {data.get('url', '')}\n"
+            f"[제목] {data.get('title', '')}\n\n[본문]\n{body}")
+    msg = client.messages.create(
+        model=ADAPT_MODEL,
+        max_tokens=8000,
+        system=STYLE_SYSTEM,
+        messages=[{"role": "user", "content": user}],
+    )
+    parts = [b.text for b in msg.content if getattr(b, "type", "") == "text"]
+    return "\n".join(parts).strip()
+
+
+@app.route("/api/keystatus")
+def api_keystatus():
+    return jsonify({"has_key": bool(get_api_key()), "has_sdk": HAS_ANTHROPIC, "model": ADAPT_MODEL})
+
+
+@app.route("/api/setkey", methods=["POST"])
+def api_setkey():
+    key = (request.get_json(silent=True) or {}).get("key", "").strip()
+    if not key:
+        return jsonify({"ok": False, "error": "키가 비어 있습니다"})
+    with open(KEY_FILE, "w", encoding="utf-8") as f:
+        f.write(key)
+    return jsonify({"ok": True})
+
+
 @app.route("/api/collect", methods=["POST"])
 def api_collect():
     urls = (request.get_json(silent=True) or {}).get("urls", [])
@@ -517,24 +644,34 @@ def api_collect():
         if not url:
             continue
         try:
-            data = scrape(url)
-            out_dir = make_out_dir(data["title"])
-            with open(os.path.join(out_dir, "content.txt"), "w", encoding="utf-8") as f:
-                f.write(f"제목: {data['title']}\n주소: {data['url']}\n")
-                f.write("=" * 60 + "\n\n")
-                f.write(data["text"])
-                if data["images"]:
-                    f.write("\n\n" + "=" * 60 + "\n[이미지 주소]\n")
-                    f.write("\n".join(data["images"]))
-            saved_imgs = download_images(data["images"], out_dir, data["referer"])
-            with open(os.path.join(out_dir, "meta.json"), "w", encoding="utf-8") as f:
-                json.dump({"title": data["title"], "url": url, "resolved_url": data["url"],
-                           "collected_at": datetime.datetime.now().isoformat(timespec="seconds"),
-                           "text_chars": len(data["text"]), "images_saved": saved_imgs},
-                          f, ensure_ascii=False, indent=2)
+            c = collect_one(url)
+            results.append({"url": url, "ok": True, "title": c["data"]["title"],
+                            "dir": os.path.relpath(c["out_dir"], BASE),
+                            "chars": len(c["data"]["text"]), "images": len(c["images"])})
+        except Exception as e:
+            results.append({"url": url, "ok": False, "error": str(e)})
+    return jsonify({"results": results})
+
+
+@app.route("/api/produce", methods=["POST"])
+def api_produce():
+    """수집 → Claude 각색 → drafts 저장. 각색 결과 반환."""
+    urls = (request.get_json(silent=True) or {}).get("urls", [])
+    results = []
+    for url in urls:
+        url = url.strip()
+        if not url:
+            continue
+        try:
+            c = collect_one(url)
+            data = dict(c["data"])
+            data["site"] = site_label(url)
+            adapted = adapt_with_claude(data)
+            draft_path = os.path.join(c["out_dir"], "draft.md")
+            with open(draft_path, "w", encoding="utf-8") as f:
+                f.write(f"# {data['title']}\n\n원문: {data['url']}\n출처: {data['site']}\n\n---\n\n{adapted}\n")
             results.append({"url": url, "ok": True, "title": data["title"],
-                            "dir": os.path.relpath(out_dir, BASE),
-                            "chars": len(data["text"]), "images": len(saved_imgs)})
+                            "dir": os.path.relpath(c["out_dir"], BASE), "draft": adapted})
         except Exception as e:
             results.append({"url": url, "ok": False, "error": str(e)})
     return jsonify({"results": results})
@@ -555,16 +692,32 @@ PAGE = """<!doctype html>
   button { background: #2563eb; color: #fff; border: 0; border-radius: 8px; padding: 8px 14px;
            font-size: 14px; cursor: pointer; margin: 2px; }
   button.gray { background: #6b7280; }
+  button.prod { background: #9333ea; }
+  button.mini { padding: 3px 9px; font-size: 12px; margin: 0 0 0 4px; }
   button:disabled { opacity: .5; cursor: wait; }
   textarea { width: 100%; height: 90px; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; font-size: 13px; }
-  .post { display: flex; gap: 8px; align-items: baseline; padding: 5px 2px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  input[type=password] { padding: 8px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; }
+  .post { display: flex; gap: 8px; align-items: center; padding: 5px 2px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+  .post .ttl { flex: 1; }
   .post .cmt { color: #dc2626; font-size: 12px; white-space: nowrap; }
+  .post .rowbtns { white-space: nowrap; }
   .log { font-size: 13px; line-height: 1.7; white-space: pre-wrap; }
   .ok { color: #15803d; } .err { color: #b91c1c; }
   .hint { color: #6b7280; font-size: 12px; }
+  .draft { margin-bottom: 14px; }
+  pre.dtext { white-space: pre-wrap; background: #faf9fb; border: 1px solid #ece9f2;
+              border-radius: 8px; padding: 12px; font-size: 13px; font-family: inherit; margin-top: 6px; }
 </style></head><body><div class="wrap">
 <h1>📥 커뮤니티 로컬 수집기</h1>
-<p class="hint">수집한 글은 이 프로그램 폴더의 <b>collected/오늘날짜/</b> 아래에 저장됩니다.</p>
+<p class="hint">수집한 글은 이 프로그램 폴더의 <b>collected/오늘날짜/</b> 아래에 저장됩니다. "제작"은 수집 후 AI가 렉카체·커뮤체로 각색합니다.</p>
+
+<div class="card" style="margin-bottom:12px">
+  <b>🤖 AI 설정 (제작 기능용)</b>
+  <div id="keyStatus" class="hint" style="margin:6px 0">확인 중...</div>
+  <input type="password" id="apikey" placeholder="Anthropic API 키 (sk-ant-...)" style="width:65%">
+  <button onclick="saveKey()">키 저장</button>
+  <div class="hint" style="margin-top:6px">키는 이 폴더 <b>api_key.txt</b>에만 저장됩니다(외부 전송 없음). 발급: console.anthropic.com</div>
+</div>
 
 <h2>1. 인기글 목록 불러오기</h2>
 <div class="card">
@@ -579,6 +732,7 @@ PAGE = """<!doctype html>
   <div id="hotList"></div>
   <div id="hotActions" style="display:none; margin-top:10px">
     <button onclick="collectChecked()">✅ 체크한 글 수집</button>
+    <button class="prod" onclick="produceChecked()">🎬 체크한 글 수집+제작</button>
     <button class="gray" onclick="toggleAll()">전체 선택/해제</button>
   </div>
 </div>
@@ -586,7 +740,10 @@ PAGE = """<!doctype html>
 <h2>2. 주소로 직접 수집</h2>
 <div class="card">
   <textarea id="urls" placeholder="글 주소를 한 줄에 하나씩 붙여넣으세요&#10;https://blog.naver.com/ranto28/224329396519&#10;https://gall.dcinside.com/board/view/?id=dcbest&no=..."></textarea>
-  <div style="margin-top:8px"><button onclick="collectTextarea()">📥 수집 시작</button></div>
+  <div style="margin-top:8px">
+    <button onclick="collectTextarea()">📥 수집 시작</button>
+    <button class="prod" onclick="produceTextarea()">🎬 수집 후 제작</button>
+  </div>
 </div>
 
 <h2>3. 결과</h2>
@@ -594,44 +751,90 @@ PAGE = """<!doctype html>
 
 <script>
 const $ = id => document.getElementById(id);
+let HOT = [];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function disableAll(on){document.querySelectorAll('button').forEach(b=>b.disabled=on);}
+
 async function loadHot(site) {
   $('hotStatus').textContent = '불러오는 중...';
   $('hotList').innerHTML = ''; $('hotActions').style.display = 'none';
   try {
     const r = await (await fetch('/api/hot?site=' + site)).json();
-    if (!r.ok) { $('hotStatus').innerHTML = '<span class="err">' + r.error + '</span>'; return; }
+    if (!r.ok) { $('hotStatus').innerHTML = '<span class="err">' + esc(r.error) + '</span>'; return; }
+    HOT = r.posts;
     $('hotStatus').textContent = r.site + ' — ' + r.posts.length + '건 (' + r.pages + '페이지'
       + (r.sorted ? ', 댓글 많은 순' : '') + ')';
     $('hotList').innerHTML = r.posts.map((p, i) =>
-      `<label class="post"><input type="checkbox" class="pick" value="${p.url}">
-       <span>${p.title}</span>${p.comments ? `<span class="cmt">💬${p.comments}</span>` : ''}</label>`).join('');
+      `<div class="post">
+         <input type="checkbox" class="pick" data-i="${i}">
+         <span class="ttl">${esc(p.title)}</span>
+         ${p.comments ? `<span class="cmt">💬${esc(p.comments)}</span>` : ''}
+         <span class="rowbtns">
+           <button class="mini gray" onclick="viewIdx(${i})">보기</button>
+           <button class="mini prod" onclick="produceIdx(${i})">제작</button>
+         </span>
+       </div>`).join('');
     $('hotActions').style.display = 'block';
   } catch (e) { $('hotStatus').innerHTML = '<span class="err">요청 실패: ' + e + '</span>'; }
 }
+function viewIdx(i){ window.open(HOT[i].url, '_blank'); }
+function produceIdx(i){ produce([HOT[i].url]); }
+function checkedUrls(){ return [...document.querySelectorAll('.pick:checked')].map(b => HOT[b.dataset.i].url); }
 function toggleAll() {
   const boxes = [...document.querySelectorAll('.pick')];
   const on = boxes.some(b => !b.checked);
   boxes.forEach(b => b.checked = on);
 }
+
 async function collect(urls) {
   if (!urls.length) { alert('수집할 주소가 없습니다'); return; }
   $('log').textContent = urls.length + '건 수집 중... (이미지 포함이라 시간이 좀 걸립니다)';
-  document.querySelectorAll('button').forEach(b => b.disabled = true);
+  disableAll(true);
   try {
     const r = await (await fetch('/api/collect', { method: 'POST',
       headers: {'Content-Type': 'application/json'}, body: JSON.stringify({urls}) })).json();
     $('log').innerHTML = r.results.map(x => x.ok
-      ? `<div class="ok">✅ ${x.title} — 글자 ${x.chars.toLocaleString()}자, 이미지 ${x.images}장 → ${x.dir}</div>`
-      : `<div class="err">❌ ${x.url}<br>&nbsp;&nbsp;사유: ${x.error}</div>`).join('');
+      ? `<div class="ok">✅ ${esc(x.title)} — 글자 ${x.chars.toLocaleString()}자, 이미지 ${x.images}장 → ${esc(x.dir)}</div>`
+      : `<div class="err">❌ ${esc(x.url)}<br>&nbsp;&nbsp;사유: ${esc(x.error)}</div>`).join('');
   } catch (e) { $('log').innerHTML = '<span class="err">수집 요청 실패: ' + e + '</span>'; }
-  document.querySelectorAll('button').forEach(b => b.disabled = false);
+  disableAll(false);
 }
-function collectChecked() {
-  collect([...document.querySelectorAll('.pick:checked')].map(b => b.value));
+async function produce(urls) {
+  if (!urls.length) { alert('제작할 주소가 없습니다'); return; }
+  $('log').textContent = urls.length + '건 제작 중... (수집 후 AI가 각색합니다. 글당 20~40초 걸려요)';
+  disableAll(true);
+  try {
+    const r = await (await fetch('/api/produce', { method: 'POST',
+      headers: {'Content-Type': 'application/json'}, body: JSON.stringify({urls}) })).json();
+    $('log').innerHTML = r.results.map(x => x.ok
+      ? `<div class="draft"><div class="ok">🎬 ${esc(x.title)} → ${esc(x.dir)}/draft.md</div>`
+        + `<pre class="dtext">${esc(x.draft)}</pre></div>`
+      : `<div class="err">❌ ${esc(x.url)}<br>&nbsp;&nbsp;사유: ${esc(x.error)}</div>`).join('');
+  } catch (e) { $('log').innerHTML = '<span class="err">제작 요청 실패: ' + e + '</span>'; }
+  disableAll(false);
 }
-function collectTextarea() {
-  collect($('urls').value.split('\\n').map(s => s.trim()).filter(Boolean));
+function collectChecked(){ collect(checkedUrls()); }
+function produceChecked(){ produce(checkedUrls()); }
+function collectTextarea(){ collect($('urls').value.split('\\n').map(s => s.trim()).filter(Boolean)); }
+function produceTextarea(){ produce($('urls').value.split('\\n').map(s => s.trim()).filter(Boolean)); }
+
+async function refreshKey(){
+  try {
+    const r = await (await fetch('/api/keystatus')).json();
+    $('keyStatus').innerHTML = !r.has_sdk
+      ? '<span class="err">anthropic 패키지 없음 — start.bat을 다시 실행해 설치하세요</span>'
+      : (r.has_key ? '<span class="ok">✅ API 키 설정됨 (모델: ' + esc(r.model) + ') — 제작 사용 가능</span>'
+                   : '<span class="err">API 키 미설정 — 제작하려면 키를 입력하세요</span>');
+  } catch (e) { $('keyStatus').innerHTML = '<span class="err">상태 확인 실패</span>'; }
 }
+async function saveKey(){
+  const key = $('apikey').value.trim();
+  if (!key) { alert('키를 입력하세요'); return; }
+  const r = await (await fetch('/api/setkey', { method: 'POST',
+    headers: {'Content-Type': 'application/json'}, body: JSON.stringify({key}) })).json();
+  if (r.ok) { $('apikey').value = ''; refreshKey(); } else { alert(r.error); }
+}
+window.addEventListener('load', refreshKey);
 </script>
 </div></body></html>"""
 
