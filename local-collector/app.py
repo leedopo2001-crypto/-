@@ -364,20 +364,27 @@ def hot_fmkorea():
     soup = BeautifulSoup(
         fetch("https://www.fmkorea.com/best", referer="https://www.fmkorea.com/").text, "lxml")
     posts, seen = [], set()
-    for a in soup.select("h3.title a, .li_best2_pop0 a, .hotdeal_var8 a"):
+    # 제목 링크만 집기: h3.title 안의 a. (추천수/썸네일 링크 제외)
+    for a in soup.select("h3.title a"):
         href = a.get("href") or ""
         if not re.search(r"/\d{6,}", href):
             continue
-        href = urljoin("https://www.fmkorea.com/", href.split("?")[0])
-        if href in seen:
-            continue
-        seen.add(href)
         title = a.get_text(" ", strip=True)
-        m = re.search(r"\[(\d+)\]\s*$", title)
-        comments = m.group(1) if m else ""
-        title = re.sub(r"\s*\[\d+\]\s*$", "", title)
-        if title:
-            posts.append({"title": title, "url": href, "comments": comments})
+        # 추천수/댓글수만 든 링크 방어: "추천 216", "123" 같은 건 제목 아님
+        if not title or title.startswith("추천") or re.fullmatch(r"[\d,]+", title):
+            continue
+        url = urljoin("https://www.fmkorea.com/", href.split("?")[0])
+        if url in seen:
+            continue
+        seen.add(url)
+        # 댓글수는 제목이 속한 행(li)에서 따로 찾기
+        cmt = ""
+        row = a.find_parent(["li", "tr", "div"])
+        if row:
+            c = row.select_one("a.comment_count, span.comment_count, .comment_count")
+            if c:
+                cmt = re.sub(r"[^\d]", "", c.get_text())
+        posts.append({"title": title, "url": url, "comments": cmt})
     return posts
 
 
