@@ -323,10 +323,20 @@ def scrape(url):
 
 # ──────────────────────────────── 인기글 목록
 
-def hot_dcinside():
-    soup = BeautifulSoup(
-        fetch("https://gall.dcinside.com/board/lists/?id=dcbest",
-              referer="https://www.dcinside.com/").text, "lxml")
+HOT_PAGES = 3  # 인기글 목록에서 긁을 페이지 수
+
+
+def page_url(base, n):
+    """base URL에 page 파라미터를 붙임 (쿼리 유무 자동 판단)"""
+    if n <= 1:
+        return base
+    sep = "&" if "?" in base else "?"
+    return f"{base}{sep}page={n}"
+
+
+def hot_dcinside(page=1):
+    url = page_url("https://gall.dcinside.com/board/lists/?id=dcbest", page)
+    soup = BeautifulSoup(fetch(url, referer="https://www.dcinside.com/").text, "lxml")
     posts = []
     for tr in soup.select("tr.ub-content"):
         a = tr.select_one("td.gall_tit a")
@@ -342,9 +352,9 @@ def hot_dcinside():
     return posts
 
 
-def hot_ruliweb():
-    soup = BeautifulSoup(
-        fetch("https://bbs.ruliweb.com/best/humor", referer="https://bbs.ruliweb.com/").text, "lxml")
+def hot_ruliweb(page=1):
+    url = page_url("https://bbs.ruliweb.com/best/humor", page)
+    soup = BeautifulSoup(fetch(url, referer="https://bbs.ruliweb.com/").text, "lxml")
     posts, seen = [], set()
     for a in soup.select("a.deco, td.subject a, .title_wrapper a"):
         href = a.get("href") or ""
@@ -360,9 +370,9 @@ def hot_ruliweb():
     return posts
 
 
-def hot_fmkorea():
-    soup = BeautifulSoup(
-        fetch("https://www.fmkorea.com/best", referer="https://www.fmkorea.com/").text, "lxml")
+def hot_fmkorea(page=1):
+    url = page_url("https://www.fmkorea.com/best", page)
+    soup = BeautifulSoup(fetch(url, referer="https://www.fmkorea.com/").text, "lxml")
     posts, seen = [], set()
     # 제목 링크만 집기: h3.title 안의 a. (추천수/썸네일 링크 제외)
     for a in soup.select("h3.title a"):
@@ -414,30 +424,31 @@ def _list_from_rows(html, base, link_pat, row_sel, title_sel, cmt_sel=None):
     return posts
 
 
-def hot_theqoo():
-    html = fetch("https://theqoo.net/hot", referer="https://theqoo.net/").text
+def hot_theqoo(page=1):
+    html = fetch(page_url("https://theqoo.net/hot", page), referer="https://theqoo.net/").text
     return _list_from_rows(html, "https://theqoo.net/", r"/hot/\d+",
                            "table.theqoo_board tbody tr, tbody tr",
                            "td.title a, a.title", "td.m_no, .replyNum")
 
 
-def hot_nate():
-    html = fetch("https://pann.nate.com/talk/ranking", referer="https://pann.nate.com/").text
+def hot_nate(page=1):
+    html = fetch(page_url("https://pann.nate.com/talk/ranking", page),
+                 referer="https://pann.nate.com/").text
     return _list_from_rows(html, "https://pann.nate.com/", r"/talk/\d+",
                            "ul.post-list li, tbody tr, li",
                            "a.subject, dt a, a", ".count, .rp")
 
 
-def hot_bobae():
-    html = fetch("https://www.bobaedream.co.kr/board/bulletin/list.php?code=best",
+def hot_bobae(page=1):
+    html = fetch(page_url("https://www.bobaedream.co.kr/board/bulletin/list.php?code=best", page),
                  referer="https://www.bobaedream.co.kr/").text
     return _list_from_rows(html, "https://www.bobaedream.co.kr/", r"view\.php",
                            "table tbody tr, .bestList li",
                            "a.bsubject, td.pl14 a, a.subject", "span.commentNum, .reply")
 
 
-def hot_mlbpark():
-    html = fetch("https://mlbpark.donga.com/mp/b.php?b=bullpen",
+def hot_mlbpark(page=1):
+    html = fetch(page_url("https://mlbpark.donga.com/mp/b.php?b=bullpen", page),
                  referer="https://mlbpark.donga.com/").text
     return _list_from_rows(html, "https://mlbpark.donga.com/", r"b\.php\?.*id=",
                            "table tbody tr, .tblType01 tr",
@@ -463,13 +474,38 @@ def api_hot():
     if site not in HOT_SOURCES:
         return jsonify({"ok": False, "error": "알 수 없는 사이트"}), 400
     name, fn = HOT_SOURCES[site]
+    all_posts, seen = [], set()
     try:
-        posts = fn()
-        if not posts:
-            return jsonify({"ok": False, "error": f"{name}: 글 목록을 찾지 못했습니다 (구조 변경/차단 가능성)"})
-        return jsonify({"ok": True, "site": name, "posts": posts[:40]})
+        for n in range(1, HOT_PAGES + 1):
+            try:
+                page_posts = fn(n)
+            except Exception as e:
+                if n == 1:
+                    raise
+                break  # 뒷페이지 실패는 있는 것까지만
+            fresh = [p for p in page_posts if p["url"] not in seen]
+            for p in fresh:
+                seen.add(p["url"])
+            all_posts += fresh
+            if not fresh:
+                break  # 새 글 없으면 마지막 페이지
     except Exception as e:
         return jsonify({"ok": False, "error": f"{name}: {e}"})
+
+    if not all_posts:
+        return jsonify({"ok": False, "error": f"{name}: 글 목록을 찾지 못했습니다 (구조 변경/차단 가능성)"})
+
+    # 댓글 많은 순 정렬 → 화제글이 위로. 댓글수 없는 사이트는 원래 순서 유지.
+    def cnum(p):
+        try:
+            return int(p.get("comments") or 0)
+        except (ValueError, TypeError):
+            return 0
+    sorted_by_comment = any(cnum(p) > 0 for p in all_posts)
+    if sorted_by_comment:
+        all_posts.sort(key=cnum, reverse=True)
+    return jsonify({"ok": True, "site": name, "sorted": sorted_by_comment,
+                    "pages": n, "posts": all_posts[:80]})
 
 
 @app.route("/api/collect", methods=["POST"])
@@ -564,7 +600,8 @@ async function loadHot(site) {
   try {
     const r = await (await fetch('/api/hot?site=' + site)).json();
     if (!r.ok) { $('hotStatus').innerHTML = '<span class="err">' + r.error + '</span>'; return; }
-    $('hotStatus').textContent = r.site + ' — ' + r.posts.length + '건';
+    $('hotStatus').textContent = r.site + ' — ' + r.posts.length + '건 (' + r.pages + '페이지'
+      + (r.sorted ? ', 댓글 많은 순' : '') + ')';
     $('hotList').innerHTML = r.posts.map((p, i) =>
       `<label class="post"><input type="checkbox" class="pick" value="${p.url}">
        <span>${p.title}</span>${p.comments ? `<span class="cmt">💬${p.comments}</span>` : ''}</label>`).join('');
