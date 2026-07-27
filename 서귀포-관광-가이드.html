@@ -90,38 +90,18 @@
   .tab[aria-current="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
   .tab[aria-current="true"] .n{color:rgba(255,255,255,.9)}
 
-  /* hero — white split */
-  .heroA{border-bottom:1px solid var(--border);background:var(--bg)}
-  .heroA-in{display:grid;grid-template-columns:1fr;gap:26px;padding:clamp(32px,6vw,64px) 0}
-  @media(min-width:820px){.heroA-in{grid-template-columns:1.05fr 1fr;align-items:center;gap:46px}}
-  .heroA .badge{display:inline-flex;align-items:center;gap:7px;background:var(--brand-soft);color:var(--brand-2);font-weight:800;font-size:12.5px;padding:7px 14px;border-radius:999px;margin-bottom:18px}
-  .heroA h1{margin:0;font-size:clamp(29px,5.4vw,50px);font-weight:900;letter-spacing:-.03em;line-height:1.14;color:var(--ink);text-wrap:balance}
-  .heroA h1 em{font-style:normal;color:var(--brand)}
-  .heroA p{margin:18px 0 0;max-width:32em;color:var(--ink-2);font-size:clamp(14px,2vw,16.5px)}
-  .heroA-meta{display:flex;gap:26px;margin-top:28px}
-  .heroA-meta b{display:block;font-size:clamp(23px,4vw,32px);font-weight:900;color:var(--brand);line-height:1;letter-spacing:-.02em}
-  .heroA-meta span{font-size:12.5px;color:var(--muted);font-weight:600}
-  .mosaic{display:grid;grid-template-columns:1fr 1fr;gap:11px;height:clamp(300px,42vw,420px)}
-  .mtile{position:relative;border-radius:16px;overflow:hidden;text-decoration:none;background:var(--surface-2);box-shadow:var(--shadow)}
-  .mtile img{width:100%;height:100%;object-fit:cover;transition:transform .5s}
-  .mtile:hover img{transform:scale(1.06)}
-  .mtile::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 42%,rgba(22,16,8,.74))}
-  .mlabel{position:absolute;left:13px;right:13px;bottom:12px;z-index:2;color:#fff;font-size:15px;font-weight:800;letter-spacing:-.01em;line-height:1.25}
-  .mlabel b{display:block;font-size:11.5px;font-weight:800;color:#ffd6b0;letter-spacing:.04em;margin-bottom:3px}
-  @media(max-width:520px){.mosaic{height:340px}.mlabel{font-size:13.5px}}
-
-  /* hero (legacy, unused) */
-  .hero{position:relative;overflow:hidden;background:#7a3f10}
-  .hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.5}
-  .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(60,30,6,.25),rgba(50,26,6,.72))}
-  .hero-in{position:relative;z-index:2;color:#fff;padding:clamp(44px,9vw,86px) 0 clamp(34px,6vw,56px)}
-  .hero .badge{display:inline-flex;align-items:center;gap:7px;background:var(--brand);color:#fff;font-weight:800;
-    font-size:12.5px;letter-spacing:.02em;padding:6px 13px;border-radius:999px;margin-bottom:18px}
-  .hero h1{margin:0;font-size:clamp(28px,6.5vw,48px);font-weight:900;letter-spacing:-.03em;line-height:1.15;text-wrap:balance}
-  .hero p{margin:16px 0 0;max-width:38em;color:#f2e4d6;font-size:clamp(14px,2.3vw,17px)}
-  .hero-meta{display:flex;gap:26px;margin-top:26px;flex-wrap:wrap}
-  .hero-meta b{display:block;font-size:clamp(24px,5vw,32px);font-weight:900;line-height:1;letter-spacing:-.02em}
-  .hero-meta span{font-size:12.5px;color:#f2cfae;font-weight:600}
+  /* hero — basalt hexagon editorial */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--border);background:var(--bg)}
+  .hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.65}
+  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 86% -15%, color-mix(in srgb,var(--brand) 22%,transparent), transparent 60%),
+              radial-gradient(115% 105% at -8% 118%, color-mix(in srgb,var(--teal) 15%,transparent), transparent 55%)}
+  .hero-inner{position:relative;z-index:2;padding-block:clamp(44px,9vw,92px) clamp(34px,6vw,60px)}
+  .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-2);margin-bottom:18px}
+  .eyebrow::before{content:"";width:26px;height:2px;background:currentColor;border-radius:2px}
+  h1.title{margin:0;font-size:clamp(32px,7.5vw,60px);line-height:1.06;font-weight:900;letter-spacing:-.03em;text-wrap:balance;color:var(--ink)}
+  h1.title em{font-style:normal;color:var(--brand)}
+  .lede{margin:20px 0 0;max-width:37em;font-size:clamp(15px,2.3vw,18px);color:var(--ink-2);line-height:1.68;text-wrap:pretty}
 
   /* course */
   .course{padding:clamp(38px,6vw,64px) 0}
@@ -261,19 +241,14 @@
 
 <nav class="tabs" aria-label="코스 바로가기"><div class="wrap tabs-inner" id="tabs"></div></nav>
 
-<section class="heroA"><div class="wrap heroA-in">
-  <div class="heroA-txt">
-    <span class="badge">🚢 강정크루즈여객터미널 출발</span>
-    <h1>크루즈에서 내려 즐기는<br><em>서귀포</em> 추천 코스</h1>
-    <p>강정크루즈여객터미널에서 출발해 반나절 동안 돌아볼 수 있는 4개 테마 코스와 12곳의 명소를 안내합니다. 사진·소개·운영정보·편의시설을 한 곳에서 확인하세요.</p>
-    <div class="heroA-meta">
-      <div><b>4</b><span>테마 코스</span></div>
-      <div><b>12</b><span>추천 명소</span></div>
-      <div><b>4시간~</b><span>반나절 코스</span></div>
-    </div>
+<section class="hero">
+  <canvas id="hexcanvas" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="eyebrow">강정크루즈여객터미널 · 서귀포</span>
+    <h1 class="title">바다에서 내려,<br><em>서귀포</em>의 하루를 걷다</h1>
+    <p class="lede">크루즈에서 막 내린 당신을 위한 4개의 테마 코스, 12곳의 명소. 화산 절벽과 폭포, 치유의 물길, 짜릿한 액티비티, 그리고 예술과 먹거리까지 — 터미널에서 가까운 순서대로 담았습니다. 전체 4시간 가량 소요됩니다.</p>
   </div>
-  <div class="mosaic" id="mosaic"></div>
-</div></section>
+</section>
 
 <main id="app"></main>
 
@@ -491,10 +466,6 @@ COURSES.forEach(c=>{
   </div>`;
   app.appendChild(sec);
 });
-const HERO_TILES=[['c1','jusangjeolli-1','화산·폭포 낭만'],['c2','kensington-1','물·치유 힐링'],['c3','jungmun-beach-1','중문 액티비티'],['c4','leejungseop-1','예술·먹거리']];
-const numOf={};COURSES.forEach(c=>numOf[c.id]=c.num);
-document.getElementById('mosaic').innerHTML=HERO_TILES.map(([cid,img,t])=>
-  `<a class="mtile" href="#${cid}"><img src="${IMG('img/'+img+'.jpg')}" alt="${t}" loading="eager"><span class="mlabel"><b>코스 ${numOf[cid]}</b>${t}</span></a>`).join('');
 
 /* gallery thumb swap + lightbox */
 const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
@@ -524,9 +495,21 @@ document.getElementById('toTop').addEventListener('click',()=>scrollTo({top:0,be
 const root=document.documentElement,tb=document.getElementById('themeBtn');
 const isDark=()=>{const s=root.getAttribute('data-theme');return s?s==='dark':matchMedia('(prefers-color-scheme:dark)').matches;};
 const paint=()=>tb.innerHTML=svg(isDark()?I.sun:I.moon);
-tb.addEventListener('click',()=>{root.setAttribute('data-theme',isDark()?'light':'dark');paint();});
-matchMedia('(prefers-color-scheme:dark)').addEventListener('change',paint);
+tb.addEventListener('click',()=>{root.setAttribute('data-theme',isDark()?'light':'dark');paint();drawHex();});
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{paint();drawHex();});
 paint();
+
+/* hero basalt-hexagon canvas (주상절리 모티프) */
+const cv=document.getElementById('hexcanvas'),ctx=cv.getContext('2d');
+function hexAt(cx,cy,r){ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/180*(60*i),px=cx+r*Math.cos(a),py=cy+r*Math.sin(a);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.stroke();}
+function drawHex(){
+  const host=cv.parentElement,dpr=Math.min(devicePixelRatio||1,2),w=host.clientWidth,h=host.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle=isDark()?'rgba(255,180,120,.10)':'rgba(70,60,50,.09)';ctx.lineWidth=1;
+  const R=27,dx=R*1.5,dy=R*Math.sqrt(3);
+  for(let col=-1,x=0;x<w+R;col++,x=col*dx){const off=(col%2)?dy/2:0;for(let y=-R;y<h+R;y+=dy) hexAt(x,y+off,R);}
+}
+addEventListener('resize',drawHex);drawHex();
 </script>
 </body>
 </html>
