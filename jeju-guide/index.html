@@ -437,9 +437,9 @@ function placeCard(s,idx){
           <a class="act" ${tel?`href="tel:${tel}"`:'aria-disabled="true"'}>${svg(I.phone)}전화</a>
           ${s.url?`<a class="act" href="${s.url}" target="_blank" rel="noopener">${svg(I.link)}홈페이지</a>`:''}
         </div>
+        <p class="p-desc">${s.desc}</p>
       </div>
     </div>
-    <p class="p-desc">${s.desc}</p>
     <div class="sect-t">기본정보</div>
     <ul class="infolist">${info}</ul>
     <div class="sect-t">편의시설 안내</div>
