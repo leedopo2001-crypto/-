@@ -3,511 +3,530 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>강정크루즈여객터미널 서귀포 관광 안내</title>
-<meta name="description" content="강정크루즈여객터미널에서 출발하는 서귀포 4개 테마 코스·12개 명소 관광 안내" />
-<meta name="theme-color" content="#f47920" />
+<title>SEOGWIPO — 강정크루즈여객터미널 반나절 트래블 가이드</title>
+<meta name="description" content="강정크루즈여객터미널에서 시작하는 서귀포 반나절 여행 매거진 · 4개 코스 12곳의 명소" />
+<meta name="theme-color" content="#0e5a53" />
 <style>
   :root{
-    --font-sans:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
-    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-
-    --bg:#ffffff;
-    --bg-soft:#f5f7f8;
-    --surface:#ffffff;
-    --surface-2:#f7f8fa;
-    --border:#e8ebee;
-    --border-strong:#d5dae0;
-    --ink:#20252a;
-    --ink-2:#4a525a;
-    --muted:#8a929b;
-    --brand:#f47920;      /* 제주 감귤 오렌지 */
-    --brand-2:#dd6510;
-    --brand-soft:#fff2e6;
-    --teal:#0ca6a0;       /* 보조 — 바다 */
-    --teal-soft:#e4f6f5;
-    --ok:#2f9e44;--ok-bg:#ebfbee;--no:#b3bac1;--no-bg:#f1f3f5;
-    --shadow:0 1px 2px rgba(30,40,50,.04),0 8px 24px -14px rgba(30,40,50,.16);
-    --shadow-lg:0 20px 48px -22px rgba(30,40,50,.32);
-    --thead:#2b3138;
+    --sans:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --serif:Georgia,"Times New Roman",Times,serif;
+    --paper:#fbfaf8;
+    --paper-2:#f2f0ea;
+    --ink:#17191e;
+    --ink-2:#464b53;
+    --muted:#8b9099;
+    --line:#e5e3dd;
+    --line-2:#1c2129;
+    --accent:#0e5a53;
+    --accent-2:#0a463f;
+    --ok:#0e5a53;--no:#b7bcbf;
   }
-  @media (prefers-color-scheme:dark){
-    :root{
-      --bg:#0f1216;--bg-soft:#14181d;--surface:#171b21;--surface-2:#1d2229;--border:#282e36;--border-strong:#39414b;
-      --ink:#eef1f4;--ink-2:#c4ccd3;--muted:#8b949d;--brand:#ff8a3d;--brand-2:#ff9a55;--brand-soft:#3a2413;
-      --teal:#2bc4bd;--teal-soft:#10312f;--ok:#40c463;--ok-bg:#12301c;--no:#5a636b;--no-bg:#20252c;
-      --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -16px rgba(0,0,0,.6);
-      --shadow-lg:0 24px 56px -26px rgba(0,0,0,.75);--thead:#252b33;
-    }
+  @media(prefers-color-scheme:dark){
+    :root{--paper:#14161a;--paper-2:#1b1e24;--ink:#f0efe9;--ink-2:#bcc2c8;--muted:#7f858e;
+      --line:#2a2e36;--line-2:#3a4049;--accent:#4cc2b4;--accent-2:#6fd4c7;--ok:#4cc2b4;--no:#5a626b;}
   }
-  :root[data-theme="light"]{
-    --bg:#ffffff;--bg-soft:#f5f7f8;--surface:#ffffff;--surface-2:#f7f8fa;--border:#e8ebee;--border-strong:#d5dae0;
-    --ink:#20252a;--ink-2:#4a525a;--muted:#8a929b;--brand:#f47920;--brand-2:#dd6510;--brand-soft:#fff2e6;
-    --teal:#0ca6a0;--teal-soft:#e4f6f5;--ok:#2f9e44;--ok-bg:#ebfbee;--no:#b3bac1;--no-bg:#f1f3f5;
-    --shadow:0 1px 2px rgba(30,40,50,.04),0 8px 24px -14px rgba(30,40,50,.16);
-    --shadow-lg:0 20px 48px -22px rgba(30,40,50,.32);--thead:#2b3138;
-  }
-  :root[data-theme="dark"]{
-    --bg:#0f1216;--bg-soft:#14181d;--surface:#171b21;--surface-2:#1d2229;--border:#282e36;--border-strong:#39414b;
-    --ink:#eef1f4;--ink-2:#c4ccd3;--muted:#8b949d;--brand:#ff8a3d;--brand-2:#ff9a55;--brand-soft:#3a2413;
-    --teal:#2bc4bd;--teal-soft:#10312f;--ok:#40c463;--ok-bg:#12301c;--no:#5a636b;--no-bg:#20252c;
-    --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -16px rgba(0,0,0,.6);
-    --shadow-lg:0 24px 56px -26px rgba(0,0,0,.75);--thead:#252b33;
-  }
+  :root[data-theme="light"]{--paper:#fbfaf8;--paper-2:#f2f0ea;--ink:#17191e;--ink-2:#464b53;--muted:#8b9099;
+    --line:#e5e3dd;--line-2:#1c2129;--accent:#0e5a53;--accent-2:#0a463f;--ok:#0e5a53;--no:#b7bcbf;}
+  :root[data-theme="dark"]{--paper:#14161a;--paper-2:#1b1e24;--ink:#f0efe9;--ink-2:#bcc2c8;--muted:#7f858e;
+    --line:#2a2e36;--line-2:#3a4049;--accent:#4cc2b4;--accent-2:#6fd4c7;--ok:#4cc2b4;--no:#5a626b;}
 
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-sans);line-height:1.65;
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
-  img{max-width:100%;display:block}
-  a{color:var(--brand-2)}
-  :focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:4px}
-  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.7;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  img{display:block;max-width:100%}
+  a{color:var(--accent)}
+  :focus-visible{outline:2.5px solid var(--accent);outline-offset:2px}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  .col{max-width:660px;margin-left:auto;margin-right:auto}
 
-  /* header */
-  .topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 86%,transparent);
-    backdrop-filter:saturate(150%) blur(12px);-webkit-backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--border)}
-  .topbar-inner{display:flex;align-items:center;gap:10px;height:58px}
-  .logo{display:flex;align-items:center;gap:9px;font-weight:900;font-size:16px;letter-spacing:-.02em}
-  .logo .mk{width:30px;height:30px;flex:none;color:#fff;background:var(--brand);border-radius:9px;display:grid;place-items:center}
-  .logo .mk svg{width:18px;height:18px}
-  .logo b{color:var(--brand)}
-  .logo small{color:var(--muted);font-weight:600;font-size:12.5px;letter-spacing:0}
-  .tbtn{margin-left:auto;width:38px;height:38px;border-radius:10px;border:1px solid var(--border);
-    background:var(--surface);color:var(--ink-2);display:grid;place-items:center;cursor:pointer}
-  .tbtn:hover{color:var(--ink);border-color:var(--border-strong)}
-  .tbtn svg{width:18px;height:18px}
+  .eyebrow{display:inline-block;font-size:11px;letter-spacing:.26em;text-transform:uppercase;font-weight:800;color:var(--accent)}
+  .rule{height:1px;background:var(--line-2);margin:48px 0}
+  .rule.soft{background:var(--line)}
 
-  /* course tabs */
-  .tabs{position:sticky;top:58px;z-index:40;background:color-mix(in srgb,var(--bg) 90%,transparent);
-    backdrop-filter:saturate(150%) blur(12px);-webkit-backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--border)}
-  .tabs-inner{display:flex;gap:6px;overflow-x:auto;padding:9px 0;scrollbar-width:none}
-  .tabs-inner::-webkit-scrollbar{display:none}
-  .tab{flex:none;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--ink-2);
-    border-radius:999px;padding:7px 14px;font-size:13px;font-weight:700;letter-spacing:-.01em;
-    display:flex;align-items:center;gap:7px;text-decoration:none;white-space:nowrap;transition:.15s}
-  .tab:hover{border-color:var(--brand);color:var(--brand-2)}
-  .tab .n{font-family:var(--font-mono);font-size:11.5px;font-weight:700;color:var(--brand)}
-  .tab[aria-current="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
-  .tab[aria-current="true"] .n{color:rgba(255,255,255,.9)}
+  /* masthead (sticky) */
+  .mast{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 88%,transparent);
+    backdrop-filter:saturate(150%) blur(10px);-webkit-backdrop-filter:saturate(150%) blur(10px);border-bottom:1px solid var(--line-2)}
+  .mast-in{display:flex;align-items:baseline;gap:12px;height:54px}
+  .mast .word{font-family:var(--serif);font-weight:700;font-size:21px;letter-spacing:.02em}
+  .mast .sub{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .mast .issue{margin-left:auto;font-family:var(--serif);font-style:italic;font-size:12.5px;color:var(--ink-2);white-space:nowrap}
+  .mast .tbtn{width:34px;height:34px;border:1px solid var(--line);background:transparent;border-radius:50%;display:grid;place-items:center;cursor:pointer;color:var(--ink-2);flex:none}
+  .mast .tbtn svg{width:16px;height:16px}
+  @media(max-width:600px){.mast .sub{display:none}.mast .issue{font-size:11px}}
 
-  /* hero — basalt hexagon editorial */
-  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--border);background:var(--bg)}
-  .hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.65}
-  .hero::after{content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 90% at 86% -15%, color-mix(in srgb,var(--brand) 22%,transparent), transparent 60%),
-              radial-gradient(115% 105% at -8% 118%, color-mix(in srgb,var(--teal) 15%,transparent), transparent 55%)}
-  .hero-inner{position:relative;z-index:2;padding-block:clamp(44px,9vw,92px) clamp(34px,6vw,60px)}
-  .eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-2);margin-bottom:18px}
-  .eyebrow::before{content:"";width:26px;height:2px;background:currentColor;border-radius:2px}
-  h1.title{margin:0;font-size:clamp(32px,7.5vw,60px);line-height:1.06;font-weight:900;letter-spacing:-.03em;text-wrap:balance;color:var(--ink)}
-  h1.title em{font-style:normal;color:var(--brand)}
-  .lede{margin:20px 0 0;max-width:37em;font-size:clamp(15px,2.3vw,18px);color:var(--ink-2);line-height:1.68;text-wrap:pretty}
+  /* course nav */
+  .nav{position:sticky;top:54px;z-index:45;background:color-mix(in srgb,var(--paper) 92%,transparent);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .nav-in{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:8px 0}
+  .nav-in::-webkit-scrollbar{display:none}
+  .nav a{flex:none;text-decoration:none;color:var(--ink-2);font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px;white-space:nowrap;display:flex;gap:7px;align-items:center}
+  .nav a .n{font-family:var(--serif);color:var(--accent);font-size:13px}
+  .nav a[aria-current="true"]{background:var(--line-2);color:var(--paper)}
+  .nav a[aria-current="true"] .n{color:var(--paper)}
 
-  /* course */
-  .course{padding:clamp(38px,6vw,64px) 0}
-  .course:nth-child(even){background:var(--bg-soft)}
-  .c-head{display:flex;gap:14px;align-items:flex-start}
-  .c-num{flex:none;font-family:var(--font-mono);font-weight:800;font-size:15px;color:#fff;background:var(--brand);
-    border-radius:10px;padding:7px 11px;letter-spacing:.02em;box-shadow:0 8px 18px -8px var(--brand)}
-  .c-kicker{font-size:12.5px;font-weight:800;color:var(--brand-2);letter-spacing:.04em;text-transform:uppercase}
-  .course h2{margin:3px 0 0;font-size:clamp(21px,4vw,30px);font-weight:900;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
+  /* cover */
+  .cover{padding:30px 0 0}
+  .cover .shot{overflow:hidden}
+  .cover .shot img{width:100%;height:clamp(320px,52vw,580px);object-fit:cover}
+  .cover figcaption,.cap{font-size:11.5px;color:var(--muted);padding:9px 2px 0;letter-spacing:.01em}
+  .cap b,.cover figcaption b{color:var(--ink-2);font-weight:700}
+  .cover .head{text-align:center;padding:36px 0 8px}
+  .cover .eyebrow{margin-bottom:16px}
+  .cover h1{margin:0 auto;max-width:15em;font-size:clamp(30px,6vw,58px);font-weight:800;letter-spacing:-.035em;line-height:1.1;text-wrap:balance}
+  .cover .deck{margin:20px auto 0;max-width:30em;color:var(--ink-2);font-size:clamp(15px,2vw,18px);line-height:1.6}
+  .cover .meta{display:flex;gap:28px;justify-content:center;margin-top:26px}
+  .cover .meta div{text-align:center}
+  .cover .meta b{font-family:var(--serif);font-size:24px}
+  .cover .meta span{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-top:4px}
 
-  .routemap{margin:22px 0 6px;border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
-  .routemap figcaption{font-size:12.5px;color:var(--muted);padding:9px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px}
-  .routemap figcaption svg{width:15px;height:15px;color:var(--brand)}
-  .route{display:flex;flex-wrap:wrap;align-items:center;gap:6px 4px;margin:16px 0 6px;padding:14px 16px;
-    background:var(--surface);border:1px solid var(--border);border-radius:14px;font-size:13px;font-weight:700;box-shadow:var(--shadow)}
-  .route .node{color:var(--ink);white-space:nowrap}
-  .route .node.start{color:var(--brand-2)}
-  .route .leg{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-weight:600;font-size:12px;white-space:nowrap}
-  .route .leg svg{width:14px;height:14px;color:var(--brand);flex:none}
-  .route .leg svg.ar{color:var(--muted)}
+  /* contents */
+  .toc .eyebrow{display:block;text-align:center;margin-bottom:6px}
+  .toc h2{text-align:center;font-family:var(--serif);font-weight:700;font-size:clamp(22px,3.5vw,30px);margin:0 0 22px}
+  .toc-row{display:grid;grid-template-columns:52px 74px 1fr auto;gap:16px;align-items:center;padding:15px 4px;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+  .toc .toc-row:last-of-type{border-bottom:1px solid var(--line)}
+  .toc-row:hover .tt b{color:var(--accent)}
+  .toc-row .no{font-family:var(--serif);font-size:29px;color:var(--accent);line-height:1}
+  .toc-row .th{width:74px;height:50px;object-fit:cover;border-radius:2px}
+  .toc-row .tt b{display:block;font-size:15.5px;font-weight:800;letter-spacing:-.01em;transition:.15s}
+  .toc-row .tt span{font-size:12px;color:var(--muted)}
+  .toc-row .pg{font-family:var(--serif);font-style:italic;color:var(--muted);font-size:13.5px}
 
-  /* place — Visit Jeju detail style */
-  .place{margin:26px 0;background:var(--surface);border:1px solid var(--border);border-radius:20px;
-    padding:clamp(16px,3vw,26px);box-shadow:var(--shadow);scroll-margin-top:118px}
-  .crumb{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);font-weight:600;margin-bottom:16px}
-  .crumb svg{width:13px;height:13px;opacity:.6}
-  .crumb b{color:var(--ink-2)}
+  /* feature */
+  .feature{scroll-margin-top:104px;padding-top:6px}
+  .feat-lead{text-align:center;margin:8px 0 26px}
+  .feat-lead .eyebrow{margin-bottom:14px}
+  .feat-lead h2{margin:0 auto;max-width:15em;font-size:clamp(24px,4.6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.14;text-wrap:balance}
+  .feat-lead p{margin:14px auto 0;max-width:28em;color:var(--ink-2);font-size:15px}
 
-  .detail{display:grid;grid-template-columns:1fr;gap:22px}
-  @media(min-width:800px){.detail{grid-template-columns:1.05fr .95fr;gap:30px;align-items:start}}
+  /* map */
+  .mapfig{margin:0 0 8px}
+  .mapfig .mapbox{border:1px solid var(--line-2);border-radius:12px;overflow:hidden;background:var(--paper)}
+  .mapfig svg{display:block;width:100%;height:auto}
 
-  .dgallery{display:flex;flex-direction:column;gap:10px}
-  .dgallery .main{border:0;padding:0;margin:0;cursor:zoom-in;background:var(--surface-2);border-radius:14px;overflow:hidden;display:block}
-  .dgallery .main img{width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .5s}
-  .dgallery .main:hover img{transform:scale(1.03)}
-  .thumbs{display:flex;gap:10px}
-  .thumbs button{flex:1;border:2px solid transparent;padding:0;margin:0;cursor:pointer;background:var(--surface-2);border-radius:10px;overflow:hidden}
-  .thumbs button img{width:100%;aspect-ratio:16/10;object-fit:cover;opacity:.72;transition:.18s}
-  .thumbs button.active{border-color:var(--brand)}
-  .thumbs button.active img,.thumbs button:hover img{opacity:1}
+  /* article */
+  .place{scroll-margin-top:104px;margin-top:40px}
+  .place .subkick{font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:800;color:var(--accent);text-align:center}
+  .place h3{margin:8px 0 0;text-align:center;font-size:clamp(22px,3.8vw,32px);font-weight:800;letter-spacing:-.025em;line-height:1.18;text-wrap:balance}
+  .place .lede{margin:6px auto 0;text-align:center;color:var(--muted);font-size:13.5px;max-width:32em}
+  .place .big{margin:24px 0 0}
+  .place .big img{width:100%;height:clamp(240px,42vw,440px);object-fit:cover;border-radius:2px}
+  .body-col{max-width:640px;margin:26px auto 0}
+  .body-col p{font-size:16px;line-height:1.85;color:var(--ink);margin:0}
+  .body-col p.drop::first-letter{font-family:var(--serif);float:left;font-size:60px;line-height:.82;padding:6px 12px 0 0;color:var(--accent)}
+  .pull{font-family:var(--serif);font-style:italic;font-size:clamp(19px,3vw,26px);line-height:1.4;text-align:center;max-width:20em;margin:32px auto;padding:20px 0;border-top:1px solid var(--line-2);border-bottom:1px solid var(--line-2)}
 
-  .cats{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-  .cat{font-size:12px;font-weight:800;color:var(--brand-2);background:var(--brand-soft);padding:5px 11px;border-radius:999px}
-  .place h3{margin:0;font-size:clamp(22px,4.5vw,29px);font-weight:900;letter-spacing:-.025em;line-height:1.22}
-  .p-tag{margin:8px 0 0;color:var(--muted);font-size:14px;font-weight:600}
-  .p-desc{margin:16px 0 0;color:var(--ink-2);font-size:14.5px;line-height:1.8;text-wrap:pretty}
+  .spread{display:grid;grid-template-columns:1fr;gap:24px;margin-top:24px}
+  @media(min-width:760px){.spread{grid-template-columns:1.5fr 1fr;gap:32px;align-items:start}}
+  .spread .ph img{width:100%;height:clamp(230px,38vw,400px);object-fit:cover;border-radius:2px}
+  .sidebar .block+.block{margin-top:22px}
+  .sidebar .h{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:800;color:var(--accent);padding-top:14px;border-top:3px solid var(--line-2);margin-bottom:12px}
+  .sidebar dl{margin:0;display:grid;gap:11px}
+  .sidebar dt{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .sidebar dd{margin:2px 0 0;font-size:14px;color:var(--ink);line-height:1.5}
+  .sidebar dd a{color:var(--accent);text-decoration:none;overflow-wrap:anywhere}
+  .sidebar dd a:hover{text-decoration:underline}
+  .sidebar dd.mono{font-variant-numeric:tabular-nums}
+  .free{display:inline-block;font-size:11.5px;font-weight:800;color:var(--accent);border:1px solid var(--accent);padding:1px 8px;border-radius:3px}
 
-  .quickacts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-  .act{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:13px;font-weight:700;
-    padding:10px 15px;border-radius:11px;border:1px solid var(--border);background:var(--surface);color:var(--ink);transition:.15s}
-  .act:hover{border-color:var(--border-strong);transform:translateY(-1px)}
-  .act.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-  .act.primary:hover{background:var(--brand-2)}
-  .act svg{width:15px;height:15px}
-  .act[aria-disabled="true"]{opacity:.45;pointer-events:none}
+  /* facilities */
+  .fac{margin-top:14px}
+  .fac ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px 18px}
+  @media(min-width:560px){.fac ul{grid-template-columns:1fr 1fr 1fr}}
+  .fac li{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--ink-2);padding:5px 0;border-bottom:1px dotted var(--line)}
+  .fac li .mk{flex:none;width:19px;height:19px;border-radius:50%;display:grid;place-items:center;color:#fff}
+  .fac li.on .mk{background:var(--ok)}
+  .fac li.off .mk{background:var(--no)}
+  .fac li .mk svg{width:12px;height:12px}
+  .fac li.off{color:var(--muted)}
+  .fac .fnote{font-size:11px;color:var(--muted)}
 
-  /* info list (icon rows) */
-  .sect-t{display:flex;align-items:center;gap:9px;margin:26px 0 12px;font-size:15px;font-weight:900;letter-spacing:-.01em}
-  .sect-t::before{content:"";width:4px;height:16px;background:var(--brand);border-radius:3px}
-  .infolist{list-style:none;margin:0;padding:0;border:1px solid var(--border);border-radius:14px;overflow:hidden}
-  .infolist li{display:grid;grid-template-columns:22px 88px 1fr;gap:10px;align-items:start;padding:12px 16px}
-  .infolist li+li{border-top:1px solid var(--border)}
-  .infolist .ic{color:var(--brand);margin-top:2px}
-  .infolist .ic svg{width:18px;height:18px}
-  .infolist .k{color:var(--muted);font-size:13px;font-weight:700;padding-top:1px}
-  .infolist .v{font-size:14px;color:var(--ink);word-break:break-word}
-  .infolist .v a{color:var(--brand-2);font-weight:600;text-decoration:none;overflow-wrap:anywhere}
-  .infolist .v a:hover{text-decoration:underline}
-  .infolist .v .note{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
-  .free{display:inline-block;font-size:12px;font-weight:800;color:var(--ok);background:var(--ok-bg);padding:2px 9px;border-radius:6px}
+  /* actions + tags */
+  .acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+  .btn{display:inline-flex;align-items:center;gap:7px;text-decoration:none;font-size:12.5px;font-weight:700;letter-spacing:.02em;
+    padding:9px 15px;border:1px solid var(--line-2);border-radius:999px;color:var(--ink);background:transparent;transition:.15s}
+  .btn:hover{background:var(--line-2);color:var(--paper)}
+  .btn.fill{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.fill:hover{background:var(--accent-2)}
+  .btn svg{width:15px;height:15px}
+  .btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
+  .tags{display:flex;flex-wrap:wrap;gap:14px;margin-top:16px;font-family:var(--serif);font-style:italic;color:var(--muted);font-size:14px}
 
-  /* facilities table */
-  .facwrap{overflow-x:auto;border:1px solid var(--border);border-radius:14px}
-  .fac{width:100%;min-width:460px;border-collapse:collapse;font-size:13px}
-  .fac thead th{background:var(--thead);color:#fff;font-weight:700;padding:10px 13px;text-align:left;font-size:12.5px}
-  .fac thead th.c-ox{text-align:center;width:60px}
-  .fac thead th.c-note{width:32%}
-  .fac td,.fac th{border-bottom:1px solid var(--border);padding:10px 13px;vertical-align:middle}
-  .fac tr:last-child td{border-bottom:0}
-  .fac .grp{background:var(--surface-2);font-weight:800;width:116px;white-space:nowrap;color:var(--ink);border-right:1px solid var(--border)}
-  .fac .item{color:var(--ink-2)}
-  .fac .ox{text-align:center;width:60px;border-right:1px solid var(--border);border-left:1px solid var(--border)}
-  .fac .ox .badge{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;color:#fff}
-  .fac .ox.on .badge{background:var(--ok)}
-  .fac .ox.off .badge{background:var(--no)}
-  .fac .ox .badge svg{width:14px;height:14px}
-  .fac .bigo{color:var(--muted);font-size:12.5px}
+  .place-div{height:1px;background:var(--line);margin:38px auto 0;max-width:120px}
 
-  /* tags */
-  .tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:20px}
-  .tag{font-size:12.5px;font-weight:600;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--border);
-    padding:5px 11px;border-radius:999px}
-  .tag b{color:var(--brand);font-weight:700}
-
-  /* nearby */
-  .nearby{margin-top:22px;padding-top:20px;border-top:1px dashed var(--border)}
-  .nearby .lbl{font-size:12.5px;font-weight:800;color:var(--muted);margin-bottom:10px}
-  .nearby .chips{display:flex;flex-wrap:wrap;gap:8px}
-  .nearby a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:var(--surface-2);
-    border:1px solid var(--border);border-radius:12px;padding:8px 12px;font-size:13px;font-weight:700;color:var(--ink);transition:.15s}
-  .nearby a:hover{border-color:var(--brand);color:var(--brand-2)}
-  .nearby a img{width:34px;height:34px;border-radius:8px;object-fit:cover}
-
-  .note-src{margin:16px 2px 0;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:flex-start}
-  .note-src svg{width:14px;height:14px;flex:none;margin-top:2px}
+  footer{border-top:1px solid var(--line-2);margin-top:56px;padding:34px 0 60px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline}
+  footer .word{font-family:var(--serif);font-weight:700;font-size:18px}
+  footer small{color:var(--muted);font-size:12px}
+  .totop{margin-left:auto;background:none;border:0;color:var(--muted);font-weight:700;font-size:12.5px;cursor:pointer;font-family:var(--serif);font-style:italic}
+  .totop:hover{color:var(--ink)}
 
   /* lightbox */
-  .lb{position:fixed;inset:0;z-index:100;background:rgba(15,12,8,.92);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
+  .lb{position:fixed;inset:0;z-index:100;background:rgba(15,16,18,.94);display:none;align-items:center;justify-content:center;padding:24px;cursor:zoom-out}
   .lb.on{display:flex}
-  .lb img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);cursor:default}
-  .lb .close{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;cursor:pointer;display:grid;place-items:center}
-  .lb .close svg{width:20px;height:20px}
+  .lb img{max-width:100%;max-height:100%;cursor:default}
+  .lb .x{position:absolute;top:18px;right:18px;width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.4);background:transparent;color:#fff;cursor:pointer;display:grid;place-items:center}
+  .lb .x svg{width:20px;height:20px}
+  [data-zoom]{cursor:zoom-in}
 
-  footer{background:var(--bg-soft);border-top:1px solid var(--border);padding:34px 0 48px;color:var(--muted);font-size:13px}
-  footer .wrap{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
-  footer b{color:var(--ink-2)}
-  .totop{margin-left:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:none;border:0;color:var(--muted);font-weight:700;font-size:13px}
-  .totop:hover{color:var(--ink)}
-  .totop svg{width:15px;height:15px}
-
-  @media(max-width:520px){.infolist li{grid-template-columns:20px 74px 1fr}}
-  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="wrap topbar-inner">
-    <span class="logo">
-      <span class="mk"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s6.4-5.6 6.4-10.1A6.4 6.4 0 105.6 10.9C5.6 15.4 12 21 12 21z" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><circle cx="12" cy="10.6" r="2.3" fill="currentColor"/></svg></span>
-      <span>VISIT <b>서귀포</b></span> <small>관광 안내</small>
-    </span>
-    <button class="tbtn" id="themeBtn" aria-label="밝은/어두운 테마 전환" title="테마 전환"></button>
-  </div>
-</header>
+<header class="mast"><div class="wrap mast-in">
+  <span class="word">SEOGWIPO</span>
+  <span class="sub">반나절 트래블 가이드</span>
+  <span class="issue">No.1 — 크루즈 에디션</span>
+  <button class="tbtn" id="themeBtn" aria-label="테마 전환" title="테마 전환"></button>
+</div></header>
 
-<nav class="tabs" aria-label="코스 바로가기"><div class="wrap tabs-inner" id="tabs"></div></nav>
+<nav class="nav"><div class="wrap nav-in" id="nav"></div></nav>
 
-<section class="hero">
-  <canvas id="hexcanvas" aria-hidden="true"></canvas>
-  <div class="wrap hero-inner">
-    <span class="eyebrow">강정크루즈여객터미널 · 서귀포</span>
-    <h1 class="title">바다에서 내려,<br><em>서귀포</em>의 하루를 걷다</h1>
-    <p class="lede">크루즈에서 막 내린 당신을 위한 4개의 테마 코스, 12곳의 명소. 화산 절벽과 폭포, 치유의 물길, 짜릿한 액티비티, 그리고 예술과 먹거리까지 — 터미널에서 가까운 순서대로 담았습니다. 전체 4시간 가량 소요됩니다.</p>
-  </div>
-</section>
+<main class="wrap" id="app">
+  <!-- COVER -->
+  <section class="cover">
+    <figure class="shot-wrap">
+      <div class="shot"><img id="coverImg" alt="정방폭포" data-zoom fetchpriority="high"></div>
+      <figcaption><b>정방폭포</b> — 육지의 물줄기가 바다로 직접 떨어지는 국내 유일의 해안 폭포. 서귀포</figcaption>
+    </figure>
+    <div class="head">
+      <span class="eyebrow">Cover Story · 강정크루즈여객터미널</span>
+      <h1>강정항에 내려, 서귀포의 하루를 걷다</h1>
+      <p class="deck">크루즈가 닿는 강정항에서 시작하는 반나절. 화산 절벽과 폭포, 치유의 물길, 그리고 예술과 먹거리까지 — 서귀포가 건네는 네 갈래의 산책.</p>
+      <div class="meta">
+        <div><b>4</b><span>Courses</span></div>
+        <div><b>12</b><span>Places</span></div>
+        <div><b>4h+</b><span>Half Day</span></div>
+      </div>
+    </div>
+  </section>
 
-<main id="app"></main>
+  <div class="rule"></div>
 
-<footer>
-  <div class="wrap">
-    <span>자료 출처 · <b>강정크루즈여객터미널 관광 안내</b></span>
-    <span>운영시간·이용요금은 방문 전 각 명소 홈페이지에서 확인하시기 바랍니다.</span>
-    <button class="totop" id="toTop">맨 위로 <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-  </div>
-</footer>
+  <!-- CONTENTS -->
+  <section class="toc col">
+    <span class="eyebrow">In this issue</span>
+    <h2>이번 호의 코스</h2>
+    <div id="toc"></div>
+  </section>
+
+  <div id="features"></div>
+</main>
+
+<footer><div class="wrap">
+  <span class="word">SEOGWIPO</span>
+  <small>반나절 트래블 가이드 · 자료 출처: 강정크루즈여객터미널 관광 안내</small>
+  <small>운영시간·요금은 방문 전 확인하세요.</small>
+  <button class="totop" id="toTop">↑ Back to top</button>
+</div></footer>
 
 <div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
-  <button class="close" id="lbClose" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-  <img id="lbImg" src="" alt="" />
+  <button class="x" id="lbx" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+  <img id="lbimg" src="" alt="" />
 </div>
 
 <script>
 const I={
-  taxi:'<path d="M5 11l1.4-3.9A1.9 1.9 0 018.2 5.8h7.6a1.9 1.9 0 011.8 1.3L19 11m-14 0h14m-14 0a1.8 1.8 0 00-1.8 1.8v2.7a.9.9 0 00.9.9h1m13.8-5.4a1.8 1.8 0 011.8 1.8v2.7a.9.9 0 01-.9.9h-1M7.5 16.4h9M7 14h.01M17 14h.01" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
-  walk:'<path d="M13.2 5.4a1.5 1.5 0 100-3 1.5 1.5 0 000 3zM10.2 21l1.9-4.8-2.1-2.1.7-4.1 3.1 1.2 1.4 2.6M12 15.9l2.3 5.1M11.4 9.3L8.4 10.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
-  arrow:'<path d="M5 12h13m0 0l-5-5m5 5l-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
   pin:'<path d="M12 21s6.4-5.6 6.4-10.1A6.4 6.4 0 105.6 10.9C5.6 15.4 12 21 12 21z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10.6" r="2.3" stroke="currentColor" stroke-width="1.7"/>',
   phone:'<path d="M6.5 3.5h3l1.3 4-2 1.4a11 11 0 005.3 5.3l1.4-2 4 1.3v3a2 2 0 01-2.2 2A16.5 16.5 0 014.5 5.7 2 2 0 016.5 3.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>',
-  clock:'<circle cx="12" cy="12" r="8.3" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
-  ticket:'<path d="M4 8.5A1.5 1.5 0 015.5 7h13A1.5 1.5 0 0120 8.5v2a2 2 0 000 4v1A1.5 1.5 0 0118.5 21h-13A1.5 1.5 0 014 19.5v-1a2 2 0 000-4v-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M13 7v14" stroke="currentColor" stroke-width="1.4" stroke-dasharray="1.5 2.5"/>',
   link:'<path d="M10 13.5a3.5 3.5 0 005 0l2.5-2.5a3.5 3.5 0 00-5-5L11 7.5M14 10.5a3.5 3.5 0 00-5 0L6.5 13a3.5 3.5 0 005 5L13 16.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
-  park:'<rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.6"/><path d="M9 16.5V8h3.4a2.6 2.6 0 010 5.2H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
-  map:'<path d="M9 3.5L3.5 6v14.5L9 18l6 2.5 5.5-2.5V3.5L15 6 9 3.5zM9 3.5V18M15 6v14.5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>',
-  chev:'<path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
-  check:'<path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
-  x:'<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
-  info:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  check:'<path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/>',
   sun:'<circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M4.3 4.3l1.8 1.8M17.9 17.9l1.8 1.8M2.5 12H5M19 12h2.5M4.3 19.7l1.8-1.8M17.9 6.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
   moon:'<path d="M20 13.5A8 8 0 019.7 4 7 7 0 1020 13.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'
 };
-const svg=(p,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${p}</svg>`;
+const svg=(p,c='')=>`<svg class="${c}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${p}</svg>`;
 const IMG=p=>(window.IMGMAP&&window.IMGMAP[p])||p;
 
 const FAC_GROUPS=[
-  {g:'정보제공',items:[['응대','외국어 응대 서비스 제공 가능 여부'],['홍보','외국어 홍보자료 비치 여부'],['안내판','관광지 내 외국어 안내판 비치 여부']]},
-  {g:'시설이용편의성',items:[['장애인','장애인 편의시설 구비 여부 (휠체어, 슬로프, 핸드레일 등)'],['주차','대형버스 전용 주차장 등 주차 편의성'],['와이파이','공공 와이파이 이용 가능 여부']]},
-  {g:'안전',items:[['제세동기','제세동기 구비 여부 등 응급조치 가능 여부']]}
+  {items:[['응대','외국어 응대'],['홍보','외국어 홍보자료'],['안내판','외국어 안내판']]},
+  {items:[['장애인','장애인 편의시설'],['주차','주차 편의'],['와이파이','공공 와이파이']]},
+  {items:[['제세동기','제세동기(AED)']]}
 ];
+const FAC_ORDER=['응대','홍보','안내판','장애인','주차','와이파이','제세동기'];
+const FAC_LABEL={'응대':'외국어 응대','홍보':'외국어 홍보자료','안내판':'외국어 안내판','장애인':'장애인 편의시설','주차':'주차 편의','와이파이':'공공 와이파이','제세동기':'제세동기(AED)'};
 
 const COURSES=[
- {id:'c1',num:'01',kicker:'4시간 코스',title:'화산 절벽과 폭포가 주는 낭만 코스',map:'img/c1-hero.jpg',start:'강정크루즈여객터미널',
+ {id:'c1',num:'01',page:'04',kicker:'자연',title:'화산 절벽과 폭포가 주는 낭만 코스',intro:'검은 현무암 절벽과 세 갈래의 물줄기. 25만 년의 시간이 빚은 서귀포의 원형을 따라 걷는다.',start:'강정크루즈여객터미널',
+  geo:{start:[712,300],stops:[[430,255],[300,140],[560,200]]},
   stops:[
-   {slug:'jusangjeolli',name:'주상절리대',cat:'자연경관',transit:{m:'taxi',t:'택시 약 15분'},
-    tag:'천연기념물 제443호 · 국내 최대 규모의 주상절리',
-    desc:'대한민국 천연기념물 제443호로 지정된 국내 최대 규모의 주상절리입니다. 약 25만 년 전 분출된 용암이 바다와 만나 식으면서 4~6각형 기둥 모양으로 형성된 거대한 바위 절벽으로, 병풍처럼 둘러친 육각형 돌기둥이 장관을 이룹니다. 파도가 심한 날에는 물보라가 20m 이상 치솟는 모습도 볼 수 있습니다.',
-    addr:'서귀포시 이어도로 36-24',hours:'09:00~17:50 (입장마감 17:30)',hoursNote:'계절별 일몰 시간에 따라 운영시간 변동 · 방문 전 유선 문의 필수',
-    tel:'+82-64-738-1521',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020476',
-    tags:['주상절리','천연기념물','해안절벽','서귀포'],
-    fac:{응대:['X'],홍보:['O'],안내판:['O'],장애인:['O','휠체어 1대 대여 가능'],와이파이:['X'],제세동기:['O','관리사무소 내 비치']}},
-   {slug:'cheonjeyeon',name:'천제연폭포',cat:'자연경관',transit:{m:'taxi',t:'택시 약 10분'},
-    tag:'제주 3대 폭포 · 3단 폭포와 에메랄드빛 연못',
-    desc:"일곱 선녀가 밤마다 내려와 목욕했다는 전설에서 이름('하느님의 연못')이 유래한 제주 대표 3대 폭포입니다. 상·중·하 3단으로 이루어져 있으며, 제1폭포는 비가 많이 온 뒤 깊이 21m의 에메랄드빛 연못을 드러냅니다. 폭포 위를 가로지르는 아치형 다리 '선임교(칠선녀교)'에서 바라보는 풍경이 특히 아름답습니다.",
-    addr:'서귀포시 천제연로 132',hours:'09:00~17:10',hoursNote:'계절별 일몰 시간에 따라 운영시간 변동 · 방문 전 유선 문의 필수',
-    tel:'+82-64-760-6331',url:'https://eticket.seogwipo.go.kr/contents?bmcode=cheonjeyeon',
-    tags:['폭포','제주3대폭포','계곡','서귀포'],
-    fac:{응대:['O'],홍보:['O'],안내판:['O'],장애인:['X'],와이파이:['O','매표소 근처 가능'],제세동기:['O','관리사무소 내 비치']}},
-   {slug:'yakcheonsa',name:'약천사',cat:'사찰·역사',transit:{m:'taxi',t:'택시 약 15분'},
-    tag:'동양 최대 규모의 대적광전을 품은 사찰',
-    desc:'사철 마르지 않는 약수가 솟는다는 뜻에서 이름 붙은 대한불교 조계종 사찰입니다. 대적광전은 단일 사찰 전각 기준 동양 최대 규모로, 높이 29m·지하 1층·지상 5층 통층 구조입니다. 종각에는 효도를 강조하는 글과 그림이 새겨진 18t 무게의 범종이 걸려 있습니다.',
-    addr:'서귀포시 이어도로 293-28',hours:null,tel:'+82-64-738-5000',telNote:'중앙관리사무소',
+   {slug:'jusangjeolli',name:'주상절리대',cat:'자연 · 천연기념물',transit:'택시 약 15분',
+    tag:'25만 년의 시간이 새긴 육각의 절벽',
+    head:'25만 년의 시간이 새긴 육각의 절벽',
+    desc:'약 25만 년 전, 분출된 용암이 바다와 만나 식으면서 마치 예리한 칼로 조각한 듯한 4~6각형의 기둥이 만들어졌다. 대한민국 천연기념물 제443호, 국내 최대 규모의 주상절리다. 병풍처럼 둘러친 돌기둥 앞에 서면 자연이 빚은 기하학에 말을 잃게 된다. 파도가 심한 날이면 물보라가 20m 이상 치솟는다.',
+    pull:'파도가 심한 날이면 물보라가 20m 이상 치솟는다.',
+    cap1:'겹겹이 선 육각 돌기둥에 파도가 부딪힌다.',cap2:'거센 바다와 검은 현무암이 만드는 서귀포의 상징적 풍경.',
+    addr:'서귀포시 이어도로 36-24',hours:'09:00 – 17:50 (입장마감 17:30)',tel:'+82-64-738-1521',
+    url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020476',
+    tags:['주상절리','천연기념물','해안절벽'],
+    fac:{응대:['X'],홍보:['O'],안내판:['O'],장애인:['O','휠체어 1대 대여'],와이파이:['X'],제세동기:['O','관리사무소 내']}},
+   {slug:'cheonjeyeon',name:'천제연폭포',cat:'자연 · 폭포',transit:'택시 약 10분',
+    tag:'일곱 선녀가 내려오던 3단 폭포',
+    head:'하느님의 연못, 세 단으로 흐르다',
+    desc:"일곱 선녀가 밤마다 내려와 목욕했다는 전설에서 '하느님의 연못'이라는 이름이 유래했다. 제주 3대 폭포 중 하나로, 상·중·하 3단으로 이루어져 있다. 제1폭포는 비가 많이 온 뒤에야 깊이 21m의 에메랄드빛 연못을 드러낸다. 폭포 위를 가로지르는 아치형 다리 '선임교(칠선녀교)'에서 내려다보는 풍경이 특히 아름답다.",
+    cap1:'울창한 난대림 사이로 쏟아지는 3단의 물줄기.',cap2:'선임교에서 내려다본 에메랄드빛 연못.',
+    addr:'서귀포시 천제연로 132',hours:'09:00 – 17:10',tel:'+82-64-760-6331',
+    url:'https://eticket.seogwipo.go.kr/contents?bmcode=cheonjeyeon',
+    tags:['폭포','제주3대폭포','난대림'],
+    fac:{응대:['O'],홍보:['O'],안내판:['O'],장애인:['X'],와이파이:['O','매표소 근처'],제세동기:['O','관리사무소 내']}},
+   {slug:'yakcheonsa',name:'약천사',cat:'사찰 · 역사',transit:'택시 약 15분',
+    tag:'동양 최대 규모의 대적광전',
+    head:'약수가 솟는 자리, 거대한 법당',
+    desc:'사철 마르지 않는 약수가 솟는다는 뜻에서 이름 붙은 대한불교 조계종 사찰이다. 대적광전은 단일 사찰 전각 기준 동양 최대 규모로, 높이 29m·지하 1층·지상 5층이 하나로 트인 통층 구조다. 종각에는 효도를 강조하는 글과 그림이 새겨진 18t 무게의 범종이 걸려 있다.',
+    cap1:'조선 초기 건축 양식의 웅장한 대적광전.',cap2:'단정하게 정비된 경내와 석탑.',
+    addr:'서귀포시 이어도로 293-28',hours:'상시 개방',tel:'+82-64-738-5000',telNote:'중앙관리사무소',
     url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000018300',
-    tags:['사찰','대적광전','불교','서귀포'],
-    fac:{응대:['X'],홍보:['O'],안내판:['X'],장애인:['O','휠체어 1대 대여 가능'],주차:['O','대형버스 전용 주차장 구비'],제세동기:['O']}}
+    tags:['사찰','대적광전','불교'],
+    fac:{응대:['X'],홍보:['O'],안내판:['X'],장애인:['O','휠체어 1대 대여'],주차:['O','대형버스 가능'],제세동기:['O']}}
   ]},
- {id:'c2',num:'02',kicker:'도보 힐링 코스',title:'물과 치유의 서귀포 힐링 로드',map:'img/c2-hero.jpg',start:'강정크루즈여객터미널',
+ {id:'c2',num:'02',page:'10',kicker:'힐링',title:'물과 치유의 서귀포 힐링 로드',intro:'한라산에서 내려온 맑은 물이 흐르는 강정 일대. 서두르지 않고, 바다와 계곡을 나란히 걷는 도보 코스.',start:'강정크루즈여객터미널',
+  geo:{start:[700,300],stops:[[485,235],[380,178],[300,278]]},
   stops:[
-   {slug:'sangsaeng',name:'상생의 정원',cat:'공원·휴식',transit:{m:'walk',t:'도보 약 30분'},
-    tag:'강정천 옆 친환경 휴식 공간 · 무료',
-    desc:'강정천 인근에 조성된 친환경 휴식 공간입니다. 잔디마당·산책로·어린이 놀이터·운동시설·무료 샤워장이 깔끔하게 갖춰져 있습니다. 한라산을 보며 걷기 좋은 산책 코스로, 여름에는 바로 앞 강정천에서 물놀이가 가능해 가족 단위 여행객에게 인기가 높습니다.',
-    addr:'서귀포시 이어도로 669',hours:'상시 개방',free:true,tags:['공원','산책','가족','무료'],
+   {slug:'sangsaeng',name:'상생의 정원',cat:'공원 · 휴식',transit:'도보 약 30분',
+    tag:'강정천 옆, 잔디와 산책로의 쉼터',
+    head:'강정천이 내어준 초록의 쉼표',
+    desc:'강정천 인근에 조성된 친환경 휴식 공간이다. 잔디마당과 산책로, 어린이 놀이터, 운동시설, 무료 샤워장이 깔끔하게 갖춰져 있다. 한라산을 바라보며 걷기 좋은 코스로, 여름이면 바로 앞 강정천에서 물놀이가 가능해 가족 여행객에게 인기가 높다.',
+    cap1:'한라산을 배경으로 펼쳐진 잔디마당과 산책로.',cap2:'강정천으로 이어지는 정원의 오솔길.',
+    addr:'서귀포시 이어도로 669',hours:'상시 개방',free:true,
+    tags:['공원','산책','가족','무료'],
     fac:{응대:['X'],홍보:['X'],안내판:['X'],장애인:['O'],와이파이:['X'],제세동기:['X']}},
-   {slug:'gangjeongcheon',name:'강정천',cat:'자연경관',transit:{m:'walk',t:'도보 약 5분'},
-    tag:"서귀포 식수 70%를 공급하는 '생명의 젖줄' · 무료",
-    desc:'한라산에서 내려오는 깨끗한 천연 암반수가 사계절 마르지 않고 흐르는 청정 계곡입니다. 서귀포 시민 식수의 70%를 공급하는 생명의 젖줄이자, 여름철에는 시원한 물놀이 명소로도 유명합니다.',
-    addr:'서귀포시 강정동 5647',hours:'상시 개방',free:true,tags:['계곡','물놀이','청정','무료'],
+   {slug:'gangjeongcheon',name:'강정천',cat:'자연 · 계곡',transit:'도보 약 5분',
+    tag:"서귀포의 '생명의 젖줄'",
+    head:'사철 마르지 않는 생명의 젖줄',
+    desc:'한라산에서 내려오는 깨끗한 천연 암반수가 사계절 마르지 않고 흐르는 청정 계곡이다. 서귀포 시민 식수의 70%를 공급하는 생명의 젖줄이자, 여름철에는 시원한 물놀이 명소로도 유명하다.',
+    cap1:'맑은 암반수가 흐르는 강정천의 물길.',cap2:'여름이면 물놀이객으로 붐비는 계곡.',
+    addr:'서귀포시 강정동 5647',hours:'상시 개방',free:true,
+    tags:['계곡','물놀이','청정','무료'],
     fac:{응대:['X'],홍보:['X'],안내판:['X'],장애인:['X'],와이파이:['X'],제세동기:['X']}},
-   {slug:'kensington',name:'켄싱턴리조트 산책로',cat:'산책·올레',transit:{m:'walk',t:'도보 약 1분'},
-    tag:'올레 7코스 · 바다와 정원을 잇는 해안 산책로 · 무료',
-    desc:'리조트 정원과 제주 바다가 곧장 이어지는 아름다운 해안 산책 코스로, 제주 올레길 7코스에 속합니다. 파도 소리를 들으며 소나무 숲길을 걷거나 바다가 보이는 그네 의자에서 쉬기 좋고, 한라산 조망과 포토존도 갖춰져 있습니다.',
-    addr:'서귀포시 이어도로 684',hours:'상시 개방',free:true,tags:['올레7코스','해안산책','포토존','무료'],
+   {slug:'kensington',name:'켄싱턴리조트 산책로',cat:'산책 · 올레',transit:'도보 약 1분',
+    tag:'올레 7코스, 바다와 정원 사이',
+    head:'파도 소리와 소나무 숲의 산책',
+    desc:'리조트 정원과 제주 바다가 곧장 이어지는 아름다운 해안 산책 코스로, 제주 올레길 7코스에 속한다. 파도 소리를 들으며 소나무 숲길을 걷거나 바다가 보이는 그네 의자에서 쉬기 좋고, 한라산 조망과 인생샷을 남길 포토존도 갖춰져 있다.',
+    cap1:'정원과 바다가 맞닿은 해안 산책로.',cap2:'소나무 숲 사이로 보이는 서귀포 바다.',
+    addr:'서귀포시 이어도로 684',hours:'상시 개방',free:true,
+    tags:['올레7코스','해안산책','포토존','무료'],
     fac:{응대:['X'],홍보:['X'],안내판:['X'],장애인:['O'],와이파이:['X'],제세동기:['X']}}
   ]},
- {id:'c3',num:'03',kicker:'액티비티 코스',title:'중문 체험형 액티비티 어드벤처 코스',map:'img/c3-hero.jpg',start:'강정크루즈여객터미널',
+ {id:'c3',num:'03',page:'16',kicker:'액티비티',title:'중문 체험형 액티비티 어드벤처 코스',intro:'짜릿한 실내 사격부터 나지막한 오름, 서핑 성지까지. 몸으로 부딪히며 즐기는 중문의 하루.',start:'강정크루즈여객터미널',
+  geo:{start:[720,300],stops:[[430,205],[335,255],[255,320]]},
   stops:[
-   {slug:'shooting',name:'중문실탄사격장 & 레이저아레나엑스',cat:'체험·액티비티',transit:{m:'taxi',t:'택시 약 20분'},
+   {slug:'shooting',name:'중문실탄사격장 & 레이저아레나엑스',cat:'체험 · 액티비티',transit:'택시 약 20분',
     tag:'제주 유일의 실내 권총 사격장',
-    desc:'중문관광단지 인근에 위치한 제주도 유일의 실내 권총 사격장입니다. 실제 권총으로 과녁을 맞히는 짜릿한 체험을 제공하는 이색 실내 관광지로, 1:1 안전 교육과 코칭을 통해 초보자도 안전하게 즐길 수 있습니다.',
-    addr:'서귀포시 소보리당로 164번길 62, 3층',hours:'10:00~19:00 (입장마감 18:30)',
-    tel:'+82-64-739-7007',url:'https://jejushootingrange.com/',tags:['실내체험','사격','이색체험','중문'],
+    head:'제주에서 방아쇠를 당기다',
+    desc:'중문관광단지 인근에 위치한 제주도 유일의 실내 권총 사격장이다. 실제 권총으로 과녁을 맞히는 짜릿한 체험을 제공하는 이색 실내 관광지로, 1:1 안전 교육과 코칭을 통해 초보자도 안전하게 즐길 수 있다.',
+    cap1:'제주 유일의 실내 실탄 사격장, JSR.',cap2:'1:1 코칭으로 초보자도 안전하게.',
+    addr:'서귀포시 소보리당로 164번길 62, 3층',hours:'10:00 – 19:00 (입장마감 18:30)',tel:'+82-64-739-7007',url:'https://jejushootingrange.com/',
+    tags:['실내체험','사격','이색체험'],
     fac:{응대:['X'],홍보:['O'],안내판:['O'],장애인:['O'],와이파이:['O'],제세동기:['O']}},
-   {slug:'beoritnae',name:'베릿내오름',cat:'오름·자연',transit:{m:'taxi',t:'택시 약 10분'},
-    tag:'해발 101m 기생화산 · 20~30분 데크 산책',
-    desc:'산기슭을 따라 흐르는 하천의 이름(베릿네)에서 유래한 높이 약 101m의 나지막한 기생화산입니다. 세 개의 봉우리(동오름·섯오름·만지섬오름)로 이루어져 있으며 솔잎난·담팔수 등 희귀식물이 자생합니다. 정상까지 나무 데크 산책로가 잘 정비되어 20~30분이면 왕복할 수 있고, 원시림과 바다·한라산을 한눈에 담을 수 있는 숨은 명소입니다.',
-    addr:'서귀포시 중문동 2314-2',hours:'상시 개방',tel:'+82-64-760-4831',
-    url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500241',tags:['오름','기생화산','데크산책','전망'],
+   {slug:'beoritnae',name:'베릿내오름',cat:'자연 · 오름',transit:'택시 약 10분',
+    tag:'20분이면 오르는 해발 101m 기생화산',
+    head:'20분의 숲, 바다와 한라산을 한 품에',
+    desc:'산기슭을 따라 흐르는 하천의 이름(베릿네)에서 유래한 높이 약 101m의 나지막한 기생화산이다. 세 개의 봉우리로 이루어져 있으며 솔잎난·담팔수 등 희귀식물이 자생한다. 정상까지 나무 데크 산책로가 잘 정비되어 20~30분이면 왕복할 수 있고, 원시림과 바다·한라산을 한눈에 담을 수 있는 숨은 명소다.',
+    cap1:'정상까지 잘 정비된 나무 데크 산책로.',cap2:'오름 위에서 내려다본 중문 앞바다.',
+    addr:'서귀포시 중문동 2314-2',hours:'상시 개방',tel:'+82-64-760-4831',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500241',
+    tags:['오름','기생화산','전망'],
     fac:{응대:['X'],홍보:['X'],안내판:['X'],장애인:['X'],와이파이:['X'],제세동기:['X']}},
-   {slug:'jungmun-beach',name:'중문 색달해수욕장',cat:'해변',transit:{m:'walk',t:'도보 약 20분'},
-    tag:'국내 최고의 서핑 성지 · 4색 모래 해변',
-    desc:"파도가 높고 잦아 국내 최고의 서핑 성지로 불리는 제주 대표 해수욕장입니다. 흑·백·적·회색 4가지 색 모래가 섞여 이국적인 풍경을 자랑합니다. '진모살'이라 불리는 560m 길이의 활처럼 굽은 백사장이 햇빛에 따라 오묘하게 다른 색을 띠며, 해마다 100만 명 넘게 서핑 등 해양스포츠를 즐기러 찾습니다.",
-    addr:'서귀포시 색달동',hours:'상시 개방',tel:'+82-64-739-4993',
-    url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500604',tags:['해수욕장','서핑','4색모래','해양스포츠'],
-    fac:{응대:['X'],홍보:['X'],안내판:['O'],장애인:['O'],와이파이:['O','화장실 부근에서 사용 가능'],제세동기:['O','종합상황실 내 비치']}}
+   {slug:'jungmun-beach',name:'중문 색달해수욕장',cat:'해변 · 서핑',transit:'도보 약 20분',
+    tag:'국내 최고의 서핑 성지, 4색 모래 해변',
+    head:'네 가지 색 모래 위, 파도를 타다',
+    desc:"파도가 높고 잦아 국내 최고의 서핑 성지로 불리는 제주 대표 해수욕장이다. 흑·백·적·회색 네 가지 색 모래가 섞여 이국적인 풍경을 자랑한다. '진모살'이라 불리는 560m 길이의 활처럼 굽은 백사장이 햇빛에 따라 오묘하게 다른 색을 띠며, 해마다 100만 명 넘게 서핑 등 해양스포츠를 즐기러 찾는다.",
+    cap1:'활처럼 굽은 560m의 진모살 백사장.',cap2:'서핑과 해양스포츠의 성지, 중문 앞바다.',
+    addr:'서귀포시 색달동',hours:'상시 개방',tel:'+82-64-739-4993',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500604',
+    tags:['해수욕장','서핑','4색모래'],
+    fac:{응대:['X'],홍보:['X'],안내판:['O'],장애인:['O'],와이파이:['O','화장실 부근'],제세동기:['O','종합상황실 내']}}
   ]},
- {id:'c4',num:'04',kicker:'예술·먹거리 코스',title:'MZ 감성 예술·쇼핑·먹거리 올인원 코스',map:'img/c4-hero.jpg',start:'강정크루즈여객터미널',
+ {id:'c4',num:'04',page:'22',kicker:'컬처',title:'MZ 감성 예술·쇼핑·먹거리 올인원 코스',intro:'화가의 거리에서 전통시장의 야시장까지. 서귀포 시내의 감성과 맛을 한 번에 훑는 코스.',start:'강정크루즈여객터미널',
+  geo:{start:[720,300],stops:[[440,178],[330,240],[540,258]]},
   stops:[
-   {slug:'leejungseop',name:'이중섭거리',cat:'문화·예술',transit:{m:'taxi',t:'택시 약 20분'},
-    tag:'천재 화가 이중섭을 기리는 문화예술 거리',
-    desc:'한국의 천재 화가 이중섭(1916~1956)이 6.25 전쟁 당시 피난 와 가족과 머물던 초가를 중심으로 조성된 문화예술 거리입니다. 이중섭의 삽화가 들어간 기념품과 아기자기한 수공예품 상점이 늘어서 있고, 각종 공연과 행사가 자주 열려 제주의 아름다움과 예술적 감성을 함께 느낄 수 있습니다.',
-    addr:'서귀포시 이중섭로 29',hours:null,url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020199',tags:['문화거리','이중섭','기념품','공연'],
-    fac:{응대:['X'],홍보:['X'],안내판:['O'],장애인:['O','이중섭미술관 창작스튜디오에서 휠체어 1대 대여 가능'],와이파이:['O'],제세동기:['X']}},
-   {slug:'olle-market',name:'서귀포매일올레시장',cat:'시장·먹거리',transit:{m:'walk',t:'도보 약 5분'},
-    tag:'제주 최대 전통시장 · 야시장 길거리 음식',
-    desc:'서귀포 중심부에 위치한 제주도 최대 규모의 전통 상설시장입니다. 현대식 아케이드와 넓은 주차장을 갖춰 날씨와 상관없이 쾌적합니다. 개성 넘치는 길거리 음식 야시장과 시장 중앙에서 바로 먹는 문화가 잘 조성되어 있고, 감귤·한라봉 등 제철 과일부터 제주 감성 기념품까지 한곳에서 쇼핑하기 좋습니다.',
-    addr:'서귀포시 중앙로 62번길 18',hours:'하절기 07:00~21:00 · 동절기 07:00~20:00',tel:'+82-507-1353-1949',
-    url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500731',tags:['전통시장','야시장','길거리음식','쇼핑'],
+   {slug:'leejungseop',name:'이중섭거리',cat:'컬처 · 예술',transit:'택시 약 20분',
+    tag:'천재 화가를 기리는 문화예술 거리',
+    head:'화가 이중섭이 머물던 거리',
+    desc:'한국의 천재 화가 이중섭(1916~1956)이 6.25 전쟁 당시 피난 와 가족과 머물던 초가를 중심으로 조성된 문화예술 거리다. 이중섭의 삽화가 들어간 기념품과 아기자기한 수공예품 상점이 늘어서 있고, 각종 공연과 행사가 자주 열려 제주의 아름다움과 예술적 감성을 함께 느낄 수 있다.',
+    cap1:'이중섭거리 입구의 상징적인 아치.',cap2:'바닥 벽화가 인상적인 예술의 거리.',
+    addr:'서귀포시 이중섭로 29',hours:'상시 개방',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020199',
+    tags:['문화거리','이중섭','기념품'],
+    fac:{응대:['X'],홍보:['X'],안내판:['O'],장애인:['O','미술관에서 휠체어 대여'],와이파이:['O'],제세동기:['X']}},
+   {slug:'olle-market',name:'서귀포매일올레시장',cat:'시장 · 먹거리',transit:'도보 약 5분',
+    tag:'제주 최대 전통시장의 야시장',
+    head:'감귤과 야식, 시장의 활기',
+    desc:'서귀포 중심부에 위치한 제주도 최대 규모의 전통 상설시장이다. 현대식 아케이드와 넓은 주차장을 갖춰 날씨와 상관없이 쾌적하다. 개성 넘치는 길거리 음식 야시장과 시장 중앙에서 바로 먹는 문화가 잘 조성되어 있고, 감귤·한라봉 등 제철 과일부터 제주 감성 기념품까지 한곳에서 즐기기 좋다.',
+    cap1:'현대식 아케이드로 정비된 올레시장.',cap2:'제철 감귤과 길거리 음식이 가득한 골목.',
+    addr:'서귀포시 중앙로 62번길 18',hours:'하절기 07:00–21:00 · 동절기 07:00–20:00',tel:'+82-507-1353-1949',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500731',
+    tags:['전통시장','야시장','길거리음식'],
     fac:{응대:['X'],홍보:['X'],안내판:['O'],장애인:['O'],와이파이:['O'],제세동기:['X']}},
-   {slug:'jeongbang',name:'정방폭포',cat:'자연경관',transit:{m:'taxi',t:'택시 약 5분'},
+   {slug:'jeongbang',name:'정방폭포',cat:'자연 · 폭포',transit:'택시 약 5분',
     tag:'바다로 직접 떨어지는 국내 유일 해안 폭포',
-    desc:'국가 명승 제43호로, 육지의 폭포수가 바다로 직접 떨어지는 국내 유일의 해안 폭포입니다. 천제연·천지연과 함께 제주 3대 폭포로 꼽힙니다. 높이 23m의 두 줄기 물줄기가 해안 절벽에서 웅장한 소리를 내며 푸른 바다로 쏟아집니다. 진시황제 전설과 4.3사건의 역사가 함께 깃들어, 자연의 아름다움과 역사의 무게를 한 장소에서 느낄 수 있습니다.',
-    addr:'서귀포시 칠십리로 214번길 37',hours:'09:00~17:50 (입장마감 17:30)',hoursNote:'계절별 운영시간 변동 · 방문 전 유선 문의 필수',
-    tel:'+82-64-733-1530',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500531',tags:['폭포','해안폭포','명승','제주3대폭포'],
+    head:'바다로 곧장 쏟아지는 물줄기',
+    desc:'국가 명승 제43호로, 육지의 폭포수가 바다로 직접 떨어지는 국내 유일의 해안 폭포다. 천제연·천지연과 함께 제주 3대 폭포로 꼽힌다. 높이 23m의 두 줄기 물줄기가 해안 절벽에서 웅장한 소리를 내며 푸른 바다로 쏟아진다. 진시황제 전설과 4.3사건의 역사가 함께 깃들어, 자연의 아름다움과 역사의 무게를 한 장소에서 느낄 수 있다.',
+    pull:'육지의 폭포가 바다로 곧장 떨어지는, 국내 유일의 풍경.',
+    cap1:'해안 절벽에서 바다로 쏟아지는 두 줄기 물길.',cap2:'폭포 앞으로 펼쳐진 서귀포의 푸른 바다.',
+    addr:'서귀포시 칠십리로 214번길 37',hours:'09:00 – 17:50 (입장마감 17:30)',tel:'+82-64-733-1530',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500531',
+    tags:['폭포','해안폭포','명승'],
     fac:{응대:['O'],홍보:['O'],안내판:['O'],장애인:['X'],와이파이:['X'],제세동기:['O']}}
   ]}
 ];
 
-const app=document.getElementById('app'),tabsEl=document.getElementById('tabs');
-const bySlug={};COURSES.forEach(c=>c.stops.forEach(s=>{s._course=c;bySlug[s.slug]=s;}));
-
-function facTable(s){
-  let rows='';
-  FAC_GROUPS.forEach(gr=>{
-    const present=gr.items.filter(([k])=>s.fac[k]!==undefined);
-    if(!present.length)return;
-    present.forEach(([k,label],i)=>{
-      const v=s.fac[k],on=v[0]==='O',note=v[1]||'';
-      rows+='<tr>';
-      if(i===0) rows+=`<td class="grp" rowspan="${present.length}">${gr.g}</td>`;
-      rows+=`<td class="item">${label}</td><td class="ox ${on?'on':'off'}"><span class="badge">${svg(on?I.check:I.x)}</span></td><td class="bigo">${note}</td></tr>`;
-    });
+/* ---------- stylized SVG route map ---------- */
+const MAP_LABEL={jusangjeolli:'주상절리대',cheonjeyeon:'천제연폭포',yakcheonsa:'약천사',sangsaeng:'상생의 정원',gangjeongcheon:'강정천',kensington:'켄싱턴 산책로',shooting:'실탄사격장',beoritnae:'베릿내오름','jungmun-beach':'색달해수욕장',leejungseop:'이중섭거리','olle-market':'올레시장',jeongbang:'정방폭포'};
+function routeMap(c){
+  const W=820,H=430;
+  const pts=[c.geo.start,...c.geo.stops];
+  // route path (gentle arcs)
+  let d=`M ${pts[0][0]} ${pts[0][1]}`;
+  for(let i=1;i<pts.length;i++){
+    const [x0,y0]=pts[i-1],[x1,y1]=pts[i];
+    const mx=(x0+x1)/2,my=(y0+y1)/2-34;
+    d+=` Q ${mx.toFixed(0)} ${my.toFixed(0)} ${x1} ${y1}`;
+  }
+  // markers
+  let marks='';
+  const [sx,sy]=c.geo.start;
+  marks+=`<g>
+    <circle cx="${sx}" cy="${sy}" r="14" fill="var(--paper)" stroke="var(--ink)" stroke-width="2.5"/>
+    <path d="M ${sx-6} ${sy-1} h12 l-2 5 h-8 z M ${sx} ${sy-8} v3 M ${sx-4} ${sy-5} h8" stroke="var(--ink)" stroke-width="1.6" fill="none" stroke-linejoin="round"/>
+    <text x="${sx}" y="${sy+31}" text-anchor="middle" class="mlbl mstart">강정항</text>
+  </g>`;
+  c.geo.stops.forEach((p,i)=>{
+    const [x,y]=p, above=y<195;
+    const ly = above? y-24 : y+35;
+    marks+=`<g>
+      <circle cx="${x}" cy="${y}" r="16" fill="var(--accent)"/>
+      <text x="${x}" y="${y+5}" text-anchor="middle" class="mnum">${i+1}</text>
+      <text x="${x}" y="${ly}" text-anchor="middle" class="mlbl">${MAP_LABEL[c.stops[i].slug]}</text>
+    </g>`;
   });
-  return `<div class="facwrap"><table class="fac"><thead><tr><th>항목</th><th>세부내용</th><th class="c-ox">O/X</th><th class="c-note">비고</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  // route legend (below map) — avoids in-map clutter/overlaps
+  let legend=`<span class="lg-node lg-start">강정항</span>`;
+  c.stops.forEach((s,i)=>{
+    legend+=`<span class="lg-leg">${s.transit.replace('약 ','')}</span><span class="lg-arrow">→</span><span class="lg-node">${MAP_LABEL[s.slug]}</span>`;
+  });
+  return `<figure class="mapfig"><div class="mapbox"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${c.title} 이동 경로 지도">
+    <defs><linearGradient id="sea-${c.id}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--accent)" stop-opacity="0.10"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0.22"/>
+    </linearGradient></defs>
+    <rect width="${W}" height="${H}" fill="var(--paper)"/>
+    <path d="M0,300 C160,275 300,320 430,300 C560,282 690,318 ${W},296 L${W},${H} L0,${H} Z" fill="url(#sea-${c.id})"/>
+    <path d="M0,300 C160,275 300,320 430,300 C560,282 690,318 ${W},296" fill="none" stroke="var(--accent)" stroke-opacity="0.45" stroke-width="1.5"/>
+    <g stroke="var(--accent)" stroke-opacity="0.18" stroke-width="1.2" fill="none">
+      <path d="M40,348 q22,-9 44,0 t44,0 t44,0 t44,0"/><path d="M560,362 q22,-9 44,0 t44,0 t44,0 t44,0"/>
+    </g>
+    <path d="${d}" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-dasharray="2 7" stroke-linecap="round"/>
+    ${marks}
+    <g transform="translate(${W-48},46)" stroke="var(--ink-2)" fill="none" stroke-width="1.4">
+      <circle r="15"/><path d="M0,-10 L4,3 L0,0 L-4,3 Z" fill="var(--ink-2)" stroke="none"/>
+      <text x="0" y="-18" text-anchor="middle" class="mcompass">N</text>
+    </g>
+    <text x="24" y="${H-20}" class="mwm">SEOGWIPO</text>
+  </svg></div>
+  <figcaption class="cap route-legend">${legend}</figcaption>
+  </figure>
+  <style>
+    .mnum{font:800 15px var(--sans);fill:#fff}
+    .mlbl{font:700 15.5px var(--sans);fill:var(--ink)}
+    .mcompass{font:700 10px var(--sans);fill:var(--muted)}
+    .mwm{font:italic 700 20px var(--serif);fill:var(--accent);opacity:.35;letter-spacing:.08em}
+    .route-legend{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding-top:12px}
+    .route-legend .lg-node{font-weight:700;color:var(--ink);font-size:13px}
+    .route-legend .lg-start{color:var(--accent)}
+    .route-legend .lg-leg{font-size:11.5px;color:var(--muted);font-weight:600}
+    .route-legend .lg-arrow{color:var(--accent);font-weight:700}
+  </style>`;
 }
 
-function infoRow(icon,k,v){return `<li><span class="ic">${svg(I[icon])}</span><span class="k">${k}</span><span class="v">${v}</span></li>`;}
+function facList(s){
+  const items=FAC_ORDER.filter(k=>s.fac[k]!==undefined).map(k=>{
+    const v=s.fac[k],on=v[0]==='O',note=v[1]||'';
+    return `<li class="${on?'on':'off'}"><span class="mk">${svg(on?I.check:I.x)}</span><span>${FAC_LABEL[k]}${note?` <span class="fnote">· ${note}</span>`:''}</span></li>`;
+  }).join('');
+  return `<div class="fac"><div class="sidebar"><div class="h" style="border:0;padding:0;margin:0 0 10px">편의시설 안내</div></div><ul>${items}</ul></div>`;
+}
 
-function placeCard(s,idx){
-  const img1=IMG(`img/${s.slug}-1.jpg`),img2=IMG(`img/${s.slug}-2.jpg`);
+function stopArticle(s,i){
   const tel=s.tel?s.tel.replace(/[^0-9+]/g,''):'';
   const mapQ=encodeURIComponent(s.name+' '+s.addr);
-
-  let info='';
-  info+=infoRow('pin','주소',s.addr);
-  info+=infoRow('clock','이용시간',(s.hours||'상세 정보 없음')+(s.hoursNote?`<span class="note">※ ${s.hoursNote}</span>`:''));
-  if(s.tel) info+=infoRow('phone','문의',`<a href="tel:${tel}">${s.tel.replace('+82-','+82) ')}</a>${s.telNote?`<span class="note">${s.telNote}</span>`:''}`);
-  info+=infoRow('ticket','이용요금',s.free?'<span class="free">무료</span>':'홈페이지 확인');
-  if(s.url) info+=infoRow('link','홈페이지',`<a href="${s.url}" target="_blank" rel="noopener">공식 안내 페이지 열기</a>`);
-
-  // nearby = other stops in same course
-  const near=s._course.stops.filter(o=>o.slug!==s.slug).map(o=>
-    `<a href="#p-${o.slug}"><img src="${IMG(`img/${o.slug}-1.jpg`)}" alt="" loading="lazy" />${o.name}</a>`).join('');
+  const img1=IMG(`img/${s.slug}-1.jpg`),img2=IMG(`img/${s.slug}-2.jpg`);
+  let note='';
+  note+=`<div><dt>주소</dt><dd>${s.addr}</dd></div>`;
+  note+=`<div><dt>이용시간</dt><dd class="mono">${s.hours}</dd></div>`;
+  if(s.tel) note+=`<div><dt>문의</dt><dd class="mono"><a href="tel:${tel}">${s.tel.replace('+82-','+82) ')}</a>${s.telNote?` <span style="color:var(--muted)">(${s.telNote})</span>`:''}</dd></div>`;
+  note+=`<div><dt>이용요금</dt><dd>${s.free?'<span class="free">무료</span>':'홈페이지 확인'}</dd></div>`;
+  note+=`<div><dt>가는 길</dt><dd>강정크루즈여객터미널에서 ${s.transit}</dd></div>`;
 
   return `<article class="place" id="p-${s.slug}">
-    <nav class="crumb">홈 ${svg(I.chev)} 서귀포 ${svg(I.chev)} ${s.cat} ${svg(I.chev)} <b>${s.name}</b></nav>
-    <div class="detail">
-      <div class="dgallery">
-        <button class="main" data-full="${img1}" aria-label="${s.name} 대표 사진 크게 보기"><img id="main-${s.slug}" src="${img1}" alt="${s.name} 대표 사진" /></button>
-        <div class="thumbs" data-slug="${s.slug}">
-          <button class="thumb active" data-src="${img1}" aria-label="사진 1"><img src="${img1}" alt="${s.name} 사진 1" loading="lazy" /></button>
-          <button class="thumb" data-src="${img2}" aria-label="사진 2"><img src="${img2}" alt="${s.name} 사진 2" loading="lazy" /></button>
+    <div class="subkick">${String(i+1).padStart(2,'0')} · ${s.cat}</div>
+    <h3>${s.head}</h3>
+    <p class="lede">${s.name}</p>
+    <figure class="big"><img src="${img1}" alt="${s.name}" data-zoom loading="lazy"><figcaption class="cap">${s.cap1}</figcaption></figure>
+    <div class="body-col"><p class="${i===0?'drop':''}">${s.desc}</p></div>
+    ${s.pull?`<blockquote class="pull">“${s.pull}”</blockquote>`:''}
+    <div class="spread">
+      <figure class="ph"><img src="${img2}" alt="${s.name}" data-zoom loading="lazy"><figcaption class="cap">${s.cap2}</figcaption></figure>
+      <div class="sidebar">
+        <div class="block"><div class="h">Travel Note</div><dl>${note}</dl>
+          <div class="acts">
+            <a class="btn fill" href="https://map.kakao.com/?q=${mapQ}" target="_blank" rel="noopener">${svg(I.pin)}지도</a>
+            <a class="btn" ${tel?`href="tel:${tel}"`:'aria-disabled="true"'}>${svg(I.phone)}전화</a>
+            ${s.url?`<a class="btn" href="${s.url}" target="_blank" rel="noopener">${svg(I.link)}홈페이지</a>`:''}
+          </div>
         </div>
-      </div>
-      <div class="dhead">
-        <div class="cats"><span class="cat">${s.cat}</span><span class="cat" style="background:var(--teal-soft);color:var(--teal)">코스 ${s._course.num} · ${idx}번째</span></div>
-        <h3>${s.name}</h3>
-        <p class="p-tag">${s.tag}</p>
-        <div class="quickacts">
-          <a class="act primary" href="https://map.kakao.com/?q=${mapQ}" target="_blank" rel="noopener">${svg(I.map)}지도·길찾기</a>
-          <a class="act" ${tel?`href="tel:${tel}"`:'aria-disabled="true"'}>${svg(I.phone)}전화</a>
-          ${s.url?`<a class="act" href="${s.url}" target="_blank" rel="noopener">${svg(I.link)}홈페이지</a>`:''}
-        </div>
-        <p class="p-desc">${s.desc}</p>
+        <div class="block">${facList(s)}</div>
       </div>
     </div>
-    <div class="sect-t">기본정보</div>
-    <ul class="infolist">${info}</ul>
-    <div class="sect-t">편의시설 안내</div>
-    ${facTable(s)}
-    <div class="tags">${s.tags.map(t=>`<span class="tag"><b>#</b>${t}</span>`).join('')}</div>
-    <div class="nearby"><div class="lbl">이 코스의 다른 명소</div><div class="chips">${near}</div></div>
-    <p class="note-src">${svg(I.info)}O/X 및 운영 정보는 안내 자료 기준이며 변동될 수 있습니다. 방문 전 홈페이지·전화로 확인하시기 바랍니다.</p>
+    <div class="tags">${s.tags.map(t=>`<span>#${t}</span>`).join('')}</div>
+    <div class="place-div"></div>
   </article>`;
 }
 
+/* build */
+document.getElementById('coverImg').src=IMG('img/jeongbang-2.jpg');
+const nav=document.getElementById('nav'),toc=document.getElementById('toc'),feats=document.getElementById('features');
+
 COURSES.forEach(c=>{
-  const tab=document.createElement('a');
-  tab.className='tab';tab.href='#'+c.id;tab.dataset.course=c.id;
-  tab.innerHTML=`<span class="n">${c.num}</span>${c.kicker}`;
-  tabsEl.appendChild(tab);
+  const a=document.createElement('a');a.href='#'+c.id;a.dataset.course=c.id;
+  a.innerHTML=`<span class="n">${c.num}</span>${c.kicker}`;nav.appendChild(a);
 
-  let route=`<span class="node start">${c.start}</span>`;
-  c.stops.forEach(s=>{route+=`<span class="leg">${svg(I.arrow,'ar')}${svg(I[s.transit.m])}${s.transit.t}</span><span class="node">${s.name}</span>`;});
-
-  const sec=document.createElement('section');
-  sec.className='course';sec.id=c.id;sec.style.scrollMarginTop='118px';
-  sec.innerHTML=`<div class="wrap">
-    <div class="c-head"><span class="c-num">${c.num}</span><div><div class="c-kicker">${c.kicker}</div><h2>${c.title}</h2></div></div>
-    <figure class="routemap"><img src="${IMG(c.map)}" alt="${c.title} 이동 경로 지도" loading="lazy" /><figcaption>${svg(I.map)}${c.start}에서 출발하는 이동 경로</figcaption></figure>
-    <div class="route">${route}</div>
-    ${c.stops.map((s,i)=>placeCard(s,i+1)).join('')}
-  </div>`;
-  app.appendChild(sec);
+  const row=document.createElement('a');row.className='toc-row';row.href='#'+c.id;
+  row.innerHTML=`<span class="no">${c.num}</span><img class="th" src="${IMG('img/'+c.stops[0].slug+'-1.jpg')}" alt=""><span class="tt"><b>${c.title}</b><span>${c.stops.map(s=>s.name.split(' ')[0]).join(' · ')}</span></span><span class="pg">p.${c.page}</span>`;
+  toc.appendChild(row);
 });
 
-/* gallery thumb swap + lightbox */
-const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
-app.addEventListener('click',e=>{
-  const th=e.target.closest('.thumbs .thumb');
-  if(th){const box=th.closest('.thumbs'),slug=box.dataset.slug,src=th.dataset.src;
-    document.getElementById('main-'+slug).src=src;
-    th.closest('.dgallery').querySelector('.main').dataset.full=src;
-    box.querySelectorAll('.thumb').forEach(t=>t.classList.toggle('active',t===th));return;}
-  const mn=e.target.closest('.dgallery .main');
-  if(mn){lbImg.src=mn.dataset.full;lbImg.alt='';lb.classList.add('on');}
+feats.innerHTML=COURSES.map((c,ci)=>`
+  <div class="rule"></div>
+  <section class="feature" id="${c.id}">
+    <div class="feat-lead">
+      <span class="eyebrow">Feature ${c.num} · ${c.kicker}</span>
+      <h2>${c.title}</h2>
+      <p>${c.intro}</p>
+    </div>
+    ${routeMap(c)}
+    ${c.stops.map((s,i)=>stopArticle(s,i)).join('')}
+  </section>`).join('');
+
+/* lightbox */
+const lb=document.getElementById('lb'),lbimg=document.getElementById('lbimg');
+document.body.addEventListener('click',e=>{
+  const z=e.target.closest('[data-zoom]');
+  if(z&&z.tagName==='IMG'){lbimg.src=z.src;lb.classList.add('on');return;}
 });
-function closeLb(){lb.classList.remove('on');lbImg.src='';}
-lb.addEventListener('click',e=>{if(e.target===lb||e.target.closest('.close'))closeLb();});
+const closeLb=()=>{lb.classList.remove('on');lbimg.src='';};
+lb.addEventListener('click',e=>{if(e.target===lb||e.target.closest('.x'))closeLb();});
 addEventListener('keydown',e=>{if(e.key==='Escape')closeLb();});
 
 /* scrollspy */
-const tabLinks=[...tabsEl.querySelectorAll('.tab')];
+const navLinks=[...nav.querySelectorAll('a')];
 const spy=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){
-  const id=en.target.id;tabLinks.forEach(t=>t.setAttribute('aria-current',t.dataset.course===id));
-  const a=tabLinks.find(t=>t.dataset.course===id);if(a)a.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});}});
-},{rootMargin:'-45% 0px -50% 0px'});
-document.querySelectorAll('.course').forEach(s=>spy.observe(s));
+  const id=en.target.id;navLinks.forEach(t=>t.setAttribute('aria-current',t.dataset.course===id));
+  const act=navLinks.find(t=>t.dataset.course===id);if(act)act.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+}});},{rootMargin:'-40% 0px -55% 0px'});
+document.querySelectorAll('.feature').forEach(s=>spy.observe(s));
 document.getElementById('toTop').addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
 
 /* theme */
 const root=document.documentElement,tb=document.getElementById('themeBtn');
 const isDark=()=>{const s=root.getAttribute('data-theme');return s?s==='dark':matchMedia('(prefers-color-scheme:dark)').matches;};
 const paint=()=>tb.innerHTML=svg(isDark()?I.sun:I.moon);
-tb.addEventListener('click',()=>{root.setAttribute('data-theme',isDark()?'light':'dark');paint();drawHex();});
-matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{paint();drawHex();});
+tb.addEventListener('click',()=>{root.setAttribute('data-theme',isDark()?'light':'dark');paint();});
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',paint);
 paint();
-
-/* hero basalt-hexagon canvas (주상절리 모티프) */
-const cv=document.getElementById('hexcanvas'),ctx=cv.getContext('2d');
-function hexAt(cx,cy,r){ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/180*(60*i),px=cx+r*Math.cos(a),py=cy+r*Math.sin(a);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.closePath();ctx.stroke();}
-function drawHex(){
-  const host=cv.parentElement,dpr=Math.min(devicePixelRatio||1,2),w=host.clientWidth,h=host.clientHeight;
-  cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
-  ctx.strokeStyle=isDark()?'rgba(255,180,120,.10)':'rgba(70,60,50,.09)';ctx.lineWidth=1;
-  const R=27,dx=R*1.5,dy=R*Math.sqrt(3);
-  for(let col=-1,x=0;x<w+R;col++,x=col*dx){const off=(col%2)?dy/2:0;for(let y=-R;y<h+R;y+=dy) hexAt(x,y+off,R);}
-}
-addEventListener('resize',drawHex);drawHex();
 </script>
 </body>
 </html>
