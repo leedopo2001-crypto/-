@@ -127,6 +127,7 @@
   .route .node.start{color:var(--accent-2)}
   .route .leg{display:inline-flex;align-items:center;gap:5px;color:var(--muted);font-weight:600;font-size:12px;white-space:nowrap}
   .route .leg svg{width:14px;height:14px;color:var(--accent);flex:none}
+  .route .leg svg.ar{color:var(--muted)}
 
   /* ---- place ---- */
   .place{margin:30px 0;background:var(--surface);border:1px solid var(--border);border-radius:16px;
@@ -221,7 +222,7 @@
 <nav class="tabs" aria-label="코스 바로가기"><div class="wrap tabs-inner" id="tabs"></div></nav>
 
 <section class="masthead">
-  <img src="img/jungmun-beach-1.jpg" alt="" aria-hidden="true" fetchpriority="high" />
+  <img id="mhImg" src="img/jungmun-beach-1.jpg" alt="" aria-hidden="true" fetchpriority="high" />
   <div class="wrap mh-in">
     <div class="mh-kicker">서귀포 · 강정크루즈여객터미널</div>
     <h1>크루즈에서 내려 즐기는<br>서귀포 추천 코스</h1>
@@ -265,6 +266,7 @@ const I={
   moon:'<path d="M20 13.5A8 8 0 019.7 4 7 7 0 1020 13.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'
 };
 const svg=(p,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${p}</svg>`;
+const IMG=p=>(window.IMGMAP&&window.IMGMAP[p])||p;  /* data-URI in single-file build, relative path otherwise */
 
 /* facility item catalog (grouped, faithful to source) */
 const FAC_GROUPS=[
@@ -393,10 +395,11 @@ function placeCard(s,idx){
   if(s.url) rows.push(`<tr><th class="rowh">홈페이지</th><td><a href="${s.url}" target="_blank" rel="noopener">${s.url}</a></td></tr>`);
   const tel=s.tel?s.tel.replace(/[^0-9+]/g,''):'';
   const mapQ=encodeURIComponent(s.name+' '+s.addr);
+  const img1=IMG(`img/${s.slug}-1.jpg`),img2=IMG(`img/${s.slug}-2.jpg`);
   return `<article class="place" id="p-${s.slug}">
     <div class="gallery">
-      <button data-full="img/${s.slug}-1.jpg" aria-label="${s.name} 사진 1 크게 보기"><img src="img/${s.slug}-1.jpg" alt="${s.name} 사진 1" loading="lazy" /></button>
-      <button data-full="img/${s.slug}-2.jpg" aria-label="${s.name} 사진 2 크게 보기"><img src="img/${s.slug}-2.jpg" alt="${s.name} 사진 2" loading="lazy" /></button>
+      <button data-full="${img1}" aria-label="${s.name} 사진 1 크게 보기"><img src="${img1}" alt="${s.name} 사진 1" loading="lazy" /></button>
+      <button data-full="${img2}" aria-label="${s.name} 사진 2 크게 보기"><img src="${img2}" alt="${s.name} 사진 2" loading="lazy" /></button>
     </div>
     <div class="p-body">
       <span class="p-num"><span class="b">${idx}</span>추천 명소</span>
@@ -424,7 +427,7 @@ COURSES.forEach(c=>{
   // route strip: start -> stop1 -(leg)- stop2 ...
   let route=`<span class="node start">${c.start}</span>`;
   c.stops.forEach(s=>{
-    route+=`<span class="leg">${svg(I[s.transit.m])}${s.transit.t}</span>${svg(I.arrow,'')}<span class="node">${s.name}</span>`;
+    route+=`<span class="leg">${svg(I.arrow,'ar')}${svg(I[s.transit.m])}${s.transit.t}</span><span class="node">${s.name}</span>`;
   });
 
   const sec=document.createElement('section');
@@ -434,13 +437,15 @@ COURSES.forEach(c=>{
       <span class="c-num">${c.num}</span>
       <div><div class="c-kicker">${c.kicker}</div><h2>${c.title}</h2></div>
     </div>
-    <figure class="routemap"><img src="${c.map}" alt="${c.title} 이동 경로 지도" loading="lazy" />
+    <figure class="routemap"><img src="${IMG(c.map)}" alt="${c.title} 이동 경로 지도" loading="lazy" />
       <figcaption>${svg(I.map)}${c.start}에서 출발하는 이동 경로</figcaption></figure>
     <div class="route">${route}</div>
     ${c.stops.map((s,i)=>placeCard(s,i+1)).join('')}
   </div>`;
   app.appendChild(sec);
 });
+
+document.getElementById('mhImg').src=IMG('img/jungmun-beach-1.jpg');
 
 /* lightbox */
 const lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg');
