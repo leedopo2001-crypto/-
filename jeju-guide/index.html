@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>서귀포 하루 코스 · 강정크루즈여객터미널</title>
+<meta name="description" content="강정크루즈여객터미널에서 시작하는 서귀포 4개 테마 코스 · 12개 명소 여행 가이드" />
+<meta name="theme-color" content="#12161a" />
+<style>
+  /* ============ Tokens ============ */
+  :root{
+    --font-sans:"Pretendard","Pretendard Variable",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    --font-mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,Consolas,monospace;
+
+    /* course accents (hues chosen distinct but cohesive) */
+    --c1:#0f9d8f;  /* 화산절벽·폭포 — jade */
+    --c2:#2f74c0;  /* 물·치유 — ocean */
+    --c3:#e9682c;  /* 액티비티 — tangerine */
+    --c4:#d5457f;  /* MZ 예술 — rose */
+
+    --brand:#e9682c;
+
+    /* light ground (paper w/ slight teal bias) */
+    --bg:#eef2f1;
+    --bg2:#e4eae8;
+    --surface:#ffffff;
+    --surface-2:#f4f7f6;
+    --border:#d8e0dd;
+    --border-strong:#c3cecb;
+    --text:#15201e;
+    --text-2:#3d4a47;
+    --muted:#66756f;
+    --shadow:0 1px 2px rgba(20,40,36,.06),0 8px 24px -12px rgba(20,40,36,.18);
+    --shadow-lg:0 12px 40px -16px rgba(20,40,36,.30);
+    --ok:#0d8a5f;
+    --ok-bg:#e4f4ec;
+    --no:#9aa6a2;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#0f1317;
+      --bg2:#12171c;
+      --surface:#171d23;
+      --surface-2:#1e252c;
+      --border:#2a323b;
+      --border-strong:#3a444e;
+      --text:#eef3f2;
+      --text-2:#c2ccca;
+      --muted:#8a9691;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -14px rgba(0,0,0,.6);
+      --shadow-lg:0 20px 50px -20px rgba(0,0,0,.7);
+      --c1:#22b6a6;--c2:#4f95df;--c3:#f2824a;--c4:#e56aa0;--brand:#f2824a;
+      --ok:#3fce93;--ok-bg:#123528;--no:#5f6c67;
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#eef2f1;--bg2:#e4eae8;--surface:#ffffff;--surface-2:#f4f7f6;
+    --border:#d8e0dd;--border-strong:#c3cecb;--text:#15201e;--text-2:#3d4a47;
+    --muted:#66756f;--shadow:0 1px 2px rgba(20,40,36,.06),0 8px 24px -12px rgba(20,40,36,.18);
+    --shadow-lg:0 12px 40px -16px rgba(20,40,36,.30);
+    --c1:#0f9d8f;--c2:#2f74c0;--c3:#e9682c;--c4:#d5457f;--brand:#e9682c;
+    --ok:#0d8a5f;--ok-bg:#e4f4ec;--no:#9aa6a2;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1317;--bg2:#12171c;--surface:#171d23;--surface-2:#1e252c;
+    --border:#2a323b;--border-strong:#3a444e;--text:#eef3f2;--text-2:#c2ccca;
+    --muted:#8a9691;--shadow:0 1px 2px rgba(0,0,0,.4),0 12px 30px -14px rgba(0,0,0,.6);
+    --shadow-lg:0 20px 50px -20px rgba(0,0,0,.7);
+    --c1:#22b6a6;--c2:#4f95df;--c3:#f2824a;--c4:#e56aa0;--brand:#f2824a;
+    --ok:#3fce93;--ok-bg:#123528;--no:#5f6c67;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--font-sans);line-height:1.6;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit}
+  button{font-family:inherit}
+  :focus-visible{outline:2.5px solid var(--brand);outline-offset:2px;border-radius:6px}
+
+  .wrap{max-width:940px;margin:0 auto;padding:0 clamp(16px,4vw,28px)}
+
+  /* ============ Header (sticky nav) ============ */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in srgb,var(--bg) 82%,transparent);
+    backdrop-filter:saturate(160%) blur(14px);
+    -webkit-backdrop-filter:saturate(160%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .topbar-inner{display:flex;align-items:center;gap:12px;height:56px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:800;letter-spacing:-.01em;font-size:15px;white-space:nowrap}
+  .brand .mark{width:22px;height:22px;flex:none;color:var(--brand)}
+  .brand small{color:var(--muted);font-weight:600;font-size:12px}
+  .theme-btn{
+    margin-left:auto;flex:none;width:38px;height:38px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface);color:var(--text-2);
+    display:grid;place-items:center;cursor:pointer;transition:.18s;
+  }
+  .theme-btn:hover{border-color:var(--border-strong);color:var(--text)}
+  .theme-btn svg{width:18px;height:18px}
+
+  /* course tab strip */
+  .tabs{
+    position:sticky;top:56px;z-index:40;
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:saturate(160%) blur(14px);
+    -webkit-backdrop-filter:saturate(160%) blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+  .tabs-inner{display:flex;gap:7px;overflow-x:auto;padding:10px 0;scrollbar-width:none;scroll-snap-type:x proximity}
+  .tabs-inner::-webkit-scrollbar{display:none}
+  .tab{
+    scroll-snap-align:start;flex:none;cursor:pointer;
+    border:1px solid var(--border);background:var(--surface);
+    color:var(--text-2);border-radius:999px;padding:7px 14px 7px 11px;
+    font-size:13.5px;font-weight:700;letter-spacing:-.01em;
+    display:flex;align-items:center;gap:8px;transition:.16s;
+  }
+  .tab:hover{border-color:var(--border-strong)}
+  .tab .dot{width:9px;height:9px;border-radius:50%;background:var(--ci);flex:none}
+  .tab[aria-current="true"]{
+    color:#fff;border-color:transparent;
+    background:var(--ci);
+  }
+  .tab[aria-current="true"] .dot{background:rgba(255,255,255,.9)}
+
+  /* ============ Hero ============ */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--border)}
+  .hero canvas{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+  .hero::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(120% 90% at 82% -10%, color-mix(in srgb,var(--c3) 26%,transparent), transparent 60%),
+      radial-gradient(120% 100% at 0% 110%, color-mix(in srgb,var(--c1) 24%,transparent), transparent 55%);
+  }
+  .hero-inner{position:relative;z-index:2;padding-block:clamp(40px,9vw,86px) clamp(30px,6vw,52px)}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--brand);margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:26px;height:2px;background:currentColor;border-radius:2px}
+  h1.title{
+    margin:0;font-size:clamp(34px,8vw,62px);line-height:1.04;font-weight:900;
+    letter-spacing:-.03em;text-wrap:balance;
+  }
+  h1.title em{font-style:normal;color:var(--brand)}
+  .lede{
+    margin:20px 0 0;max-width:34em;font-size:clamp(15px,2.4vw,18px);
+    color:var(--text-2);line-height:1.65;text-wrap:pretty;
+  }
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+  .stat{
+    background:color-mix(in srgb,var(--surface) 78%,transparent);
+    border:1px solid var(--border);border-radius:14px;padding:10px 16px;
+    backdrop-filter:blur(6px);
+  }
+  .stat b{display:block;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.1}
+  .stat span{font-size:12px;color:var(--muted);font-weight:600}
+
+  /* ============ Course section ============ */
+  .course{padding:clamp(34px,7vw,64px) 0;scroll-margin-top:112px}
+  .course-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:8px}
+  .course-num{
+    flex:none;font-family:var(--font-mono);font-weight:700;font-size:13px;
+    color:#fff;background:var(--ci);border-radius:11px;
+    width:44px;height:44px;display:grid;place-items:center;letter-spacing:.02em;
+    box-shadow:0 6px 16px -6px var(--ci);
+  }
+  .course-titles{min-width:0}
+  .course-kicker{font-size:12.5px;font-weight:800;letter-spacing:.04em;color:var(--ci);text-transform:uppercase}
+  .course h2{margin:2px 0 0;font-size:clamp(21px,4.4vw,29px);font-weight:900;letter-spacing:-.02em;line-height:1.18;text-wrap:balance}
+  .course-meta{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:12px;color:var(--muted);font-size:13.5px;font-weight:600}
+  .course-meta .m{display:inline-flex;align-items:center;gap:6px}
+  .course-meta svg{width:15px;height:15px;color:var(--ci)}
+
+  /* origin chip */
+  .origin{
+    display:inline-flex;align-items:center;gap:9px;margin:22px 0 4px;
+    font-size:13.5px;font-weight:700;color:var(--text-2);
+    background:var(--surface);border:1px dashed var(--border-strong);
+    padding:8px 14px;border-radius:12px;
+  }
+  .origin .anchor{width:9px;height:9px;border-radius:50%;border:3px solid var(--ci);background:var(--surface)}
+
+  /* ============ Timeline ============ */
+  .timeline{position:relative;margin-top:6px;padding-left:26px}
+  .timeline::before{
+    content:"";position:absolute;left:8px;top:6px;bottom:34px;width:2px;
+    background:linear-gradient(var(--ci),color-mix(in srgb,var(--ci) 20%,var(--border)));
+    border-radius:2px;
+  }
+  .transit{
+    position:relative;display:flex;align-items:center;gap:7px;
+    padding:9px 0 9px 0;margin-left:-2px;color:var(--muted);
+    font-size:12.5px;font-weight:600;
+  }
+  .transit .ic{width:15px;height:15px;color:var(--ci);flex:none}
+  .transit::before{
+    content:"";position:absolute;left:-18px;top:50%;width:8px;height:8px;
+    transform:translateY(-50%);border-radius:50%;background:var(--border-strong);
+  }
+
+  .stop{
+    position:relative;background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .18s,box-shadow .18s;
+  }
+  .stop::before{
+    content:"";position:absolute;left:-22px;top:24px;width:14px;height:14px;
+    border-radius:50%;background:var(--surface);border:3px solid var(--ci);z-index:1;
+  }
+  .stop.open{border-color:color-mix(in srgb,var(--ci) 45%,var(--border));box-shadow:var(--shadow-lg)}
+  .stop-btn{
+    width:100%;text-align:left;background:none;border:0;cursor:pointer;
+    display:flex;align-items:center;gap:14px;padding:16px 16px;
+  }
+  .stop-idx{
+    flex:none;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    font-family:var(--font-mono);font-weight:700;font-size:14px;
+    color:var(--ci);background:color-mix(in srgb,var(--ci) 12%,transparent);
+  }
+  .stop-main{flex:1;min-width:0}
+  .stop-name{font-size:16.5px;font-weight:800;letter-spacing:-.01em;line-height:1.25}
+  .stop-tag{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .chev{flex:none;width:20px;height:20px;color:var(--muted);transition:transform .25s}
+  .stop.open .chev{transform:rotate(180deg)}
+
+  .stop-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+  .stop.open .stop-body{grid-template-rows:1fr}
+  .stop-body>div{overflow:hidden;min-height:0}
+  .stop-inner{padding:2px 16px 18px;border-top:1px solid var(--border)}
+  .stop-desc{color:var(--text-2);font-size:14.5px;line-height:1.72;margin:16px 0 0;text-wrap:pretty}
+
+  /* info rows */
+  .info{margin-top:16px;display:grid;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .info .row{display:grid;grid-template-columns:76px 1fr;gap:12px;background:var(--surface);padding:10px 14px}
+  .info .row .k{color:var(--muted);font-size:12.5px;font-weight:700;padding-top:1px}
+  .info .row .v{font-size:13.5px;color:var(--text);word-break:break-word}
+  .info .row .v .note{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+  .info .row .v a{color:var(--ci);font-weight:600;text-decoration:none;overflow-wrap:anywhere}
+  .info .row .v a:hover{text-decoration:underline}
+  .free{display:inline-block;font-size:11.5px;font-weight:800;color:var(--ok);background:var(--ok-bg);padding:2px 8px;border-radius:999px}
+
+  /* actions */
+  .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+  .act{
+    display:inline-flex;align-items:center;gap:7px;text-decoration:none;
+    font-size:13px;font-weight:700;padding:9px 14px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface-2);color:var(--text);transition:.15s;
+  }
+  .act:hover{border-color:var(--border-strong);transform:translateY(-1px)}
+  .act.primary{background:var(--ci);border-color:transparent;color:#fff}
+  .act.primary:hover{filter:brightness(1.06)}
+  .act svg{width:15px;height:15px}
+  .act[aria-disabled="true"]{opacity:.45;pointer-events:none}
+
+  /* facilities */
+  .fac-title{display:flex;align-items:center;gap:8px;margin:20px 0 10px;font-size:12.5px;font-weight:800;letter-spacing:.02em;color:var(--muted);text-transform:uppercase}
+  .fac-title::after{content:"";flex:1;height:1px;background:var(--border)}
+  .facs{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+  .fac{
+    display:flex;align-items:flex-start;gap:9px;padding:10px 11px;border-radius:11px;
+    border:1px solid var(--border);background:var(--surface-2);
+  }
+  .fac.on{border-color:color-mix(in srgb,var(--ok) 40%,var(--border));background:var(--ok-bg)}
+  .fac .badge{
+    flex:none;width:20px;height:20px;border-radius:6px;display:grid;place-items:center;
+    background:var(--no);color:#fff;margin-top:1px;
+  }
+  .fac.on .badge{background:var(--ok)}
+  .fac .badge svg{width:13px;height:13px}
+  .fac .ftxt{min-width:0}
+  .fac .fname{font-size:13px;font-weight:700;line-height:1.3;display:flex;align-items:center;gap:6px}
+  .fac .fname svg{width:14px;height:14px;color:var(--muted);flex:none}
+  .fac.on .fname svg{color:var(--ok)}
+  .fac .fnote{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+
+  .disclaimer{margin:14px 2px 0;font-size:12px;color:var(--muted);display:flex;gap:7px;align-items:flex-start}
+  .disclaimer svg{width:14px;height:14px;flex:none;margin-top:2px}
+
+  /* ============ footer ============ */
+  footer{border-top:1px solid var(--border);padding:34px 0 46px;color:var(--muted);font-size:13px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center}
+  footer b{color:var(--text-2)}
+  .totop{margin-left:auto;display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:none;border:0;color:var(--muted);font-weight:700;font-size:13px}
+  .totop:hover{color:var(--text)}
+  .totop svg{width:15px;height:15px}
+
+  @media (min-width:560px){
+    .info .row{grid-template-columns:92px 1fr}
+    .stop-name{font-size:17.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+  }
+  html{scroll-behavior:smooth}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <span class="brand">
+      <svg class="mark" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 17c2 0 2-1.4 4-1.4S9 17 11 17s2-1.4 4-1.4S17 17 19 17s2-1.4 2-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 13.5V7l6-3 6 3v6.5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="11" cy="8.5" r="1.4" fill="currentColor"/></svg>
+      서귀포 하루 코스 <small>· 강정크루즈터미널</small>
+    </span>
+    <button class="theme-btn" id="themeBtn" aria-label="밝은/어두운 테마 전환" title="테마 전환"></button>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="코스 바로가기">
+  <div class="wrap tabs-inner" id="tabs"></div>
+</nav>
+
+<section class="hero">
+  <canvas id="hexcanvas" aria-hidden="true"></canvas>
+  <div class="wrap hero-inner">
+    <span class="eyebrow">강정크루즈여객터미널 · 서귀포</span>
+    <h1 class="title">바다에서 내려,<br><em>서귀포</em>의 하루를 걷다</h1>
+    <p class="lede">크루즈에서 막 내린 당신을 위한 4개의 테마 코스. 화산 절벽과 폭포, 치유의 물길, 짜릿한 액티비티, 그리고 예술과 먹거리까지 — 터미널에서 가까운 순서대로 담았습니다.</p>
+    <div class="stats">
+      <div class="stat"><b>4</b><span>테마 코스</span></div>
+      <div class="stat"><b>12</b><span>추천 명소</span></div>
+      <div class="stat"><b>4시간~</b><span>반나절 코스</span></div>
+    </div>
+  </div>
+</section>
+
+<main id="app"></main>
+
+<footer>
+  <div class="wrap">
+    <span>자료 출처 · <b>강정크루즈여객터미널 관광 안내</b></span>
+    <span>운영시간·요금은 방문 전 각 명소 홈페이지에서 확인하세요.</span>
+    <button class="totop" id="toTop">맨 위로
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 19V6M6 11l6-6 6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</footer>
+
+<script>
+/* ============ Icons ============ */
+const I = {
+  taxi:'<path d="M5 11l1.5-4.2A2 2 0 018.4 5.5h7.2a2 2 0 011.9 1.3L19 11m-14 0h14m-14 0a2 2 0 00-2 2v3a1 1 0 001 1h1m14-6a2 2 0 012 2v3a1 1 0 01-1 1h-1M7 17h10M6.5 14h.01M17.5 14h.01" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  walk:'<path d="M13 5.5a1.6 1.6 0 100-3.2 1.6 1.6 0 000 3.2zM10 21l2-5-2.2-2.2.7-4.3 3.3 1.3 1.4 2.7M12 16l2.4 5M11.2 9.5L8 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  clock:'<circle cx="12" cy="12" r="8.3" stroke="currentColor" stroke-width="1.7"/><path d="M12 7.6V12l3 1.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  pin:'<path d="M12 21s6.5-5.7 6.5-10.2A6.5 6.5 0 105.5 10.8C5.5 15.3 12 21 12 21z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="10.6" r="2.4" stroke="currentColor" stroke-width="1.7"/>',
+  phone:'<path d="M6.5 3.5h3l1.3 4-2 1.4a11 11 0 005.3 5.3l1.4-2 4 1.3v3a2 2 0 01-2.2 2A16.5 16.5 0 014.5 5.7 2 2 0 016.5 3.5z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>',
+  link:'<path d="M10 13.5a3.5 3.5 0 005 0l2.5-2.5a3.5 3.5 0 00-5-5L11 7.5M14 10.5a3.5 3.5 0 00-5 0L6.5 13a3.5 3.5 0 005 5L13 16.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  chev:'<path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  check:'<path d="M4 12.5l5 5L20 6.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
+  info:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 11v5M12 8h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  // facility glyphs
+  speech:'<path d="M4 6.5A2.5 2.5 0 016.5 4h11A2.5 2.5 0 0120 6.5v6A2.5 2.5 0 0117.5 15H9l-4 4v-4H6.5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 8.5h7M8.5 11h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  doc:'<path d="M7 3h7l4 4v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v4h4M9 12h6M9 15.5h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>',
+  sign:'<path d="M12 3v3M12 20v-3M6.5 6h9l2.2 2.5L15.5 11h-9V6zM12 11h5l2.2 2.5L17 16H8v-5" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" fill="none"/>',
+  wheelchair:'<circle cx="9.5" cy="4.5" r="1.6" stroke="currentColor" stroke-width="1.5"/><path d="M9 7v5h4l3 5M9 12a5 5 0 103.5 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  wifi:'<path d="M4 8.5a13 13 0 0116 0M6.7 11.7a9 9 0 0110.6 0M9.4 14.9a5 5 0 015.2 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="18.3" r="1.2" fill="currentColor"/>',
+  aed:'<path d="M12 20s-7-4.3-7-9.3A4.2 4.2 0 0112 7a4.2 4.2 0 017 3.7c0 5-7 9.3-7 9.3z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M11 10l-1.5 3h2.5L10.5 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+  park:'<circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 16V8h3.2a2.4 2.4 0 010 4.8H9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>',
+  sun:'<circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M4.3 4.3l1.8 1.8M17.9 17.9l1.8 1.8M2.5 12H5M19 12h2.5M4.3 19.7l1.8-1.8M17.9 6.1l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>',
+  moon:'<path d="M20 13.5A8 8 0 019.7 4 7 7 0 1020 13.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'
+};
+const svg=(p,cls='')=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" aria-hidden="true">${p}</svg>`;
+
+/* ============ Facility meta ============ */
+const FAC=[
+  {key:'응대',  name:'외국어 응대',   icon:'speech'},
+  {key:'홍보',  name:'외국어 홍보자료',icon:'doc'},
+  {key:'안내판',name:'외국어 안내판', icon:'sign'},
+  {key:'장애인',name:'장애인 편의시설',icon:'wheelchair'},
+  {key:'주차',  name:'주차 편의',     icon:'park'},
+  {key:'와이파이',name:'공공 와이파이',icon:'wifi'},
+  {key:'제세동기',name:'제세동기(AED)',icon:'aed'}
+];
+
+/* ============ Data ============ */
+const COURSES=[
+  {
+    id:'c1',num:'01',var:'--c1',
+    kicker:'4시간 코스',
+    title:'화산 절벽과 폭포가 주는 낭만 코스',
+    origin:'강정크루즈여객터미널',
+    stops:[
+      {name:'주상절리대',transit:{mode:'taxi',t:'택시 약 15분'},
+       tag:'천연기념물 제443호 · 육각 돌기둥 해안절벽',
+       desc:'대한민국 천연기념물 제443호로 지정된 국내 최대 규모의 주상절리. 약 25만 년 전 분출된 용암이 바다와 만나 식으면서 4~6각형 기둥 모양으로 형성된 거대한 바위 절벽입니다. 병풍처럼 둘러친 육각형 돌기둥이 장관을 이루며, 파도가 심한 날에는 물보라가 20m 이상 치솟는 모습도 볼 수 있습니다.',
+       addr:'서귀포시 이어도로 36-24',
+       hours:'09:00~17:50 (입장마감 17:30)',hoursNote:'계절별 일몰 시간에 따라 운영시간 변동 · 방문 전 유선 문의 필수',
+       tel:'+82-64-738-1521',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020476',
+       fac:{응대:[0],홍보:[1],안내판:[1],장애인:[1,'휠체어 1대 대여 가능'],와이파이:[0],제세동기:[1,'관리사무소 내 비치']}},
+      {name:'천제연폭포',transit:{mode:'taxi',t:'택시 약 10분'},
+       tag:'제주 3대 폭포 · 3단 폭포와 에메랄드 연못',
+       desc:"일곱 선녀가 밤마다 내려와 목욕했다는 전설에서 이름('하느님의 연못')이 유래한 제주 대표 3대 폭포. 상·중·하 3단으로 이루어져 있으며, 제1폭포는 비가 많이 온 뒤 깊이 21m의 에메랄드빛 연못을 드러냅니다. 폭포 위를 가로지르는 아치형 다리 '선임교(칠선녀교)'에서 바라보는 풍경이 특히 아름답습니다.",
+       addr:'서귀포시 천제연로 132',
+       hours:'09:00~17:10',hoursNote:'계절별 일몰 시간에 따라 운영시간 변동 · 방문 전 유선 문의 필수',
+       tel:'+82-64-760-6331',
+       url:'https://eticket.seogwipo.go.kr/contents?bmcode=cheonjeyeon',
+       fac:{응대:[1],홍보:[1],안내판:[1],장애인:[0],와이파이:[1,'매표소 근처 가능'],제세동기:[1,'관리사무소 내 비치']}},
+      {name:'약천사',transit:{mode:'taxi',t:'택시 약 15분'},
+       tag:'동양 최대 규모의 대적광전 사찰',
+       desc:'사철 마르지 않는 약수가 솟는다는 뜻에서 이름 붙은 대한불교 조계종 사찰. 대적광전은 단일 사찰 전각 기준 동양 최대 규모로, 높이 29m·지하 1층·지상 5층 통층 구조입니다. 종각에는 효도를 강조하는 글과 그림이 새겨진 18t 무게의 범종이 걸려 있습니다.',
+       addr:'서귀포시 이어도로 293-28',
+       hours:null,
+       tel:'+82-64-738-5000',telNote:'중앙관리사무소',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000018300',
+       fac:{응대:[0],홍보:[1],안내판:[0],장애인:[1,'휠체어 1대 대여 가능'],주차:[1,'대형버스 전용 주차장'],제세동기:[1]}}
+    ]
+  },
+  {
+    id:'c2',num:'02',var:'--c2',
+    kicker:'도보 힐링 코스',
+    title:'물과 치유의 서귀포 힐링 로드',
+    origin:'강정크루즈여객터미널',
+    stops:[
+      {name:'상생의 정원',transit:{mode:'walk',t:'도보 약 30분'},
+       tag:'강정천 옆 친환경 휴식 공간 · 무료',
+       desc:'강정천 인근에 조성된 친환경 휴식 공간. 잔디마당·산책로·어린이 놀이터·운동시설·무료 샤워장이 깔끔하게 갖춰져 있습니다. 한라산을 보며 걷기 좋은 산책 코스로, 여름에는 바로 앞 강정천에서 물놀이가 가능해 가족 단위 여행객에게 인기입니다.',
+       addr:'서귀포시 이어도로 669',hours:'상시 개방',free:true,
+       fac:{응대:[0],홍보:[0],안내판:[0],장애인:[1],와이파이:[0],제세동기:[0]}},
+      {name:'강정천',transit:{mode:'walk',t:'도보 약 5분'},
+       tag:"서귀포 식수 70%를 공급하는 '생명의 젖줄' · 무료",
+       desc:'한라산에서 내려오는 깨끗한 천연 암반수가 사계절 마르지 않고 흐르는 청정 계곡. 서귀포 시민 식수의 70%를 공급하는 생명의 젖줄이자, 여름철에는 시원한 물놀이 명소로도 유명합니다.',
+       addr:'서귀포시 강정동 5647',hours:'상시 개방',free:true,
+       fac:{응대:[0],홍보:[0],안내판:[0],장애인:[0],와이파이:[0],제세동기:[0]}},
+      {name:'켄싱턴리조트 산책로',transit:{mode:'walk',t:'도보 약 1분'},
+       tag:'올레 7코스 · 바다와 정원을 잇는 해안 산책로 · 무료',
+       desc:'리조트 정원과 제주 바다가 곧장 이어지는 아름다운 해안 산책 코스로, 제주 올레길 7코스에 속합니다. 파도 소리를 들으며 소나무 숲길을 걷거나 바다가 보이는 그네 의자에서 쉬기 좋고, 한라산 조망과 인생샷 포토존도 갖춰져 있습니다.',
+       addr:'서귀포시 이어도로 684',hours:'상시 개방',free:true,
+       fac:{응대:[0],홍보:[0],안내판:[0],장애인:[1],와이파이:[0],제세동기:[0]}}
+    ]
+  },
+  {
+    id:'c3',num:'03',var:'--c3',
+    kicker:'액티비티 코스',
+    title:'중문 체험형 액티비티 어드벤처 코스',
+    origin:'강정크루즈여객터미널',
+    stops:[
+      {name:'중문실탄사격장 & 레이저아레나엑스',transit:{mode:'taxi',t:'택시 약 20분'},
+       tag:'제주 유일의 실내 권총 사격장',
+       desc:'중문관광단지 인근에 위치한 제주도 유일의 실내 권총 사격장. 실제 권총으로 과녁을 맞히는 짜릿한 체험을 제공하는 이색 실내 관광지입니다. 1:1 안전 교육과 코칭을 통해 초보자도 안전하게 즐길 수 있습니다.',
+       addr:'서귀포시 소보리당로 164번길 62, 3층',
+       hours:'10:00~19:00 (입장마감 18:30)',
+       tel:'+82-64-739-7007',
+       url:'https://jejushootingrange.com/',
+       fac:{응대:[0],홍보:[1],안내판:[1],장애인:[1],와이파이:[1],제세동기:[1]}},
+      {name:'베릿내오름',transit:{mode:'taxi',t:'택시 약 10분'},
+       tag:'해발 101m 기생화산 · 20~30분 데크 산책',
+       desc:'산기슭을 따라 흐르는 하천의 이름(베릿네)에서 유래한 높이 약 101m의 나지막한 기생화산. 세 개의 봉우리(동오름·섯오름·만지섬오름)로 이루어져 있으며 솔잎난·담팔수 등 희귀식물이 자생합니다. 정상까지 나무 데크 산책로가 잘 정비되어 20~30분이면 왕복할 수 있고, 원시림과 바다·한라산을 한눈에 담을 수 있는 숨은 명소입니다.',
+       addr:'서귀포시 중문동 2314-2',hours:'상시 개방',
+       tel:'+82-64-760-4831',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500241',
+       fac:{응대:[0],홍보:[0],안내판:[0],장애인:[0],와이파이:[0],제세동기:[0]}},
+      {name:'중문 색달해수욕장',transit:{mode:'walk',t:'도보 약 20분'},
+       tag:'국내 최고의 서핑 성지 · 4색 모래 해변',
+       desc:"파도가 높고 잦아 국내 최고의 서핑 성지로 불리는 제주 대표 해수욕장. 흑·백·적·회색 4가지 색 모래가 섞여 이국적인 풍경을 자랑합니다. '진모살'이라 불리는 560m 길이의 활처럼 굽은 백사장이 햇빛에 따라 오묘하게 다른 색을 띠며, 해마다 100만 명 넘게 서핑 등 해양스포츠를 즐기러 찾습니다.",
+       addr:'서귀포시 색달동',hours:'상시 개방',
+       tel:'+82-64-739-4993',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500604',
+       fac:{응대:[0],홍보:[0],안내판:[1],장애인:[1],와이파이:[1,'화장실 부근에서 사용 가능'],제세동기:[1,'종합상황실 내 비치']}}
+    ]
+  },
+  {
+    id:'c4',num:'04',var:'--c4',
+    kicker:'예술·먹거리 코스',
+    title:'MZ 감성 예술·쇼핑·먹거리 올인원 코스',
+    origin:'강정크루즈여객터미널',
+    stops:[
+      {name:'이중섭거리',transit:{mode:'taxi',t:'택시 약 20분'},
+       tag:'천재 화가 이중섭을 기리는 문화예술 거리',
+       desc:'한국의 천재 화가 이중섭(1916~1956)이 6.25 전쟁 당시 피난 와 가족과 머물던 초가를 중심으로 조성된 문화예술 거리. 이중섭의 삽화가 들어간 기념품과 아기자기한 수공예품 상점이 늘어서 있고, 각종 공연과 행사가 자주 열려 제주의 아름다움과 예술적 감성을 함께 느낄 수 있습니다.',
+       addr:'서귀포시 이중섭로 29',hours:null,
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020199',
+       fac:{응대:[0],홍보:[0],안내판:[1],장애인:[1,'이중섭미술관 창작스튜디오에서 휠체어 1대 대여'],와이파이:[1],제세동기:[0]}},
+      {name:'서귀포매일올레시장',transit:{mode:'walk',t:'도보 약 5분'},
+       tag:'제주 최대 전통시장 · 야시장 길거리 음식',
+       desc:'서귀포 중심부에 위치한 제주도 최대 규모의 전통 상설시장. 현대식 아케이드와 넓은 주차장을 갖춰 날씨와 상관없이 쾌적합니다. 개성 넘치는 길거리 음식 야시장과 시장 중앙에서 바로 먹는 문화가 잘 조성되어 있고, 감귤·한라봉 등 제철 과일부터 제주 감성 기념품까지 한곳에서 쇼핑하기 좋습니다.',
+       addr:'서귀포시 중앙로 62번길 18',
+       hours:'하절기 07:00~21:00 · 동절기 07:00~20:00',
+       tel:'+82-507-1353-1949',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500731',
+       fac:{응대:[0],홍보:[0],안내판:[1],장애인:[1],와이파이:[1],제세동기:[0]}},
+      {name:'정방폭포',transit:{mode:'taxi',t:'택시 약 5분'},
+       tag:'바다로 직접 떨어지는 국내 유일 해안 폭포',
+       desc:'국가 명승 제43호로, 육지의 폭포수가 바다로 직접 떨어지는 국내 유일의 해안 폭포. 천제연·천지연과 함께 제주 3대 폭포로 꼽힙니다. 높이 23m의 두 줄기 물줄기가 해안 절벽에서 웅장한 소리를 내며 푸른 바다로 쏟아집니다. 진시황제 전설과 4.3사건의 역사가 함께 깃들어, 자연의 아름다움과 역사의 무게를 한 장소에서 느낄 수 있습니다.',
+       addr:'서귀포시 칠십리로 214번길 37',
+       hours:'09:00~17:50 (입장마감 17:30)',hoursNote:'계절별 운영시간 변동 · 방문 전 유선 문의 필수',
+       tel:'+82-64-733-1530',
+       url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500531',
+       fac:{응대:[1],홍보:[1],안내판:[1],장애인:[0],와이파이:[0],제세동기:[1]}}
+    ]
+  }
+];
+
+/* ============ Render ============ */
+const app=document.getElementById('app');
+const tabsEl=document.getElementById('tabs');
+
+COURSES.forEach((c,ci)=>{
+  // tab
+  const tab=document.createElement('a');
+  tab.className='tab';tab.href='#'+c.id;tab.style.setProperty('--ci',`var(${c.var})`);
+  tab.innerHTML=`<span class="dot"></span>${c.num} ${c.kicker}`;
+  tab.dataset.course=c.id;
+  tabsEl.appendChild(tab);
+
+  // section
+  const sec=document.createElement('section');
+  sec.className='course';sec.id=c.id;sec.style.setProperty('--ci',`var(${c.var})`);
+
+  const stopsHTML=c.stops.map((s,si)=>{
+    const facHTML=FAC.filter(f=>s.fac[f.key]!==undefined).map(f=>{
+      const v=s.fac[f.key];const on=v[0]===1;const note=v[1];
+      return `<div class="fac ${on?'on':''}">
+        <span class="badge">${svg(on?I.check:I.x)}</span>
+        <span class="ftxt">
+          <span class="fname">${svg(I[f.icon])}${f.name}</span>
+          ${note?`<span class="fnote">${note}</span>`:''}
+        </span>
+      </div>`;
+    }).join('');
+
+    const rows=[];
+    rows.push(`<div class="row"><span class="k">주소</span><span class="v">${s.addr}</span></div>`);
+    rows.push(`<div class="row"><span class="k">운영시간</span><span class="v">${s.hours?s.hours:'상세 정보 없음'}${s.hoursNote?`<span class="note">※ ${s.hoursNote}</span>`:''}</span></div>`);
+    if(s.tel) rows.push(`<div class="row"><span class="k">전화</span><span class="v">${s.tel.replace(/-/g,'-')}${s.telNote?`<span class="note">${s.telNote}</span>`:''}</span></div>`);
+    if(s.free) rows.push(`<div class="row"><span class="k">이용요금</span><span class="v"><span class="free">무료</span></span></div>`);
+    if(s.url) rows.push(`<div class="row"><span class="k">홈페이지</span><span class="v"><a href="${s.url}" target="_blank" rel="noopener">공식 안내 페이지 열기</a></span></div>`);
+
+    const mapQ=encodeURIComponent(s.name+' '+s.addr);
+    const telClean=s.tel?s.tel.replace(/[^0-9+]/g,''):'';
+
+    return `<div class="transit">${svg(I[s.transit.mode==='taxi'?'taxi':'walk'],'ic')}${s.transit.t}</div>
+    <article class="stop" data-stop>
+      <button class="stop-btn" aria-expanded="false">
+        <span class="stop-idx">${si+1}</span>
+        <span class="stop-main">
+          <span class="stop-name">${s.name}</span>
+          <span class="stop-tag">${s.tag}</span>
+        </span>
+        ${svg(I.chev,'chev')}
+      </button>
+      <div class="stop-body"><div><div class="stop-inner">
+        <p class="stop-desc">${s.desc}</p>
+        <div class="info">${rows.join('')}</div>
+        <div class="actions">
+          <a class="act primary" href="https://map.kakao.com/?q=${mapQ}" target="_blank" rel="noopener">${svg(I.pin)}지도에서 보기</a>
+          <a class="act" ${telClean?`href="tel:${telClean}"`:'aria-disabled="true"'}>${svg(I.phone)}전화</a>
+          ${s.url?`<a class="act" href="${s.url}" target="_blank" rel="noopener">${svg(I.link)}홈페이지</a>`:''}
+        </div>
+        <div class="fac-title">편의시설 · 서비스</div>
+        <div class="facs">${facHTML}</div>
+        <p class="disclaimer">${svg(I.info)}O/X 정보와 운영시간은 자료 기준이며, 변동될 수 있습니다. 방문 전 홈페이지·전화로 확인하세요.</p>
+      </div></div></div>
+    </article>`;
+  }).join('');
+
+  sec.innerHTML=`
+    <div class="wrap">
+      <div class="course-head">
+        <span class="course-num">${c.num}</span>
+        <div class="course-titles">
+          <div class="course-kicker">${c.kicker}</div>
+          <h2>${c.title}</h2>
+        </div>
+      </div>
+      <div class="origin"><span class="anchor"></span>출발 · ${c.origin}</div>
+      <div class="timeline">${stopsHTML}</div>
+    </div>`;
+  app.appendChild(sec);
+});
+
+/* ============ Accordion ============ */
+app.addEventListener('click',e=>{
+  const btn=e.target.closest('.stop-btn');
+  if(!btn)return;
+  const stop=btn.closest('.stop');
+  const open=stop.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open);
+});
+
+/* ============ Scrollspy tabs ============ */
+const tabLinks=[...tabsEl.querySelectorAll('.tab')];
+const secs=[...document.querySelectorAll('.course')];
+const spy=new IntersectionObserver(entries=>{
+  entries.forEach(en=>{
+    if(en.isIntersecting){
+      const id=en.target.id;
+      tabLinks.forEach(t=>t.setAttribute('aria-current',t.dataset.course===id));
+      const active=tabLinks.find(t=>t.dataset.course===id);
+      if(active) active.scrollIntoView({block:'nearest',inline:'center',behavior:'smooth'});
+    }
+  });
+},{rootMargin:'-45% 0px -50% 0px'});
+secs.forEach(s=>spy.observe(s));
+
+document.getElementById('toTop').addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+
+/* ============ Theme toggle ============ */
+const root=document.documentElement,tb=document.getElementById('themeBtn');
+function currentDark(){
+  const set=root.getAttribute('data-theme');
+  if(set) return set==='dark';
+  return matchMedia('(prefers-color-scheme:dark)').matches;
+}
+function paintThemeBtn(){tb.innerHTML=svg(currentDark()?I.sun:I.moon);}
+tb.addEventListener('click',()=>{
+  root.setAttribute('data-theme',currentDark()?'light':'dark');
+  paintThemeBtn();drawHex();
+});
+matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{paintThemeBtn();drawHex();});
+paintThemeBtn();
+
+/* ============ Hero basalt-hexagon canvas ============ */
+const cv=document.getElementById('hexcanvas'),ctx=cv.getContext('2d');
+function drawHex(){
+  const host=cv.parentElement,dpr=Math.min(devicePixelRatio||1,2);
+  const w=host.clientWidth,h=host.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,w,h);
+  const dark=currentDark();
+  ctx.strokeStyle=dark?'rgba(120,200,190,.16)':'rgba(20,90,80,.10)';
+  ctx.lineWidth=1;
+  const R=27,dx=R*1.5,dy=R*Math.sqrt(3);
+  for(let col=-1,x=0;x<w+R;col++,x=col*dx){
+    const off=(col%2)?dy/2:0;
+    for(let y=-R;y<h+R;y+=dy){
+      hexAt(x,y+off,R);
+    }
+  }
+}
+function hexAt(cx,cy,r){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const a=Math.PI/180*(60*i);
+    const px=cx+r*Math.cos(a),py=cy+r*Math.sin(a);
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  }
+  ctx.closePath();ctx.stroke();
+}
+addEventListener('resize',drawHex);
+drawHex();
+</script>
+</body>
+</html>
