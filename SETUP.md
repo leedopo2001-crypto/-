@@ -34,6 +34,21 @@
 
 > ⚠️ `service_role` 키는 **절대 복사/공유하지 마세요.** `anon public` 만 쓰면 됩니다.
 
+### `anon` 키를 공개해도 괜찮은 이유
+
+`anon` 키는 웹페이지에 그대로 들어가므로 누구나 볼 수 있습니다. 그래서 이 스키마는
+**anon 에게 테이블 접근 권한을 아예 주지 않습니다.** 모든 동작은 함수(RPC)를 통해서만
+가능하고, 각 함수는 값을 알아야만 통과합니다.
+
+| 하려는 것 | 필요한 것 |
+|---|---|
+| 위치 조회 | `short_code` (링크에 들어있음) |
+| 위치 올리기 / 추적 종료 | `short_code` **+** `owner_token` |
+
+`owner_token` 은 세션을 만든 기기에만 반환되고 **링크에는 들어가지 않습니다.**
+따라서 링크를 받은 사람도 남의 위치를 조작하거나 추적을 중단시킬 수 없습니다.
+`short_code` 는 8자리(31^8 ≈ 8500억 가지)라 추측으로 찾는 것도 사실상 불가능합니다.
+
 ---
 
 ## 2단계. 웹 뷰어를 Vercel에 배포 (10분)
@@ -142,7 +157,8 @@ npx expo start -c
 ### 지도에 마커가 안 보임
 - Supabase Dashboard → `locations` 테이블에 데이터가 쌓이는지 확인
 - 브라우저 DevTools 콘솔 (F12) 에서 에러 확인
-- Supabase Realtime 이 활성화됐는지: Dashboard → Database → Replication → `supabase_realtime` 에 `locations`, `sessions` 포함 여부
+- Supabase Dashboard → Database → Functions 에 `here_get_locations` 등 6개 함수가 있는지 확인
+- 없다면 `supabase/schema.sql` 실행이 중간에 실패한 것이므로 다시 실행
 
 ### "Network request failed" (앱에서)
 - Wi-Fi 연결 확인

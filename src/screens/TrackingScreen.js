@@ -147,6 +147,7 @@ export default function TrackingScreen({ settings, onStop }) {
       });
       await pushLocation({
         shortCode: current.shortCode,
+        ownerToken: current.ownerToken,
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
         accuracy: loc.coords.accuracy,
@@ -186,7 +187,10 @@ export default function TrackingScreen({ settings, onStop }) {
             if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
             if (sessionRef.current) {
               try {
-                await endSession(sessionRef.current.shortCode);
+                await endSession(
+                  sessionRef.current.shortCode,
+                  sessionRef.current.ownerToken,
+                );
               } catch {}
             }
             onStop();

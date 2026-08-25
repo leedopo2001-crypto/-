@@ -137,6 +137,8 @@ function start(code) {
   let followMode = true;
   let cancelTween = null;
   let cancelReplay = null;
+  let lastFetchedAt = null;
+  let pollTimer = null;
 
   followButton.addEventListener('click', () => {
     setFollow(!followMode);
@@ -395,13 +397,7 @@ function start(code) {
     }
 
     try {
-      const { data: session, error: sessErr } = await client
-        .from('sessions')
-        .select('*')
-        .eq('short_code', code)
-        .maybeSingle();
-
-      if (sessErr) throw sessErr;
+      const session = await fetchSession();
       if (!session) {
         showOverlay('❓', '세션을 찾을 수 없습니다', '링크를 다시 확인해주세요.');
         return;
@@ -412,16 +408,10 @@ function start(code) {
         : '실시간 위치';
       setStatus(session.active ? 'active' : 'ended');
 
-      const { data: locs, error: locErr } = await client
-        .from('locations')
-        .select('*')
-        .eq('session_code', code)
-        .order('updated_at', { ascending: true })
-        .limit(500);
+      const locs = await fetchLocations(null);
 
-      if (locErr) throw locErr;
-
-      if (locs && locs.length > 0) {
+      if (locs.length > 0) {
+        lastFetchedAt = locs.at(-1).updated_at;
         applyRows(locs, { initial: true });
         hideOverlay();
       } else if (session.active) {
@@ -430,42 +420,61 @@ function start(code) {
         showOverlay('🏁', '추적이 종료되었습니다', '기록된 위치가 없습니다.');
       }
 
-      subscribeRealtime();
+      if (session.active) startPolling();
     } catch (e) {
       console.error(e);
       showOverlay('⚠️', '연결 오류', e.message || '잠시 후 다시 시도해주세요.');
     }
   }
 
-  function subscribeRealtime() {
-    client
-      .channel(`loc-${code}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'locations',
-          filter: `session_code=eq.${code}`,
-        },
-        (payload) => {
-          applyRows([payload.new]);
+  async function fetchSession() {
+    const { data, error } = await client.rpc('here_get_session', { p_code: code });
+    if (error) throw error;
+    return Array.isArray(data) ? data[0] : data;
+  }
+
+  async function fetchLocations(since) {
+    const { data, error } = await client.rpc('here_get_locations', {
+      p_code: code,
+      p_since: since,
+    });
+    if (error) throw error;
+    return data || [];
+  }
+
+  /**
+   * Realtime 대신 폴링을 쓴다.
+   *
+   * Realtime 구독은 anon 에게 테이블 SELECT 권한을 열어줘야 동작하는데, 그러면
+   * 링크를 모르는 사람도 남의 위치를 전부 조회할 수 있게 된다. 위치는 어차피
+   * 1~15분에 한 번 올라오므로, 20초 폴링과 실시간 푸시의 체감 차이는 없다.
+   */
+  function startPolling() {
+    const POLL_MS = 20_000;
+
+    pollTimer = setInterval(async () => {
+      // 재생 중에는 굳이 요청하지 않는다.
+      if (cancelReplay) return;
+
+      try {
+        const since = lastFetchedAt;
+        const rows = await fetchLocations(since);
+        if (rows.length > 0) {
+          lastFetchedAt = rows.at(-1).updated_at;
+          applyRows(rows);
           hideOverlay();
-        },
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'sessions',
-          filter: `short_code=eq.${code}`,
-        },
-        (payload) => {
-          if (payload.new.active === false) setStatus('ended');
-        },
-      )
-      .subscribe();
+        }
+
+        const session = await fetchSession();
+        if (session && !session.active) {
+          setStatus('ended');
+          clearInterval(pollTimer);
+        }
+      } catch (e) {
+        // 일시적인 네트워크 오류는 다음 주기에 다시 시도한다.
+        console.warn('polling failed', e);
+      }
+    }, POLL_MS);
   }
 
   loadInitial();

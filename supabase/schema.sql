@@ -1,10 +1,21 @@
 -- here 실시간 위치 공유용 스키마
 -- Supabase Dashboard → SQL Editor 에 붙여넣고 "Run" 실행.
+--
+-- 보안 모델
+--   anon 키는 웹페이지에 그대로 노출된다. 따라서 anon 에게 테이블 직접 접근을
+--   전혀 주지 않고, 모든 동작을 SECURITY DEFINER 함수로만 열어둔다.
+--
+--   * 읽기   : short_code 를 알아야만 가능 (링크를 받은 사람)
+--   * 쓰기   : owner_token 까지 알아야 가능 (추적 중인 본인 기기만)
+--
+--   owner_token 은 세션을 만든 기기에만 반환되고 링크에는 포함되지 않는다.
+--   그래서 링크를 받은 사람이 남의 위치를 조작하거나 추적을 끝낼 수 없다.
 
 -- ===== 1) 테이블 =====
 
 CREATE TABLE IF NOT EXISTS public.sessions (
   short_code TEXT PRIMARY KEY,
+  owner_token UUID NOT NULL DEFAULT gen_random_uuid(),
   user_name TEXT,
   started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   ended_at TIMESTAMPTZ,
@@ -21,48 +32,193 @@ CREATE TABLE IF NOT EXISTS public.locations (
 );
 
 CREATE INDEX IF NOT EXISTS locations_session_code_updated_at_idx
-  ON public.locations (session_code, updated_at DESC);
+  ON public.locations (session_code, updated_at);
 
--- ===== 2) Row Level Security =====
+-- ===== 2) 잠그기 =====
+-- RLS 를 켜고 정책을 하나도 만들지 않는다. 정책이 없으면 anon 은 아무것도 못 한다.
+-- 아래 함수들만 SECURITY DEFINER 로 우회한다.
+
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.locations ENABLE ROW LEVEL SECURITY;
 
--- 익명 사용자가 세션을 생성/조회/종료할 수 있도록 허용.
--- (짧은 코드 자체가 비밀 역할을 함)
+-- 이전 버전에서 만들었을 수 있는 개방형 정책 제거
 DROP POLICY IF EXISTS sessions_insert_anon ON public.sessions;
-CREATE POLICY sessions_insert_anon ON public.sessions
-  FOR INSERT TO anon, authenticated WITH CHECK (true);
-
 DROP POLICY IF EXISTS sessions_select_anon ON public.sessions;
-CREATE POLICY sessions_select_anon ON public.sessions
-  FOR SELECT TO anon, authenticated USING (true);
-
 DROP POLICY IF EXISTS sessions_update_anon ON public.sessions;
-CREATE POLICY sessions_update_anon ON public.sessions
-  FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
-
 DROP POLICY IF EXISTS locations_insert_anon ON public.locations;
-CREATE POLICY locations_insert_anon ON public.locations
-  FOR INSERT TO anon, authenticated WITH CHECK (true);
-
 DROP POLICY IF EXISTS locations_select_anon ON public.locations;
-CREATE POLICY locations_select_anon ON public.locations
-  FOR SELECT TO anon, authenticated USING (true);
 
--- ===== 3) Realtime 발행 활성화 =====
--- (이미 publication 에 있으면 에러 나므로 DO 블록으로 감쌈)
-DO $$
+REVOKE ALL ON public.sessions FROM anon, authenticated;
+REVOKE ALL ON public.locations FROM anon, authenticated;
+
+-- ===== 3) 함수 =====
+
+-- 헷갈리는 글자(0/o, 1/l, i)를 뺀 알파벳으로 8자리 코드를 만든다.
+-- 31^8 ≈ 8.5e11 이라 추측으로 남의 세션을 찾기는 사실상 불가능하다.
+CREATE OR REPLACE FUNCTION public.here_generate_code()
+RETURNS TEXT
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  alphabet CONSTANT TEXT := 'abcdefghjkmnpqrstuvwxyz23456789';
+  result TEXT := '';
 BEGIN
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.locations;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+  FOR _ IN 1..8 LOOP
+    result := result || substr(alphabet, floor(random() * length(alphabet))::int + 1, 1);
+  END LOOP;
+  RETURN result;
+END;
+$$;
 
-DO $$
+-- 세션 생성. short_code 와 owner_token 을 함께 돌려준다.
+CREATE OR REPLACE FUNCTION public.here_create_session(p_user_name TEXT DEFAULT NULL)
+RETURNS TABLE (short_code TEXT, owner_token UUID)
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  candidate TEXT;
 BEGIN
-  ALTER PUBLICATION supabase_realtime ADD TABLE public.sessions;
-EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+  IF p_user_name IS NOT NULL AND length(p_user_name) > 40 THEN
+    RAISE EXCEPTION 'user_name too long';
+  END IF;
 
--- ===== 4) 오래된 위치 정리 (선택) =====
--- 24시간 지난 위치 레코드 자동 삭제는 Supabase Cron 또는 수동 실행.
--- DELETE FROM public.locations WHERE updated_at < now() - INTERVAL '24 hours';
+  FOR _ IN 1..10 LOOP
+    candidate := public.here_generate_code();
+    BEGIN
+      RETURN QUERY
+        INSERT INTO public.sessions (short_code, user_name)
+        VALUES (candidate, nullif(btrim(coalesce(p_user_name, '')), ''))
+        RETURNING sessions.short_code, sessions.owner_token;
+      RETURN;
+    EXCEPTION WHEN unique_violation THEN
+      -- 코드가 겹쳤다. 다시 뽑는다.
+    END;
+  END LOOP;
+
+  RAISE EXCEPTION 'could not allocate a unique short code';
+END;
+$$;
+
+-- 위치 추가. owner_token 이 맞아야 하고, 이미 종료된 세션에는 쓸 수 없다.
+CREATE OR REPLACE FUNCTION public.here_push_location(
+  p_code TEXT,
+  p_owner_token UUID,
+  p_latitude DOUBLE PRECISION,
+  p_longitude DOUBLE PRECISION,
+  p_accuracy DOUBLE PRECISION DEFAULT NULL
+)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  is_owner BOOLEAN;
+BEGIN
+  IF p_latitude IS NULL OR p_longitude IS NULL
+     OR p_latitude < -90 OR p_latitude > 90
+     OR p_longitude < -180 OR p_longitude > 180 THEN
+    RAISE EXCEPTION 'invalid coordinates';
+  END IF;
+
+  SELECT TRUE INTO is_owner
+  FROM public.sessions
+  WHERE sessions.short_code = p_code
+    AND sessions.owner_token = p_owner_token
+    AND sessions.active;
+
+  IF is_owner IS NULL THEN
+    RAISE EXCEPTION 'session not found, already ended, or token mismatch';
+  END IF;
+
+  INSERT INTO public.locations (session_code, latitude, longitude, accuracy)
+  VALUES (p_code, p_latitude, p_longitude, p_accuracy);
+END;
+$$;
+
+-- 추적 종료. 본인만 가능.
+CREATE OR REPLACE FUNCTION public.here_end_session(p_code TEXT, p_owner_token UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  UPDATE public.sessions
+  SET active = FALSE, ended_at = now()
+  WHERE short_code = p_code AND owner_token = p_owner_token;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'session not found or token mismatch';
+  END IF;
+END;
+$$;
+
+-- 링크를 받은 사람이 보는 세션 정보. owner_token 은 절대 내보내지 않는다.
+CREATE OR REPLACE FUNCTION public.here_get_session(p_code TEXT)
+RETURNS TABLE (user_name TEXT, started_at TIMESTAMPTZ, ended_at TIMESTAMPTZ, active BOOLEAN)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT s.user_name, s.started_at, s.ended_at, s.active
+  FROM public.sessions s
+  WHERE s.short_code = p_code;
+$$;
+
+-- 위치 목록. p_since 이후 것만 받아오면 폴링이 가벼워진다.
+CREATE OR REPLACE FUNCTION public.here_get_locations(
+  p_code TEXT,
+  p_since TIMESTAMPTZ DEFAULT NULL
+)
+RETURNS TABLE (
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION,
+  accuracy DOUBLE PRECISION,
+  updated_at TIMESTAMPTZ
+)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT l.latitude, l.longitude, l.accuracy, l.updated_at
+  FROM public.locations l
+  WHERE l.session_code = p_code
+    AND (p_since IS NULL OR l.updated_at > p_since)
+  ORDER BY l.updated_at
+  LIMIT 1000;
+$$;
+
+-- ===== 4) 권한 =====
+-- anon 은 이 함수들만 실행할 수 있다. 테이블에는 손댈 수 없다.
+
+REVOKE ALL ON FUNCTION public.here_generate_code() FROM PUBLIC;
+
+GRANT EXECUTE ON FUNCTION public.here_create_session(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.here_push_location(TEXT, UUID, DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.here_end_session(TEXT, UUID) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.here_get_session(TEXT) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.here_get_locations(TEXT, TIMESTAMPTZ) TO anon, authenticated;
+
+-- ===== 5) 오래된 데이터 정리 (선택) =====
+-- 24시간 지난 세션과 위치를 지운다. Dashboard → Integrations → Cron 에 걸어두거나
+-- 가끔 수동으로 실행하면 된다.
+CREATE OR REPLACE FUNCTION public.here_purge_old(p_older_than INTERVAL DEFAULT '24 hours')
+RETURNS INTEGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  removed INTEGER;
+BEGIN
+  DELETE FROM public.sessions
+  WHERE started_at < now() - p_older_than;   -- locations 는 ON DELETE CASCADE 로 함께 삭제
+  GET DIAGNOSTICS removed = ROW_COUNT;
+  RETURN removed;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.here_purge_old(INTERVAL) FROM PUBLIC;
