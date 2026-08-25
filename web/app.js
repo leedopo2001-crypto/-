@@ -2,6 +2,8 @@
 import { formatDistance, haversineKm, interpolateGreatCircle, speedKmh, totalDistanceKm } from '/lib/geo.js';
 import { cleanLocations } from '/lib/outlier.js';
 import { easeInOutCubic, tween } from '/lib/animation.js';
+import { buildTrack, startReplay } from '/lib/replay.js';
+import { demoRows, demoSession } from '/lib/demo-route.js';
 
 const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.HERE_CONFIG || {};
 
@@ -18,7 +20,11 @@ const distanceEl = el('distance');
 const speedEl = el('speed');
 const fitButton = el('fitButton');
 const followButton = el('followButton');
+const replayButton = el('replayButton');
 const filteredNote = el('filteredNote');
+const demoBadge = el('demoBadge');
+const lastUpdateLabel = el('lastUpdateLabel');
+const speedLabel = el('speedLabel');
 
 function showOverlay(icon, title, desc) {
   overlayIcon.textContent = icon;
@@ -38,9 +44,23 @@ function getShortCode() {
 }
 
 const shortCode = getShortCode();
+const isDemo =
+  new URLSearchParams(window.location.search).get('demo') === '1' ||
+  shortCode === 'demo';
 
-if (!SUPABASE_URL || SUPABASE_URL.includes('your-project-ref')) {
-  showOverlay('⚙️', '설정 필요', 'web/config.js 에 Supabase URL과 키를 입력해주세요.');
+const supabaseReady = Boolean(SUPABASE_URL) && !SUPABASE_URL.includes('your-project-ref');
+
+if (isDemo) {
+  demoBadge.classList.remove('hidden');
+  // 배지가 좌상단 줌 컨트롤과 겹치므로 컨트롤을 아래로 내린다 (styles.css).
+  document.body.classList.add('is-demo');
+  start('demo');
+} else if (!supabaseReady) {
+  showOverlay(
+    '⚙️',
+    '설정 필요',
+    'web/config.js 에 Supabase URL과 키를 입력해주세요. 설정 없이 둘러보려면 주소 끝에 ?demo=1 을 붙이세요.',
+  );
 } else if (!shortCode) {
   showOverlay('🔗', '잘못된 링크', '공유받은 링크를 다시 확인해주세요.');
 } else {
@@ -48,10 +68,13 @@ if (!SUPABASE_URL || SUPABASE_URL.includes('your-project-ref')) {
 }
 
 function start(code) {
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-    auth: { persistSession: false },
-    realtime: { params: { eventsPerSecond: 2 } },
-  });
+  // 데모 모드는 Supabase 를 전혀 건드리지 않는다.
+  const client = isDemo
+    ? null
+    : window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+      realtime: { params: { eventsPerSecond: 2 } },
+    });
 
   const map = L.map('map', { zoomControl: true, attributionControl: true }).setView(
     [36.5, 127.8],
@@ -95,6 +118,16 @@ function start(code) {
     lineCap: 'round',
   }).addTo(map);
 
+  // 재생 중에만 쓰는 "최근 구간" 강조선. 전체를 같은 색으로 그리면 지금 어디를
+  // 지나는 중인지 안 보이기 때문에, 최근 일부만 굵고 진하게 덧그린다.
+  const recentTrail = L.polyline([], {
+    color: '#8B0000',
+    weight: 7,
+    opacity: 0,
+    lineJoin: 'round',
+    lineCap: 'round',
+  }).addTo(map);
+
   let marker = null;
   let startMarker = null;
   let points = [];
@@ -103,21 +136,95 @@ function start(code) {
   let lastTimestamp = null;
   let followMode = true;
   let cancelTween = null;
+  let cancelReplay = null;
 
   followButton.addEventListener('click', () => {
-    followMode = !followMode;
-    followButton.classList.toggle('active', followMode);
-    followButton.textContent = followMode ? '🎯 따라가기 켜짐' : '🎯 따라가기 꺼짐';
+    setFollow(!followMode);
     if (followMode && points.length > 0) {
       map.panTo(latLngOf(points.at(-1)));
     }
   });
 
+  const REPLAY_DURATION_MS = 12_000;
+
+  function setFollow(on) {
+    followMode = on;
+    followButton.classList.toggle('active', on);
+    followButton.textContent = on ? '🎯 따라가기 켜짐' : '🎯 따라가기 꺼짐';
+  }
+
+  function stopReplay() {
+    if (cancelReplay) cancelReplay();
+    cancelReplay = null;
+    recentTrail.setStyle({ opacity: 0 });
+    recentTrail.setLatLngs([]);
+    replayButton.textContent = '▶ 경로 재생';
+    replayButton.classList.remove('active');
+    lastUpdateLabel.textContent = '마지막 업데이트';
+    speedLabel.textContent = '최근 속도';
+    drawTrail();
+    if (points.length > 0 && marker) marker.setLatLng(latLngOf(points.at(-1)));
+    renderStats();
+  }
+
+  replayButton.addEventListener('click', () => {
+    if (cancelReplay) {
+      stopReplay();
+      return;
+    }
+    if (points.length < 2) return;
+
+    // 재생 중에는 따라가기를 끄고 전체 경로가 보이게 맞춘다.
+    setFollow(false);
+    map.fitBounds(trail.getBounds(), { padding: [70, 70], maxZoom: 17 });
+
+    if (cancelTween) { cancelTween(); cancelTween = null; }
+
+    const track = buildTrack(points);
+    // 최근 구간은 전체의 18% 로 잡는다 (너무 길면 강조 효과가 사라진다).
+    const recentKm = Math.max(0.05, track.totalKm * 0.18);
+
+    replayButton.textContent = '⏹ 재생 중지';
+    replayButton.classList.add('active');
+    recentTrail.setStyle({ opacity: 1 });
+    lastUpdateLabel.textContent = '재생 진행';
+    speedLabel.textContent = '기록 시각';
+
+    cancelReplay = startReplay({
+      track,
+      durationMs: REPLAY_DURATION_MS,
+      onFrame: ({ position, segmentIndex, distanceKm, progress }) => {
+        const head = [position.latitude, position.longitude];
+
+        const travelled = points.slice(0, segmentIndex + 1).map(latLngOf);
+        travelled.push(head);
+        trailCasing.setLatLngs(travelled);
+        trail.setLatLngs(travelled);
+
+        // 최근 recentKm 만큼만 잘라서 덧그린다.
+        const fromKm = Math.max(0, distanceKm - recentKm);
+        let fromIndex = track.cumulative.findIndex((km) => km >= fromKm);
+        if (fromIndex < 0) fromIndex = 0;
+        const recent = points.slice(fromIndex, segmentIndex + 1).map(latLngOf);
+        recent.push(head);
+        recentTrail.setLatLngs(recent);
+
+        if (marker) marker.setLatLng(head);
+
+        distanceEl.textContent = formatDistance(distanceKm);
+        lastUpdateEl.textContent = `재생 ${Math.round(progress * 100)}%`;
+        const at = points[Math.min(segmentIndex + 1, points.length - 1)];
+        speedEl.textContent = at?.instant
+          ? at.instant.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+          : '—';
+      },
+      onDone: stopReplay,
+    });
+  });
+
   fitButton.addEventListener('click', () => {
     if (points.length === 0) return;
-    followMode = false;
-    followButton.classList.remove('active');
-    followButton.textContent = '🎯 따라가기 꺼짐';
+    setFollow(false);
     if (points.length === 1) {
       map.setView(latLngOf(points[0]), 16);
     } else {
@@ -127,10 +234,7 @@ function start(code) {
 
   // 사용자가 지도를 직접 움직이면 따라가기를 끈다.
   map.on('dragstart', () => {
-    if (!followMode) return;
-    followMode = false;
-    followButton.classList.remove('active');
-    followButton.textContent = '🎯 따라가기 꺼짐';
+    if (followMode) setFollow(false);
   });
 
   function latLngOf(point) {
@@ -171,11 +275,15 @@ function start(code) {
   }
 
   function refreshElapsed() {
+    // 재생 중에는 이 칸이 진행률을 보여주고 있으므로 건드리지 않는다.
+    if (cancelReplay) return;
     if (lastTimestamp) lastUpdateEl.textContent = formatAgo(lastTimestamp);
   }
   setInterval(refreshElapsed, 10_000);
 
   function renderStats() {
+    replayButton.disabled = points.length < 2;
+
     distanceEl.textContent = formatDistance(totalDistanceKm(points));
 
     if (points.length >= 2) {
@@ -253,6 +361,11 @@ function start(code) {
     points = cleaned.points;
     removedCount = rawCount - points.length;
 
+    // 재생 중이면 데이터만 갱신하고 화면은 건드리지 않는다. 여기서 다시 그리면
+    // 재생 프레임과 서로 덮어써서 마커가 튄다. 재생이 끝나면 stopReplay 가
+    // drawTrail/renderStats 를 불러 최신 상태로 복구한다.
+    if (cancelReplay) return;
+
     drawTrail();
     renderStats();
 
@@ -273,6 +386,14 @@ function start(code) {
   }
 
   async function loadInitial() {
+    if (isDemo) {
+      userNameEl.textContent = `${demoSession.user_name} 경로`;
+      setStatus('ended');
+      applyRows(demoRows(), { initial: true });
+      hideOverlay();
+      return;
+    }
+
     try {
       const { data: session, error: sessErr } = await client
         .from('sessions')

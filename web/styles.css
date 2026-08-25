@@ -132,6 +132,38 @@ html, body {
   color: white;
 }
 
+.map-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.map-button:disabled:hover {
+  background: white;
+}
+
+.demo-badge {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 1000;
+  background: #24191d;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.demo-badge.hidden {
+  display: none;
+}
+
+/* 데모 배지가 차지하는 만큼 좌상단 줌 컨트롤을 내린다. */
+body.is-demo .leaflet-top.leaflet-left {
+  margin-top: 46px;
+}
+
 .meta-label {
   font-size: 11px;
   color: #999;

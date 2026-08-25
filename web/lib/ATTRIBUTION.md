@@ -15,6 +15,7 @@
 | `geo.js` | `haversineKm`, `cumulativeDistances`, 대권 보간 로직 | TypeScript → ES 모듈, 지도 타일 투영(`project`) 계열은 Leaflet 이 대신하므로 제외, `formatDistance`/`speedKmh` 추가 |
 | `outlier.js` | "멀리 튀었다가 제자리로 돌아오는 구간" 판정 알고리즘 (`isSuspiciousExcursion`, `suspiciousRunEnd`, `filterLocationOutliers`) | 상수를 항공편 규모(500km 도약, 1300km/h)에서 지상 실시간 추적 규모(1km 도약, 400km/h)로 재조정, GPS `accuracy` 게이트 추가 |
 | `animation.js` | `easeOutCubic`, `easeInOutCubic`, `clamp` | 영상 프레임 계산부 대신 `requestAnimationFrame` 트윈 헬퍼 추가 |
+| `replay.js` | 진행률을 누적 거리에 매핑하는 방식 (`worldPositionAtDistance`) | 캔버스에 프레임을 그려 MP4 로 인코딩하는 대신, Leaflet 폴리라인/마커를 갱신하는 `requestAnimationFrame` 재생으로 대체 |
 
 ## 원본 라이선스 전문
 

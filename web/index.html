@@ -12,9 +12,12 @@
 <body>
   <div id="map"></div>
 
+  <div class="demo-badge hidden" id="demoBadge">데모 모드 · 예시 경로입니다</div>
+
   <div class="map-controls">
     <button type="button" id="followButton" class="map-button active">🎯 따라가기 켜짐</button>
     <button type="button" id="fitButton" class="map-button">🗺 전체 경로 보기</button>
+    <button type="button" id="replayButton" class="map-button">▶ 경로 재생</button>
   </div>
 
   <div class="status-panel">
@@ -25,7 +28,7 @@
     <div class="user-name" id="userName">—</div>
     <div class="meta-row">
       <div class="meta-item">
-        <div class="meta-label">마지막 업데이트</div>
+        <div class="meta-label" id="lastUpdateLabel">마지막 업데이트</div>
         <div class="meta-value" id="lastUpdate">—</div>
       </div>
       <div class="meta-item">
@@ -33,7 +36,7 @@
         <div class="meta-value" id="distance">0 m</div>
       </div>
       <div class="meta-item">
-        <div class="meta-label">최근 속도</div>
+        <div class="meta-label" id="speedLabel">최근 속도</div>
         <div class="meta-value" id="speed">—</div>
       </div>
     </div>
