@@ -1,55 +1,68 @@
-(function () {
-  const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.HERE_CONFIG || {};
+// /t/:code 로 접속해도 동작하도록 루트 절대 경로로 import 한다.
+import { formatDistance, haversineKm, interpolateGreatCircle, speedKmh, totalDistanceKm } from '/lib/geo.js';
+import { cleanLocations } from '/lib/outlier.js';
+import { easeInOutCubic, tween } from '/lib/animation.js';
 
-  function getShortCode() {
-    const path = window.location.pathname;
-    const match = path.match(/\/t\/([a-z0-9]+)/i);
-    if (match) return match[1];
-    const params = new URLSearchParams(window.location.search);
-    return params.get('t');
-  }
+const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.HERE_CONFIG || {};
 
-  const shortCode = getShortCode();
+const el = (id) => document.getElementById(id);
+const overlay = el('overlay');
+const overlayIcon = el('overlayIcon');
+const overlayTitle = el('overlayTitle');
+const overlayDesc = el('overlayDesc');
+const statusDot = el('statusDot');
+const statusLabel = el('statusLabel');
+const userNameEl = el('userName');
+const lastUpdateEl = el('lastUpdate');
+const distanceEl = el('distance');
+const speedEl = el('speed');
+const fitButton = el('fitButton');
+const followButton = el('followButton');
+const filteredNote = el('filteredNote');
 
-  const overlay = document.getElementById('overlay');
-  const overlayIcon = document.getElementById('overlayIcon');
-  const overlayTitle = document.getElementById('overlayTitle');
-  const overlayDesc = document.getElementById('overlayDesc');
-  const statusDot = document.getElementById('statusDot');
-  const statusLabel = document.getElementById('statusLabel');
-  const userNameEl = document.getElementById('userName');
-  const lastUpdateEl = document.getElementById('lastUpdate');
-  const updateCountEl = document.getElementById('updateCount');
+function showOverlay(icon, title, desc) {
+  overlayIcon.textContent = icon;
+  overlayTitle.textContent = title;
+  overlayDesc.textContent = desc || '';
+  overlay.classList.remove('hidden');
+}
 
-  function showOverlay(icon, title, desc) {
-    overlayIcon.textContent = icon;
-    overlayTitle.textContent = title;
-    overlayDesc.textContent = desc || '';
-    overlay.classList.remove('hidden');
-  }
+function hideOverlay() {
+  overlay.classList.add('hidden');
+}
 
-  function hideOverlay() {
-    overlay.classList.add('hidden');
-  }
+function getShortCode() {
+  const match = window.location.pathname.match(/\/t\/([a-z0-9]+)/i);
+  if (match) return match[1];
+  return new URLSearchParams(window.location.search).get('t');
+}
 
-  if (!SUPABASE_URL || SUPABASE_URL.includes('your-project-ref')) {
-    showOverlay('⚙️', '설정 필요', 'web/config.js 에 Supabase URL과 키를 입력해주세요.');
-    return;
-  }
+const shortCode = getShortCode();
 
-  if (!shortCode) {
-    showOverlay('🔗', '잘못된 링크', '공유받은 링크를 다시 확인해주세요.');
-    return;
-  }
+if (!SUPABASE_URL || SUPABASE_URL.includes('your-project-ref')) {
+  showOverlay('⚙️', '설정 필요', 'web/config.js 에 Supabase URL과 키를 입력해주세요.');
+} else if (!shortCode) {
+  showOverlay('🔗', '잘못된 링크', '공유받은 링크를 다시 확인해주세요.');
+} else {
+  start(shortCode);
+}
 
-  const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+function start(code) {
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: false },
     realtime: { params: { eventsPerSecond: 2 } },
   });
 
-  const map = L.map('map', { zoomControl: true, attributionControl: false }).setView([36.5, 127.8], 6);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
+  const map = L.map('map', { zoomControl: true, attributionControl: true }).setView(
+    [36.5, 127.8],
+    6,
+  );
+
+  // CARTO Voyager: OSM 데이터 기반이지만 대비가 낮아 경로 선이 잘 보인다.
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    maxZoom: 20,
+    subdomains: 'abcd',
+    attribution: '&copy; OpenStreetMap &copy; CARTO',
   }).addTo(map);
 
   const markerIcon = L.divIcon({
@@ -59,10 +72,82 @@
     iconAnchor: [10, 10],
   });
 
+  const startIcon = L.divIcon({
+    html: '<div class="start-marker"></div>',
+    className: '',
+    iconSize: [12, 12],
+    iconAnchor: [6, 6],
+  });
+
+  // 지나온 경로: 아래쪽 굵은 흰 선 + 위쪽 빨간 선으로 어떤 배경에서도 보이게 한다.
+  const trailCasing = L.polyline([], {
+    color: '#ffffff',
+    weight: 8,
+    opacity: 0.9,
+    lineJoin: 'round',
+    lineCap: 'round',
+  }).addTo(map);
+  const trail = L.polyline([], {
+    color: '#E53935',
+    weight: 4,
+    opacity: 1,
+    lineJoin: 'round',
+    lineCap: 'round',
+  }).addTo(map);
+
   let marker = null;
-  let updateCount = 0;
+  let startMarker = null;
+  let points = [];
+  let rawCount = 0;
+  let removedCount = 0;
   let lastTimestamp = null;
-  let firstLocation = true;
+  let followMode = true;
+  let cancelTween = null;
+
+  followButton.addEventListener('click', () => {
+    followMode = !followMode;
+    followButton.classList.toggle('active', followMode);
+    followButton.textContent = followMode ? '🎯 따라가기 켜짐' : '🎯 따라가기 꺼짐';
+    if (followMode && points.length > 0) {
+      map.panTo(latLngOf(points.at(-1)));
+    }
+  });
+
+  fitButton.addEventListener('click', () => {
+    if (points.length === 0) return;
+    followMode = false;
+    followButton.classList.remove('active');
+    followButton.textContent = '🎯 따라가기 꺼짐';
+    if (points.length === 1) {
+      map.setView(latLngOf(points[0]), 16);
+    } else {
+      map.fitBounds(trail.getBounds(), { padding: [60, 60], maxZoom: 17 });
+    }
+  });
+
+  // 사용자가 지도를 직접 움직이면 따라가기를 끈다.
+  map.on('dragstart', () => {
+    if (!followMode) return;
+    followMode = false;
+    followButton.classList.remove('active');
+    followButton.textContent = '🎯 따라가기 꺼짐';
+  });
+
+  function latLngOf(point) {
+    return [point.latitude, point.longitude];
+  }
+
+  function toPoint(row) {
+    const latitude = Number(row.latitude);
+    const longitude = Number(row.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+    return {
+      latitude,
+      longitude,
+      accuracy: row.accuracy == null ? null : Number(row.accuracy),
+      instant: new Date(row.updated_at || Date.now()),
+    };
+  }
 
   function setStatus(state) {
     statusDot.className = 'status-dot';
@@ -72,8 +157,6 @@
     } else if (state === 'ended') {
       statusDot.classList.add('ended');
       statusLabel.textContent = '추적 종료됨';
-    } else {
-      statusLabel.textContent = state;
     }
   }
 
@@ -87,36 +170,106 @@
     return `${hrs}시간 ${mins % 60}분 전`;
   }
 
-  function updateLastUpdateLabel() {
-    if (!lastTimestamp) return;
-    lastUpdateEl.textContent = formatAgo(lastTimestamp);
+  function refreshElapsed() {
+    if (lastTimestamp) lastUpdateEl.textContent = formatAgo(lastTimestamp);
+  }
+  setInterval(refreshElapsed, 10_000);
+
+  function renderStats() {
+    distanceEl.textContent = formatDistance(totalDistanceKm(points));
+
+    if (points.length >= 2) {
+      const kmh = speedKmh(points.at(-2), points.at(-1));
+      speedEl.textContent = kmh == null ? '—' : `${kmh.toFixed(1)} km/h`;
+    } else {
+      speedEl.textContent = '—';
+    }
+
+    lastTimestamp = points.at(-1)?.instant ?? null;
+    refreshElapsed();
+
+    if (removedCount > 0) {
+      filteredNote.textContent = `부정확한 GPS 신호 ${removedCount}개를 걸러냈습니다`;
+      filteredNote.classList.remove('hidden');
+    } else {
+      filteredNote.classList.add('hidden');
+    }
   }
 
-  setInterval(updateLastUpdateLabel, 10000);
+  function drawTrail() {
+    const path = points.map(latLngOf);
+    trailCasing.setLatLngs(path);
+    trail.setLatLngs(path);
 
-  function applyLocation(loc) {
-    const lat = Number(loc.latitude);
-    const lng = Number(loc.longitude);
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+    if (points.length > 0 && !startMarker) {
+      startMarker = L.marker(latLngOf(points[0]), { icon: startIcon })
+        .addTo(map)
+        .bindTooltip('출발', { direction: 'top', offset: [0, -8] });
+    }
+  }
 
-    const latlng = [lat, lng];
+  /** 마커를 이전 위치에서 새 위치로 대권 경로 따라 부드럽게 이동시킨다. */
+  function moveMarker(from, to) {
+    if (cancelTween) cancelTween();
+
     if (!marker) {
-      marker = L.marker(latlng, { icon: markerIcon }).addTo(map);
-    } else {
-      marker.setLatLng(latlng);
+      marker = L.marker(latLngOf(to), { icon: markerIcon }).addTo(map);
+      return;
+    }
+    if (!from) {
+      marker.setLatLng(latLngOf(to));
+      return;
     }
 
-    if (firstLocation) {
-      map.setView(latlng, 16);
-      firstLocation = false;
-    } else {
-      map.panTo(latlng);
-    }
+    // 이동 거리에 따라 애니메이션 길이를 정한다 (0.4s ~ 2.5s).
+    const km = haversineKm(from, to);
+    const durationMs = Math.min(2500, Math.max(400, km * 900));
 
-    updateCount++;
-    updateCountEl.textContent = `${updateCount}회`;
-    lastTimestamp = new Date(loc.updated_at || Date.now());
-    updateLastUpdateLabel();
+    cancelTween = tween({
+      durationMs,
+      easing: easeInOutCubic,
+      onUpdate: (progress) => {
+        const position = interpolateGreatCircle(from, to, progress);
+        marker.setLatLng([position.latitude, position.longitude]);
+        if (followMode) map.panTo([position.latitude, position.longitude], { animate: false });
+      },
+      onDone: () => {
+        cancelTween = null;
+      },
+    });
+  }
+
+  function applyRows(rows, { initial } = { initial: false }) {
+    const incoming = rows.map(toPoint).filter(Boolean);
+    if (incoming.length === 0) return;
+
+    const previousLast = points.at(-1) ?? null;
+    rawCount += incoming.length;
+
+    const merged = [...points, ...incoming].sort(
+      (a, b) => a.instant.getTime() - b.instant.getTime(),
+    );
+    const cleaned = cleanLocations(merged);
+    points = cleaned.points;
+    removedCount = rawCount - points.length;
+
+    drawTrail();
+    renderStats();
+
+    const newLast = points.at(-1);
+    if (!newLast) return;
+
+    if (initial) {
+      marker = marker || L.marker(latLngOf(newLast), { icon: markerIcon }).addTo(map);
+      marker.setLatLng(latLngOf(newLast));
+      if (points.length === 1) {
+        map.setView(latLngOf(newLast), 16);
+      } else {
+        map.fitBounds(trail.getBounds(), { padding: [60, 60], maxZoom: 17 });
+      }
+    } else {
+      moveMarker(previousLast, newLast);
+    }
   }
 
   async function loadInitial() {
@@ -124,7 +277,7 @@
       const { data: session, error: sessErr } = await client
         .from('sessions')
         .select('*')
-        .eq('short_code', shortCode)
+        .eq('short_code', code)
         .maybeSingle();
 
       if (sessErr) throw sessErr;
@@ -133,25 +286,27 @@
         return;
       }
 
-      userNameEl.textContent = session.user_name ? `${session.user_name}님의 위치` : '실시간 위치';
+      userNameEl.textContent = session.user_name
+        ? `${session.user_name}님의 위치`
+        : '실시간 위치';
       setStatus(session.active ? 'active' : 'ended');
 
       const { data: locs, error: locErr } = await client
         .from('locations')
         .select('*')
-        .eq('session_code', shortCode)
+        .eq('session_code', code)
         .order('updated_at', { ascending: true })
-        .limit(200);
+        .limit(500);
 
       if (locErr) throw locErr;
 
       if (locs && locs.length > 0) {
-        locs.forEach(applyLocation);
+        applyRows(locs, { initial: true });
         hideOverlay();
       } else if (session.active) {
         showOverlay('📡', '위치 수신 대기 중', '곧 첫 위치가 도착합니다.');
       } else {
-        showOverlay('🏁', '추적이 종료되었습니다', '마지막 위치가 없습니다.');
+        showOverlay('🏁', '추적이 종료되었습니다', '기록된 위치가 없습니다.');
       }
 
       subscribeRealtime();
@@ -163,17 +318,17 @@
 
   function subscribeRealtime() {
     client
-      .channel(`loc-${shortCode}`)
+      .channel(`loc-${code}`)
       .on(
         'postgres_changes',
         {
           event: 'INSERT',
           schema: 'public',
           table: 'locations',
-          filter: `session_code=eq.${shortCode}`,
+          filter: `session_code=eq.${code}`,
         },
         (payload) => {
-          applyLocation(payload.new);
+          applyRows([payload.new]);
           hideOverlay();
         },
       )
@@ -183,16 +338,14 @@
           event: 'UPDATE',
           schema: 'public',
           table: 'sessions',
-          filter: `short_code=eq.${shortCode}`,
+          filter: `short_code=eq.${code}`,
         },
         (payload) => {
-          if (payload.new.active === false) {
-            setStatus('ended');
-          }
+          if (payload.new.active === false) setStatus('ended');
         },
       )
       .subscribe();
   }
 
   loadInitial();
-})();
+}

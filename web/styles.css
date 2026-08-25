@@ -77,11 +77,59 @@ html, body {
 
 .meta-row {
   display: flex;
-  gap: 20px;
+  gap: 16px;
 }
 
 .meta-item {
   flex: 1;
+  min-width: 0;
+}
+
+.filtered-note {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  font-size: 12px;
+  color: #999;
+}
+
+.filtered-note.hidden {
+  display: none;
+}
+
+.map-controls {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.map-button {
+  background: white;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+  font-family: inherit;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s;
+}
+
+.map-button:hover {
+  background: #fafafa;
+}
+
+.map-button.active {
+  background: #E53935;
+  color: white;
 }
 
 .meta-label {
@@ -159,4 +207,20 @@ html, body {
 @keyframes marker-pulse {
   0% { transform: scale(0.5); opacity: 1; }
   100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* Route start point */
+.start-marker {
+  width: 12px;
+  height: 12px;
+  background: white;
+  border: 3px solid #666;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* The marker moves via requestAnimationFrame, so Leaflet's own CSS
+   transition would fight the tween and lag a frame behind. */
+.leaflet-marker-icon {
+  transition: none !important;
 }

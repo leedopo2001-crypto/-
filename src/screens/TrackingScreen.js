@@ -9,7 +9,6 @@ import {
   View,
 } from 'react-native';
 import * as Location from 'expo-location';
-import * as SMS from 'expo-sms';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 import {
@@ -19,6 +18,8 @@ import {
   pushLocation,
 } from '../api/supabase';
 import { renderTemplate } from '../storage';
+import { SMS_WEB_FALLBACK, sendSms } from '../sms';
+import MessagePreviewModal from '../components/MessagePreviewModal';
 
 function formatElapsed(secondsAgo) {
   if (secondsAgo < 5) return '방금';
@@ -48,6 +49,7 @@ export default function TrackingScreen({ settings, onStop }) {
   const [nextInMs, setNextInMs] = useState(intervalMs);
   const [error, setError] = useState(null);
   const [tick, setTick] = useState(0);
+  const [previewMessage, setPreviewMessage] = useState(null);
 
   const tickTimerRef = useRef(null);
   const pushTimerRef = useRef(null);
@@ -118,8 +120,6 @@ export default function TrackingScreen({ settings, onStop }) {
 
   async function openSmsComposer(created) {
     try {
-      const smsAvailable = await SMS.isAvailableAsync();
-      if (!smsAvailable) return;
       const message = renderTemplate(settings.trackingMessageTemplate, {
         이름: settings.userName || 'here',
         링크: created.url,
@@ -127,7 +127,11 @@ export default function TrackingScreen({ settings, onStop }) {
       });
       const phones = (settings.contacts || []).map((c) => c.phone);
       if (phones.length === 0) return;
-      await SMS.sendSMSAsync(phones, message);
+
+      const { result } = await sendSms(phones, message);
+      if (result === SMS_WEB_FALLBACK) {
+        setPreviewMessage(message);
+      }
     } catch {
       // composer 취소는 무시
     }
@@ -246,6 +250,13 @@ export default function TrackingScreen({ settings, onStop }) {
           <Text style={styles.stopText}>🛑 추적 종료</Text>
         </Pressable>
       </ScrollView>
+
+      <MessagePreviewModal
+        visible={previewMessage !== null}
+        message={previewMessage || ''}
+        contacts={settings.contacts || []}
+        onClose={() => setPreviewMessage(null)}
+      />
     </View>
   );
 }

@@ -14,7 +14,14 @@
 - **링크 한 번만 보내면** 수신자가 실시간으로 위치를 확인
 - N분(1/5/10/15) 마다 자동으로 새 위치가 Supabase 로 업로드됨
 - 수신자는 웹 브라우저에서 Leaflet 지도로 실시간 추적
+- **지나온 경로가 선으로 그려지고**, 총 이동 거리와 최근 속도가 표시됨
+- **튀는 GPS 신호를 자동으로 걸러냄** (오차 100m 초과 · 멀리 갔다 즉시 복귀하는 점)
+- 마커가 대권 경로를 따라 부드럽게 이동 (따라가기 / 전체 경로 보기 토글)
 - 앱에서 "추적 종료" 하면 링크도 비활성화
+
+### 🌐 웹 지원
+- 앱 전체가 브라우저에서도 실행됨 (`npm run web`)
+- 웹에서는 문자 API 가 없으므로, 나갈 문구를 그대로 보여주는 미리보기 + 복사 버튼 제공
 
 ### ⚙ 설정
 - 내 이름 (메시지에 사용)
@@ -31,6 +38,9 @@ here/
 ├── src/
 │   ├── api/
 │   │   └── supabase.js          ← Supabase 클라이언트 + 세션/위치 API
+│   ├── components/
+│   │   └── MessagePreviewModal.js  ← 웹에서 문자 대신 띄우는 미리보기
+│   ├── sms.js                   ← 네이티브/웹 공통 문자 발송 래퍼
 │   ├── storage.js               ← AsyncStorage + 템플릿 렌더링
 │   └── screens/
 │       ├── OnboardingScreen.js
@@ -42,7 +52,12 @@ here/
 │   ├── app.js
 │   ├── styles.css
 │   ├── config.js
-│   └── vercel.json
+│   ├── vercel.json
+│   └── lib/                     ← geo/이상치/이징 (google-timeline-visualizer 기반)
+│       ├── geo.js
+│       ├── outlier.js
+│       ├── animation.js
+│       └── ATTRIBUTION.md
 ├── supabase/
 │   └── schema.sql               ← Supabase SQL Editor 에 실행
 ├── .env.example
@@ -64,7 +79,17 @@ npx expo start -c
 
 Expo Go 로 QR 스캔.
 
-### 3. 앱에서 최초 사용
+### 3. 브라우저에서 바로 보기 (앱 설치 없이)
+```bash
+npm run web          # 개발 서버, 브라우저가 자동으로 열린다
+npm run build:web    # dist/ 에 정적 파일로 내보내기
+```
+
+온보딩 → 설정 → 홈 → 추적까지 전 화면을 브라우저에서 그대로 확인할 수 있습니다.
+단, 웹에는 문자 발송 API 가 없으므로 SOS 를 누르면 **실제로 나갈 문구와 수신자를
+보여주는 미리보기 창**이 뜨고, 복사 버튼으로 내용을 가져갈 수 있습니다.
+
+### 4. 앱에서 최초 사용
 1. 환영 → 시작하기
 2. 이름 + 연락처 입력 후 저장
 3. 메인 화면에서 테스트
@@ -80,3 +105,9 @@ Expo Go 로 QR 스캔.
 - Supabase 에 저장되는 정보: `short_code`, 사용자 이름, 위도/경도, 타임스탬프
 - 24시간 지난 데이터는 수동 정리 가능 (schema.sql 참고)
 - 개인 사용이 아닌 배포용이면 개인정보처리방침 별도 작성 필요
+
+## 서드파티 출처
+`web/lib/` 의 거리 계산 · GPS 이상치 필터 · 이징 함수는
+[mahlernim/google-timeline-visualizer](https://github.com/mahlernim/google-timeline-visualizer)
+(MIT License, © 2025 mahlernim) 를 기반으로 실시간 추적용으로 다시 맞춘 것입니다.
+자세한 내역은 [web/lib/ATTRIBUTION.md](./web/lib/ATTRIBUTION.md) 참고.

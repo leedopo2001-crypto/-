@@ -10,10 +10,11 @@ import {
   View,
 } from 'react-native';
 import * as Location from 'expo-location';
-import * as SMS from 'expo-sms';
 import Svg, { Circle } from 'react-native-svg';
 
 import { renderTemplate } from '../storage';
+import { SMS_SENT, SMS_UNAVAILABLE, SMS_WEB_FALLBACK, sendSms } from '../sms';
+import MessagePreviewModal from '../components/MessagePreviewModal';
 
 const HOLD_DURATION_MS = 2000;
 
@@ -34,6 +35,7 @@ export default function HomeScreen({
   const [permissionMessage, setPermissionMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState(null);
 
   const progress = useRef(new Animated.Value(0)).current;
   const animationRef = useRef(null);
@@ -93,15 +95,14 @@ export default function HomeScreen({
         위치: locationText,
       });
 
-      const smsAvailable = await SMS.isAvailableAsync();
-      if (!smsAvailable) {
-        Alert.alert('전송 실패', '이 기기에서는 SMS를 보낼 수 없습니다.');
-        return;
-      }
-
       const phones = settings.contacts.map((c) => c.phone);
-      const { result } = await SMS.sendSMSAsync(phones, message);
-      if (result === 'sent' || result === 'unknown') {
+      const { result } = await sendSms(phones, message);
+
+      if (result === SMS_WEB_FALLBACK) {
+        setPreviewMessage(message);
+      } else if (result === SMS_UNAVAILABLE) {
+        Alert.alert('전송 실패', '이 기기에서는 SMS를 보낼 수 없습니다.');
+      } else if (result === SMS_SENT) {
         showToastMessage();
       }
     } catch {
@@ -254,6 +255,13 @@ export default function HomeScreen({
           <Text style={styles.toastText}>전송 완료</Text>
         </Animated.View>
       )}
+
+      <MessagePreviewModal
+        visible={previewMessage !== null}
+        message={previewMessage || ''}
+        contacts={settings.contacts || []}
+        onClose={() => setPreviewMessage(null)}
+      />
     </View>
   );
 }
