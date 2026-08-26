@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Alert,
   Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,8 @@ import PathPreview from '../components/PathPreview';
 import { deleteSession } from '../lib/history';
 import { formatDistance, formatDuration } from '../lib/geo';
 import { shakeLabel } from '../lib/shake';
+import { detectStays, totalStayMs } from '../lib/stays';
+import { shareGpx, shareSummary } from '../lib/exportRoute';
 
 function formatDateTime(iso) {
   const d = new Date(iso);
@@ -25,8 +28,30 @@ function speedText(kmh) {
   return Number.isFinite(kmh) ? `${kmh.toFixed(1)} km/h` : '—';
 }
 
+function clockTime(iso) {
+  const d = new Date(iso);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
   const stats = session.stats || {};
+  const [exportNote, setExportNote] = useState(null);
+
+  const stays = useMemo(() => detectStays(session.points || []), [session.points]);
+
+  const handleExportGpx = async () => {
+    const result = await shareGpx(session);
+    if (result.ok) {
+      setExportNote(null);
+      return;
+    }
+    const messages = {
+      'web-unsupported': '웹에서는 파일 내보내기를 지원하지 않습니다. 폰에서 시도해주세요.',
+      'no-points': '내보낼 위치 기록이 없습니다.',
+      'sharing-unavailable': '이 기기에서는 공유 기능을 쓸 수 없습니다.',
+    };
+    setExportNote(messages[result.reason] || `내보내기에 실패했습니다: ${result.reason}`);
+  };
 
   const handleDelete = () => {
     Alert.alert('기록 삭제', '이 기록을 삭제할까요?', [
@@ -59,7 +84,7 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <PathPreview points={session.points} />
+        <PathPreview points={session.points} stays={stays} />
 
         <View style={styles.grid}>
           <Cell label="이동 거리" value={formatDistance(stats.distanceKm || 0)} />
@@ -86,15 +111,64 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
           <Cell label="기록 간격" value={`${session.intervalMinutes || '?'}분`} />
         </View>
 
+        {stays.length > 0 && (
+          <>
+            <Text style={styles.sectionLabel}>
+              머문 곳 {stays.length}곳 · 합계 {formatDuration(totalStayMs(stays))}
+            </Text>
+            {stays.map((stay) => (
+              <View key={`${stay.startIndex}-${stay.endIndex}`} style={styles.stayRow}>
+                <View style={styles.stayDot} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.stayTime}>
+                    {clockTime(stay.startT)} – {clockTime(stay.endT)}
+                  </Text>
+                  <Text style={styles.stayMeta}>
+                    {formatDuration(stay.durationMs)} 머무름 · 위치 {stay.pointCount}개
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() =>
+                    Linking.openURL(
+                      `https://maps.google.com/?q=${stay.latitude},${stay.longitude}`,
+                    )
+                  }
+                  hitSlop={8}
+                >
+                  <Text style={styles.stayLink}>지도</Text>
+                </Pressable>
+              </View>
+            ))}
+          </>
+        )}
+
+        <Text style={styles.sectionLabel}>내보내기</Text>
+        <View style={styles.exportRow}>
+          <Pressable style={styles.exportButton} onPress={handleExportGpx}>
+            <Text style={styles.exportText}>📄 GPX 파일</Text>
+          </Pressable>
+          <Pressable
+            style={styles.exportButton}
+            onPress={() => shareSummary(session)}
+          >
+            <Text style={styles.exportText}>💬 요약 보내기</Text>
+          </Pressable>
+        </View>
+        {exportNote && <Text style={styles.exportNote}>{exportNote}</Text>}
+        <Text style={styles.hint}>
+          GPX 는 등산·러닝 앱과 구글 어스에서 그대로 열립니다. 배터리·흔들림은
+          확장 필드로 함께 저장되며, 표준 뷰어는 이를 무시합니다.
+        </Text>
+
         {session.url && (
           <Pressable style={styles.webButton} onPress={handleOpenWeb}>
-            <Text style={styles.webButtonText}>🗺 웹 지도에서 경로 재생</Text>
+            <Text style={styles.webButtonText}>🗺 웹 지도에서 보기</Text>
           </Pressable>
         )}
         <Text style={styles.hint}>
           웹 지도는 서버 데이터를 사용하므로, 서버에서 오래된 세션을 정리한
-          뒤에는 열리지 않을 수 있습니다. 위 통계와 경로 모양은 이 기기에
-          저장되어 계속 남습니다.
+          뒤에는 열리지 않을 수 있습니다. 위 통계와 경로는 이 기기에 저장되어
+          계속 남습니다.
         </Text>
       </ScrollView>
     </View>
@@ -150,6 +224,49 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   webButtonText: { color: '#1565C0', fontWeight: '600', fontSize: 15 },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#999',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 26,
+    marginBottom: 10,
+  },
+  stayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F3F0FA',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    gap: 12,
+  },
+  stayDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#4527A0',
+  },
+  stayTime: { fontSize: 15, fontWeight: '600', color: '#311B92' },
+  stayMeta: { fontSize: 12, color: '#7E57C2', marginTop: 2 },
+  stayLink: { fontSize: 13, fontWeight: '600', color: '#4527A0' },
+  exportRow: { flexDirection: 'row', gap: 10 },
+  exportButton: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 13,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  exportText: { color: '#555', fontSize: 14, fontWeight: '600' },
+  exportNote: {
+    marginTop: 10,
+    fontSize: 13,
+    color: '#B71C1C',
+    lineHeight: 19,
+  },
   hint: {
     marginTop: 12,
     fontSize: 12,

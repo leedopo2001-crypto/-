@@ -16,6 +16,28 @@ export function haversineKm(a, b) {
   return EARTH_RADIUS_KM * 2 * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
+/** 각 지점까지의 누적 이동 거리 배열(km). */
+export function cumulativeDistances(points) {
+  const distances = new Array(points.length).fill(0);
+  for (let i = 1; i < points.length; i += 1) {
+    distances[i] = distances[i - 1] + haversineKm(points[i - 1], points[i]);
+  }
+  return distances;
+}
+
+/**
+ * 두 좌표 사이를 비율만큼 보간한다.
+ * 재생 중 점과 점 사이를 마커가 부드럽게 지나가게 할 때 쓴다.
+ * 도보~차량 규모에서는 선형 보간과 대권 보간의 차이가 무시할 수준이라
+ * 단순한 쪽을 쓴다.
+ */
+export function interpolate(from, to, fraction) {
+  return {
+    latitude: from.latitude + (to.latitude - from.latitude) * fraction,
+    longitude: from.longitude + (to.longitude - from.longitude) * fraction,
+  };
+}
+
 /** 사람이 읽기 좋은 거리 문자열. */
 export function formatDistance(km) {
   if (!Number.isFinite(km) || km <= 0) return '0 m';
