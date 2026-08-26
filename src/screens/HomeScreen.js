@@ -34,6 +34,7 @@ export default function HomeScreen({
   onOpenHistory,
   onOpenWatch,
   onOpenCheckIn,
+  onOpenNight,
   onOpenMyPage,
   checkInRemaining,
   interrupted,
@@ -287,6 +288,22 @@ export default function HomeScreen({
           <Text style={styles.checkInArrow}>›</Text>
         </Pressable>
 
+        <Pressable
+          style={[styles.trackingButton, styles.nightButton]}
+          onPress={onOpenNight}
+        >
+          <View style={styles.trackingIcon}>
+            <Icon name="clock" size={22} color="#E8EAED" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.nightTitle}>밤 모드</Text>
+            <Text style={styles.nightSubtitle}>
+              마시기 전에 켜두면 아침에 동선이 남습니다
+            </Text>
+          </View>
+          <Text style={styles.nightArrow}>›</Text>
+        </Pressable>
+
         <View style={styles.secondaryRow}>
           <Pressable style={styles.secondaryButton} onPress={onOpenHistory}>
             <Icon name="clock" size={17} color="#555" />
@@ -391,6 +408,10 @@ const styles = StyleSheet.create({
   checkInTitle: { fontSize: 15, fontWeight: '600', color: '#4527A0' },
   checkInSubtitle: { fontSize: 12, color: '#7E57C2', marginTop: 2 },
   checkInArrow: { fontSize: 24, color: '#4527A0' },
+  nightButton: { backgroundColor: '#1A1A1E', marginTop: 10 },
+  nightTitle: { fontSize: 15, fontWeight: '600', color: '#fff' },
+  nightSubtitle: { fontSize: 12, color: '#9AA0A6', marginTop: 2 },
+  nightArrow: { fontSize: 24, color: '#9AA0A6' },
   secondaryRow: {
     flexDirection: 'row',
     gap: 10,

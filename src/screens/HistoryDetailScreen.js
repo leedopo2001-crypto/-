@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Image,
   Linking,
   Platform,
   Pressable,
@@ -17,6 +18,12 @@ import { shakeLabel } from '../lib/shake';
 import { detectStays, totalStayMs } from '../lib/stays';
 import { shareGpx, shareSummary } from '../lib/exportRoute';
 import Icon from '../components/Icon';
+import {
+  PHOTO_DENIED,
+  PHOTO_UNSUPPORTED,
+  buildTimeline,
+  loadSessionPhotos,
+} from '../lib/photos';
 
 function formatDateTime(iso) {
   const d = new Date(iso);
@@ -39,6 +46,28 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
   const [exportNote, setExportNote] = useState(null);
 
   const stays = useMemo(() => detectStays(session.points || []), [session.points]);
+  const [photoState, setPhotoState] = useState({ photos: [], loading: true });
+
+  // 사진은 기기 안에서만 읽는다. 복사하지도, 올리지도 않는다.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const result = await loadSessionPhotos({
+        startedAt: session.startedAt,
+        endedAt: session.endedAt,
+        points: session.points || [],
+      });
+      if (alive) setPhotoState({ ...result, loading: false });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [session.id]);
+
+  const timeline = useMemo(
+    () => buildTimeline({ stays, photos: photoState.photos }),
+    [stays, photoState.photos],
+  );
 
   const handleExportGpx = async () => {
     const result = await shareGpx(session);
@@ -112,35 +141,86 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
           <Cell label="기록 간격" value={`${session.intervalMinutes || '?'}분`} />
         </View>
 
-        {stays.length > 0 && (
+        {timeline.length > 0 && (
           <>
             <Text style={styles.sectionLabel}>
-              머문 곳 {stays.length}곳 · 합계 {formatDuration(totalStayMs(stays))}
+              그날의 흐름
+              {stays.length > 0
+                ? ` · 머문 곳 ${stays.length}곳 (${formatDuration(totalStayMs(stays))})`
+                : ''}
+              {photoState.photos.length > 0
+                ? ` · 사진 ${photoState.photos.length}장`
+                : ''}
             </Text>
-            {stays.map((stay) => (
-              <View key={`${stay.startIndex}-${stay.endIndex}`} style={styles.stayRow}>
-                <View style={styles.stayDot} />
+
+            {timeline.map((item, index) => (
+              <View
+                key={`${item.kind}-${item.t}-${index}`}
+                style={[styles.timelineRow, item.kind === 'photo' && styles.timelineRowPhoto]}
+              >
+                <View
+                  style={[styles.stayDot, item.kind === 'photo' && styles.photoDot]}
+                />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.stayTime}>
-                    {clockTime(stay.startT)} – {clockTime(stay.endT)}
+                    {item.kind === 'stay'
+                      ? `${clockTime(item.t)} – ${clockTime(item.endT)}`
+                      : clockTime(item.t)}
                   </Text>
                   <Text style={styles.stayMeta}>
-                    {formatDuration(stay.durationMs)} 머무름 · 위치 {stay.pointCount}개
+                    {item.kind === 'stay'
+                      ? `${formatDuration(item.durationMs)} 머무름 · 위치 ${item.pointCount}개`
+                      : '이동 중'}
+                    {item.photos.length > 0 ? ` · 사진 ${item.photos.length}장` : ''}
                   </Text>
+
+                  {item.photos.length > 0 && (
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.thumbRow}
+                    >
+                      {item.photos.slice(0, 8).map((photo) => (
+                        <Image
+                          key={photo.id}
+                          source={{ uri: photo.uri }}
+                          style={styles.thumb}
+                        />
+                      ))}
+                    </ScrollView>
+                  )}
                 </View>
-                <Pressable
-                  onPress={() =>
-                    Linking.openURL(
-                      `https://maps.google.com/?q=${stay.latitude},${stay.longitude}`,
-                    )
-                  }
-                  hitSlop={8}
-                >
-                  <Text style={styles.stayLink}>지도</Text>
-                </Pressable>
+
+                {(item.latitude || item.photos[0]?.latitude) && (
+                  <Pressable
+                    onPress={() => {
+                      const lat = item.latitude ?? item.photos[0].latitude;
+                      const lon = item.longitude ?? item.photos[0].longitude;
+                      Linking.openURL(`https://maps.google.com/?q=${lat},${lon}`);
+                    }}
+                    hitSlop={8}
+                  >
+                    <Text style={styles.stayLink}>지도</Text>
+                  </Pressable>
+                )}
               </View>
             ))}
           </>
+        )}
+
+        {!photoState.loading &&
+          photoState.reason === PHOTO_DENIED &&
+          Platform.OS !== 'web' && (
+            <Text style={styles.hint}>
+              사진 접근을 허용하면 그날 찍은 사진을 동선 위에 함께 보여줍니다.
+              사진은 기기 밖으로 나가지 않습니다.
+            </Text>
+          )}
+        {!photoState.loading && photoState.limited && (
+          <Text style={styles.hint}>
+            일부 사진에만 접근이 허용되어 있어, 선택하지 않은 사진은 표시되지
+            않습니다.
+          </Text>
         )}
 
         <Text style={styles.sectionLabel}>내보내기</Text>
@@ -259,6 +339,26 @@ const styles = StyleSheet.create({
   stayTime: { fontSize: 15, fontWeight: '600', color: '#311B92' },
   stayMeta: { fontSize: 12, color: '#7E57C2', marginTop: 2 },
   stayLink: { fontSize: 13, fontWeight: '600', color: '#4527A0' },
+  timelineRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#F3F0FA',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    gap: 12,
+  },
+  timelineRowPhoto: { backgroundColor: '#F5F6F7' },
+  photoDot: { backgroundColor: '#9AA0A6' },
+  thumbRow: { marginTop: 10 },
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    marginRight: 6,
+    backgroundColor: '#e6e8ea',
+  },
   exportRow: { flexDirection: 'row', gap: 10 },
   exportButton: {
     flex: 1,

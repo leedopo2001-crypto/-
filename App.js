@@ -17,6 +17,7 @@ import CheckInScreen from './src/screens/CheckInScreen';
 import MyPageScreen from './src/screens/MyPageScreen';
 import LinkScreen from './src/screens/LinkScreen';
 import WatchdogScreen from './src/screens/WatchdogScreen';
+import NightStartScreen from './src/screens/NightStartScreen';
 import { formatRemaining, loadCheckIn, remainingMs } from './src/lib/checkin';
 import { ensureIdentity, loadIdentity } from './src/lib/identity';
 
@@ -30,6 +31,7 @@ export default function App() {
   const [checkIn, setCheckIn] = useState(null);
   const [identity, setIdentity] = useState(null);
   const [watchPeer, setWatchPeer] = useState(null);
+  const [nightConfig, setNightConfig] = useState(null);
   const [, setClock] = useState(0);
 
   useEffect(() => {
@@ -144,11 +146,13 @@ export default function App() {
           onOpenSettings={() => setScreen('settings')}
           onStartTracking={() => {
             setResumeFrom(null);
+            setNightConfig(null);
             setScreen('tracking');
           }}
           onOpenHistory={() => setScreen('history')}
           onOpenWatch={() => setScreen('watch')}
           onOpenCheckIn={() => setScreen('checkin')}
+          onOpenNight={() => setScreen('night')}
           onOpenMyPage={() => setScreen('mypage')}
           checkInRemaining={checkInRemaining}
           interrupted={interrupted}
@@ -156,13 +160,25 @@ export default function App() {
           onDiscard={handleDiscard}
         />
       )}
+      {screen === 'night' && (
+        <NightStartScreen
+          onBack={goHome}
+          onStart={(config) => {
+            setResumeFrom(null);
+            setNightConfig(config);
+            setScreen('tracking');
+          }}
+        />
+      )}
       {screen === 'tracking' && (
         <TrackingScreen
           settings={settings}
           identity={identity}
           resume={resumeFrom}
+          night={nightConfig}
           onStop={() => {
             setResumeFrom(null);
+            setNightConfig(null);
             goHome();
           }}
         />

@@ -25,6 +25,7 @@ import { formatDistance, haversineKm } from '../lib/geo';
 import { saveSession } from '../lib/history';
 import { shakeLabel, startShakeMonitor } from '../lib/shake';
 import { clearActive, loadActive, saveActive } from '../lib/activeSession';
+import { NIGHT_INTERVAL_MINUTES, formatRemaining as formatNightRemaining } from '../lib/nightMode';
 import { checkStillness, pruneShakeSamples } from '../lib/anomaly';
 import { PREFIX_STILLNESS, sendEmergencySms } from '../lib/alert';
 import CountdownPrompt from '../components/CountdownPrompt';
@@ -47,9 +48,20 @@ function formatCountdown(seconds) {
   return `${mins}분 ${secs}초 후`;
 }
 
-export default function TrackingScreen({ settings, onStop, resume, identity }) {
+export default function TrackingScreen({
+  settings,
+  onStop,
+  resume,
+  identity,
+  night,          // { endsAtMs } — 밤 모드로 시작할 때만
+}) {
+  // 이어하기라면 그때의 설정을 그대로 따른다. 밤 모드는 배터리를 위해
+  // 주기를 길게 잡는다.
+  const nightEndsAt = resume?.nightEndsAt ?? night?.endsAtMs ?? null;
+  const isNight = Boolean(nightEndsAt);
   const intervalMinutes =
-    (resume && resume.intervalMinutes) || settings.trackingIntervalMinutes || 5;
+    resume?.intervalMinutes ||
+    (isNight ? NIGHT_INTERVAL_MINUTES : settings.trackingIntervalMinutes || 5);
   const intervalMs = intervalMinutes * 60 * 1000;
 
   const [status, setStatus] = useState('starting');
@@ -146,9 +158,14 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
     tickTimerRef.current = setInterval(() => {
       setTick((t) => t + 1);
       setNextInMs((ms) => Math.max(0, ms - 1000));
+
+      // 밤 모드는 스스로 끝난다. 취한 사람은 종료도 누르지 않는다.
+      if (nightEndsAt && !stoppedRef.current && Date.now() >= nightEndsAt) {
+        finish({ silent: true });
+      }
     }, 1000);
     return () => clearInterval(tickTimerRef.current);
-  }, []);
+  }, [nightEndsAt]);
 
   // 이상 감지: 30초마다 최근 창을 다시 판정한다.
   useEffect(() => {
@@ -258,7 +275,9 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
       setStatus('active');
       await persist();
 
-      await openSmsComposer(created);
+      // 밤 모드는 공유가 아니라 기록이 목적이라 문자를 보내지 않는다.
+      // 필요하면 아래 "링크 다시 보내기" 로 언제든 보낼 수 있다.
+      if (!isNight) await openSmsComposer(created);
       await pushOnce();
       scheduleNext();
     } catch (e) {
@@ -286,6 +305,7 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
       userName: settings.userName || '',
       startedAt: startedAtRef.current,
       intervalMinutes,
+      nightEndsAt,
       points: pointsRef.current,
       queue: queueRef.current,
     });
@@ -402,42 +422,63 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
     await openSmsComposer(session);
   }
 
+  /**
+   * 추적을 끝낸다. 사용자가 눌러서든, 밤 모드 종료 시각이 되어서든
+   * 뒷정리는 같아야 한다 — 서버 세션을 닫고, 기록을 남기고, 복구용
+   * 저장분을 지운다.
+   */
+  async function finish({ silent } = {}) {
+    if (stoppedRef.current) return;
+    stoppedRef.current = true;
+    if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
+
+    if (sessionRef.current) {
+      // 아직 못 보낸 위치가 있으면 마지막으로 한 번 더 시도한다.
+      try {
+        await flushQueue();
+      } catch {}
+      try {
+        await endSession(
+          sessionRef.current.shortCode,
+          sessionRef.current.ownerToken,
+        );
+      } catch {}
+
+      try {
+        await saveSession({
+          shortCode: sessionRef.current.shortCode,
+          url: sessionRef.current.url,
+          userName: settings.userName || '',
+          startedAt: startedAtRef.current,
+          endedAt: new Date().toISOString(),
+          intervalMinutes,
+          mode: isNight ? 'night' : 'normal',
+          points: pointsRef.current,
+        });
+      } catch {}
+      await clearActive();
+    }
+
+    if (silent) {
+      Alert.alert(
+        '밤 모드 종료',
+        '정해둔 시각이 되어 기록을 마쳤습니다.\n기록에서 동선과 사진을 확인할 수 있습니다.',
+        [{ text: '확인', onPress: onStop }],
+      );
+      return;
+    }
+    onStop();
+  }
+
   async function handleStop() {
     Alert.alert(
-      '추적 종료',
-      '정말 실시간 위치 추적을 종료할까요?',
+      isNight ? '밤 모드 종료' : '추적 종료',
+      isNight
+        ? '지금 끝내고 기록을 저장할까요?'
+        : '정말 실시간 위치 추적을 종료할까요?',
       [
         { text: '취소', style: 'cancel' },
-        {
-          text: '종료',
-          style: 'destructive',
-          onPress: async () => {
-            stoppedRef.current = true;
-            if (pushTimerRef.current) clearTimeout(pushTimerRef.current);
-            if (sessionRef.current) {
-              try {
-                await endSession(
-                  sessionRef.current.shortCode,
-                  sessionRef.current.ownerToken,
-                );
-              } catch {}
-
-              try {
-                await saveSession({
-                  shortCode: sessionRef.current.shortCode,
-                  url: sessionRef.current.url,
-                  userName: settings.userName || '',
-                  startedAt: startedAtRef.current,
-                  endedAt: new Date().toISOString(),
-                  intervalMinutes,
-                  points: pointsRef.current,
-                });
-              } catch {}
-              await clearActive();
-            }
-            onStop();
-          },
-        },
+        { text: '종료', style: 'destructive', onPress: () => finish() },
       ],
     );
   }
@@ -454,14 +495,29 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
           <View style={[styles.dot, status === 'active' && styles.dotActive]} />
           <Text style={styles.statusText}>
             {status === 'starting' && '시작 중...'}
-            {status === 'active' && '실시간 추적 중'}
+            {status === 'active' && (isNight ? '밤 모드 기록 중' : '실시간 추적 중')}
             {status === 'error' && '오류'}
           </Text>
         </View>
 
         <Text style={styles.title}>
-          {settings.userName || '나'}님의 위치를{'\n'}공유하고 있습니다
+          {isNight
+            ? `오늘 밤 동선을\n기록하고 있습니다`
+            : `${settings.userName || '나'}님의 위치를\n공유하고 있습니다`}
         </Text>
+
+        {isNight && (
+          <View style={styles.nightCard}>
+            <Text style={styles.nightLabel}>자동 종료까지</Text>
+            <Text style={styles.nightValue}>
+              {formatNightRemaining(nightEndsAt - Date.now())}
+            </Text>
+            <Text style={styles.nightHint}>
+              {intervalMinutes}분마다 조용히 기록합니다. 종료를 누르지 않아도
+              시각이 되면 알아서 마칩니다.
+            </Text>
+          </View>
+        )}
 
         {error && (
           <View style={styles.errorBox}>
@@ -524,6 +580,7 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
         <Text style={styles.hint}>
           {intervalMinutes}분마다 자동으로 새 위치가 전송됩니다.{'\n'}
           Expo Go에서는 앱을 켜둔 상태여야 합니다.
+          {isNight ? '\n화면이 꺼져도 앱이 살아 있으면 계속 기록합니다.' : ''}
         </Text>
 
         {anomalyNote && (
@@ -534,7 +591,7 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
 
         <Pressable style={styles.stopButton} onPress={handleStop}>
           <Icon name="stop" size={18} color="#fff" />
-          <Text style={styles.stopText}>추적 종료</Text>
+          <Text style={styles.stopText}>{isNight ? '지금 종료' : '추적 종료'}</Text>
         </Pressable>
       </ScrollView>
 
@@ -670,6 +727,21 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   anomalyText: { color: '#2E7D32', fontSize: 13, lineHeight: 19 },
+  nightCard: {
+    backgroundColor: '#1A1A1E',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+  },
+  nightLabel: { fontSize: 12, color: '#9AA0A6' },
+  nightValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginTop: 4,
+    marginBottom: 10,
+  },
+  nightHint: { fontSize: 12.5, color: '#9AA0A6', lineHeight: 19 },
   hint: {
     fontSize: 12,
     color: '#888',
