@@ -11,6 +11,7 @@ import {
 import * as Clipboard from 'expo-clipboard';
 
 import { acceptInvite, createInvite, isSupabaseConfigured } from '../api/supabase';
+import Icon from '../components/Icon';
 
 const RELATIONS = ['가족', '연인', '친구', '보호자'];
 
@@ -78,7 +79,7 @@ export default function LinkScreen({ identity, onBack, onLinked }) {
           <View style={{ minWidth: 60 }} />
         </View>
         <View style={styles.blocked}>
-          <Text style={styles.blockedEmoji}>🔌</Text>
+          <View style={styles.blockedIcon}><Icon name="unplug" size={40} color="#c8ccd0" /></View>
           <Text style={styles.blockedTitle}>아직 연결할 수 없습니다</Text>
           <Text style={styles.blockedDesc}>
             {isSupabaseConfigured
@@ -153,7 +154,7 @@ export default function LinkScreen({ identity, onBack, onLinked }) {
                   }}
                 >
                   <Text style={styles.secondaryText}>
-                    {copied ? '✓ 복사되었습니다' : '📋 코드 복사'}
+                    {copied ? '복사되었습니다' : '코드 복사'}
                   </Text>
                 </Pressable>
                 <Pressable style={styles.ghostButton} onPress={handleCreateInvite}>
@@ -341,7 +342,7 @@ const styles = StyleSheet.create({
   },
   errorText: { color: '#B71C1C', fontSize: 14, lineHeight: 20 },
   blocked: { padding: 32, paddingTop: 80, alignItems: 'center' },
-  blockedEmoji: { fontSize: 48, marginBottom: 16 },
+  blockedIcon: { marginBottom: 16 },
   blockedTitle: {
     fontSize: 17,
     fontWeight: '700',

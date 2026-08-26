@@ -16,6 +16,7 @@ import { formatDistance, formatDuration } from '../lib/geo';
 import { shakeLabel } from '../lib/shake';
 import { detectStays, totalStayMs } from '../lib/stays';
 import { shareGpx, shareSummary } from '../lib/exportRoute';
+import Icon from '../components/Icon';
 
 function formatDateTime(iso) {
   const d = new Date(iso);
@@ -145,13 +146,15 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
         <Text style={styles.sectionLabel}>내보내기</Text>
         <View style={styles.exportRow}>
           <Pressable style={styles.exportButton} onPress={handleExportGpx}>
-            <Text style={styles.exportText}>📄 GPX 파일</Text>
+            <Icon name="file" size={16} color="#555" />
+            <Text style={styles.exportText}>GPX 파일</Text>
           </Pressable>
           <Pressable
             style={styles.exportButton}
             onPress={() => shareSummary(session)}
           >
-            <Text style={styles.exportText}>💬 요약 보내기</Text>
+            <Icon name="share" size={16} color="#555" />
+            <Text style={styles.exportText}>요약 보내기</Text>
           </Pressable>
         </View>
         {exportNote && <Text style={styles.exportNote}>{exportNote}</Text>}
@@ -162,7 +165,8 @@ export default function HistoryDetailScreen({ session, onBack, onDeleted }) {
 
         {session.url && (
           <Pressable style={styles.webButton} onPress={handleOpenWeb}>
-            <Text style={styles.webButtonText}>🗺 웹 지도에서 보기</Text>
+            <Icon name="map" size={16} color="#1565C0" />
+            <Text style={styles.webButtonText}>웹 지도에서 보기</Text>
           </Pressable>
         )}
         <Text style={styles.hint}>
@@ -221,7 +225,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     paddingVertical: 14,
     borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   webButtonText: { color: '#1565C0', fontWeight: '600', fontSize: 15 },
   sectionLabel: {
@@ -258,7 +265,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     paddingVertical: 13,
     borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   exportText: { color: '#555', fontSize: 14, fontWeight: '600' },
   exportNote: {

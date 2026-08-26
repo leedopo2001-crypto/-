@@ -18,6 +18,7 @@ import {
 } from '../api/supabase';
 import { formatDistance, haversineKm } from '../lib/geo';
 import ViewerFrame from '../components/ViewerFrame';
+import Icon from '../components/Icon';
 
 const RECENT_KEY = '@here:watch-recent:v1';
 const POLL_MS = 20_000;
@@ -158,8 +159,8 @@ export default function WatchScreen({ onBack, initialCode }) {
       Date.now() - new Date(last.updated_at).getTime() - intervalMin * 60_000;
     if (overdueMs > intervalMin * 60_000) {
       staleReason = Number.isFinite(last.battery) && last.battery <= 15
-        ? `⚠️ 위치가 늦습니다. 마지막 배터리 ${last.battery}% — 방전됐을 수 있습니다.`
-        : '⚠️ 약속한 주기보다 위치가 늦습니다. 네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
+        ? `위치가 늦습니다. 마지막 배터리 ${last.battery}% — 방전됐을 수 있습니다.`
+        : '약속한 주기보다 위치가 늦습니다. 네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
     }
   }
 
@@ -189,7 +190,7 @@ export default function WatchScreen({ onBack, initialCode }) {
             {formatDistance(distanceKm)}
             {' · '}
             {formatAgo(last?.updated_at)}
-            {Number.isFinite(last?.battery) ? ` · 🔋${last.battery}%` : ''}
+            {Number.isFinite(last?.battery) ? ` · 배터리 ${last.battery}%` : ''}
           </Text>
         </View>
 
@@ -231,7 +232,8 @@ export default function WatchScreen({ onBack, initialCode }) {
         />
 
         <Pressable style={styles.watchButton} onPress={() => startWatching(input)}>
-          <Text style={styles.watchButtonText}>👀 지켜보기 시작</Text>
+          <Icon name="eye" size={18} color="#fff" />
+          <Text style={styles.watchButtonText}>지켜보기 시작</Text>
         </Pressable>
 
         {error && (
@@ -295,7 +297,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E53935',
     paddingVertical: 14,
     borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   watchButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
   errorBox: {

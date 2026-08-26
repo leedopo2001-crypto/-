@@ -25,6 +25,7 @@ import {
 } from '../lib/notify';
 import { PREFIX_CHECKIN, sendEmergencySms } from '../lib/alert';
 import CountdownPrompt from '../components/CountdownPrompt';
+import Icon from '../components/Icon';
 
 export default function CheckInScreen({ settings, onBack }) {
   const [checkIn, setCheckIn] = useState(null);
@@ -167,13 +168,14 @@ export default function CheckInScreen({ settings, onBack }) {
           </View>
 
           <Pressable style={styles.safeButton} onPress={handleSafe}>
-            <Text style={styles.safeText}>✅ 무사히 도착</Text>
+            <Icon name="checkCircle" size={20} color="#fff" />
+            <Text style={styles.safeText}>무사히 도착</Text>
           </Pressable>
 
           {note && <Text style={styles.note}>{note}</Text>}
 
           <Text style={styles.limitation}>
-            ⚠️ 지금 구성에서 "자동"의 범위{'\n'}
+            지금 구성에서 "자동"의 범위{'\n'}
             · 앱이 열려 있어야 시간을 셀 수 있습니다. 닫혀 있으면 알림만 오고,
             앱을 열어야 그때부터 진행됩니다.{'\n'}
             · 시간이 지나면 문자 앱이 내용과 수신자까지 채워진 채로 열립니다.
@@ -231,7 +233,8 @@ export default function CheckInScreen({ settings, onBack }) {
         />
 
         <Pressable style={styles.startButton} onPress={handleStart}>
-          <Text style={styles.startText}>⏰ {minutes}분 체크인 시작</Text>
+          <Icon name="timer" size={18} color="#fff" />
+          <Text style={styles.startText}>{minutes}분 체크인 시작</Text>
         </Pressable>
 
         {note && <Text style={styles.note}>{note}</Text>}
@@ -305,7 +308,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E53935',
     paddingVertical: 16,
     borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   startText: { color: '#fff', fontSize: 16, fontWeight: '700' },
   countdownCard: {
@@ -341,7 +347,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#2E7D32',
     paddingVertical: 18,
     borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   safeText: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
   note: {

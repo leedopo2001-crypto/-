@@ -14,8 +14,28 @@ import { isSupabaseConfigured, listLinks, unlink, updateProfile } from '../api/s
 import { updateLocalIdentity } from '../lib/identity';
 import { listSessions } from '../lib/history';
 import { formatDistance } from '../lib/geo';
+import Icon from '../components/Icon';
 
-const EMOJIS = ['🙂', '🌙', '🐣', '🌿', '🔥', '🐻', '⭐️', '🍀'];
+/** 이름 첫 글자로 만든 아바타. 사진 업로드나 캐릭터 없이 사람을 구분한다. */
+function Avatar({ name, size = 44, tone = '#1A1A1E' }) {
+  const initial = (name || '').trim().charAt(0) || '·';
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: tone,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text style={{ color: '#fff', fontSize: size * 0.42, fontWeight: '700' }}>
+        {initial}
+      </Text>
+    </View>
+  );
+}
 
 function agoLabel(iso) {
   if (!iso) return null;
@@ -38,7 +58,6 @@ export default function MyPageScreen({
 }) {
   const [links, setLinks] = useState(null);
   const [name, setName] = useState(identity?.displayName || settings.userName || '');
-  const [emoji, setEmoji] = useState(identity?.emoji || '🙂');
   const [saving, setSaving] = useState(false);
   const [summary, setSummary] = useState({ count: 0, distanceKm: 0 });
 
@@ -68,12 +87,9 @@ export default function MyPageScreen({
     setSaving(true);
     try {
       if (identity && isSupabaseConfigured) {
-        await updateProfile(identity, { displayName: name.trim(), emoji });
+        await updateProfile(identity, { displayName: name.trim() });
       }
-      const next = await updateLocalIdentity({
-        displayName: name.trim(),
-        emoji,
-      });
+      const next = await updateLocalIdentity({ displayName: name.trim() });
       onIdentityChanged?.(next);
     } catch (e) {
       Alert.alert('저장 실패', e.message || '잠시 후 다시 시도해주세요.');
@@ -119,7 +135,7 @@ export default function MyPageScreen({
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* 프로필 */}
         <View style={styles.profileCard}>
-          <Text style={styles.avatar}>{emoji}</Text>
+          <Avatar name={name} size={64} />
           <TextInput
             style={styles.nameInput}
             value={name}
@@ -128,17 +144,9 @@ export default function MyPageScreen({
             placeholderTextColor="#bbb"
             maxLength={20}
           />
-          <View style={styles.emojiRow}>
-            {EMOJIS.map((e) => (
-              <Pressable
-                key={e}
-                onPress={() => setEmoji(e)}
-                style={[styles.emojiPick, emoji === e && styles.emojiPickActive]}
-              >
-                <Text style={styles.emojiPickText}>{e}</Text>
-              </Pressable>
-            ))}
-          </View>
+          <Text style={styles.profileHint}>
+            연결된 사람에게 이 이름으로 보입니다.
+          </Text>
           <Pressable
             style={styles.saveButton}
             onPress={handleSaveProfile}
@@ -147,7 +155,7 @@ export default function MyPageScreen({
             {saving ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.saveText}>프로필 저장</Text>
+              <Text style={styles.saveText}>저장</Text>
             )}
           </Pressable>
         </View>
@@ -186,7 +194,11 @@ export default function MyPageScreen({
               onPress={() => live && onWatchPeer(peer)}
               onLongPress={() => handleUnlink(peer)}
             >
-              <Text style={styles.peerEmoji}>{peer.emoji || '🙂'}</Text>
+              <Avatar
+                name={peer.display_name}
+                size={40}
+                tone={live ? '#2E7D32' : '#9AA0A6'}
+              />
               <View style={{ flex: 1 }}>
                 <Text style={styles.peerName}>
                   {peer.display_name || '이름 없음'}
@@ -273,7 +285,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: 'center',
   },
-  avatar: { fontSize: 56, marginBottom: 10 },
+  profileHint: { fontSize: 12, color: '#999', marginBottom: 16 },
   nameInput: {
     fontSize: 20,
     fontWeight: '700',
@@ -283,27 +295,9 @@ const styles = StyleSheet.create({
     borderBottomColor: '#ddd',
     paddingVertical: 6,
     width: '100%',
-    marginBottom: 16,
+    marginBottom: 8,
+    marginTop: 12,
   },
-  emojiRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    marginBottom: 16,
-  },
-  emojiPick: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  emojiPickActive: { borderColor: '#1A1A1E' },
-  emojiPickText: { fontSize: 22 },
   saveButton: {
     backgroundColor: '#1A1A1E',
     paddingVertical: 12,
@@ -341,7 +335,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   peerRowLive: { backgroundColor: '#E8F5E9' },
-  peerEmoji: { fontSize: 28 },
   peerName: { fontSize: 16, fontWeight: '600', color: '#222' },
   peerRelation: { fontSize: 13, fontWeight: '400', color: '#999' },
   peerStatus: { fontSize: 12.5, color: '#999', marginTop: 2 },

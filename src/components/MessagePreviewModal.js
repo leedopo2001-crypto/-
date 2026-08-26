@@ -74,7 +74,7 @@ export default function MessagePreviewModal({
 
           <Pressable style={styles.primaryButton} onPress={handleCopy}>
             <Text style={styles.primaryButtonText}>
-              {copied ? '✓ 복사되었습니다' : '📋 메시지 복사'}
+              {copied ? '복사되었습니다' : '메시지 복사'}
             </Text>
           </Pressable>
 

@@ -28,6 +28,7 @@ import { clearActive, loadActive, saveActive } from '../lib/activeSession';
 import { checkStillness, pruneShakeSamples } from '../lib/anomaly';
 import { PREFIX_STILLNESS, sendEmergencySms } from '../lib/alert';
 import CountdownPrompt from '../components/CountdownPrompt';
+import Icon from '../components/Icon';
 
 function formatElapsed(secondsAgo) {
   if (secondsAgo < 5) return '방금';
@@ -475,7 +476,8 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
               {session.url}
             </Text>
             <Pressable style={styles.resendButton} onPress={handleResend}>
-              <Text style={styles.resendText}>📨 연락처에 링크 다시 보내기</Text>
+              <Icon name="send" size={16} color="#1565C0" />
+              <Text style={styles.resendText}>연락처에 링크 다시 보내기</Text>
             </Pressable>
           </View>
         )}
@@ -505,7 +507,7 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
         {pendingCount > 0 && (
           <View style={styles.pendingBox}>
             <Text style={styles.pendingText}>
-              📡 전송 대기 중인 위치 {pendingCount}개 · 신호가 돌아오면 자동으로
+              전송 대기 중인 위치 {pendingCount}개 · 신호가 돌아오면 자동으로
               올라갑니다
             </Text>
           </View>
@@ -514,7 +516,7 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
         {Number.isFinite(batteryPct) && batteryPct <= 20 && (
           <View style={styles.batteryBox}>
             <Text style={styles.batteryText}>
-              🔋 배터리 {batteryPct}% · 방전되면 추적이 멈춥니다
+              배터리 {batteryPct}% · 방전되면 추적이 멈춥니다
             </Text>
           </View>
         )}
@@ -531,7 +533,8 @@ export default function TrackingScreen({ settings, onStop, resume, identity }) {
         )}
 
         <Pressable style={styles.stopButton} onPress={handleStop}>
-          <Text style={styles.stopText}>🛑 추적 종료</Text>
+          <Icon name="stop" size={18} color="#fff" />
+          <Text style={styles.stopText}>추적 종료</Text>
         </Pressable>
       </ScrollView>
 
@@ -625,7 +628,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E3F2FD',
     paddingVertical: 10,
     borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   resendText: { color: '#1565C0', fontWeight: '600', fontSize: 14 },
   statsRow: {
@@ -675,7 +681,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#E53935',
     paddingVertical: 18,
     borderRadius: 14,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
   },
   stopText: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
 });

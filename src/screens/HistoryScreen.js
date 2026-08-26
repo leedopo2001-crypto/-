@@ -9,6 +9,7 @@ import {
 
 import { listSessions } from '../lib/history';
 import { formatDistance, formatDuration } from '../lib/geo';
+import Icon from '../components/Icon';
 
 function formatDate(iso) {
   const d = new Date(iso);
@@ -38,7 +39,7 @@ export default function HistoryScreen({ onBack, onOpenSession }) {
 
       {sessions && sessions.length === 0 && (
         <View style={styles.empty}>
-          <Text style={styles.emptyEmoji}>🕘</Text>
+          <View style={styles.emptyIcon}><Icon name="clock" size={40} color="#c8ccd0" /></View>
           <Text style={styles.emptyTitle}>아직 기록이 없습니다</Text>
           <Text style={styles.emptyDesc}>
             실시간 위치 추적을 종료하면{'\n'}동선과 통계가 여기에 저장됩니다.
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     paddingTop: 100,
     paddingHorizontal: 40,
   },
-  emptyEmoji: { fontSize: 48, marginBottom: 16 },
+  emptyIcon: { marginBottom: 16 },
   emptyTitle: { fontSize: 17, fontWeight: '600', color: '#444', marginBottom: 8 },
   emptyDesc: { fontSize: 14, color: '#999', textAlign: 'center', lineHeight: 21 },
 });

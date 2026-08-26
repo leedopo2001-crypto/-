@@ -46,6 +46,6 @@ export async function sendEmergencySms({ settings, prefix = '', locationText }) 
 }
 
 export const PREFIX_CHECKIN =
-  '⏰ 자동 체크인 시간이 지났는데 응답이 없어 자동으로 보냅니다.';
+  '[자동 체크인] 시간이 지났는데 응답이 없어 자동으로 보냅니다.';
 export const PREFIX_STILLNESS =
-  '⚠️ 한동안 움직임이 없어 확인했으나 응답이 없어 자동으로 보냅니다.';
+  '[움직임 없음] 확인했으나 응답이 없어 자동으로 보냅니다.';

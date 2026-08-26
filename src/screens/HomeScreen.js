@@ -15,6 +15,7 @@ import Svg, { Circle } from 'react-native-svg';
 import { renderTemplate } from '../storage';
 import { SMS_SENT, SMS_UNAVAILABLE, SMS_WEB_FALLBACK, sendSms } from '../sms';
 import MessagePreviewModal from '../components/MessagePreviewModal';
+import Icon from '../components/Icon';
 
 const HOLD_DURATION_MS = 2000;
 
@@ -172,7 +173,7 @@ export default function HomeScreen({
       <View style={styles.topBar}>
         <Text style={styles.appName}>here</Text>
         <Pressable onPress={onOpenMyPage} hitSlop={12} style={styles.gear}>
-          <Text style={styles.gearIcon}>👤</Text>
+          <Icon name="person" size={24} color="#666" />
         </Pressable>
       </View>
 
@@ -260,7 +261,7 @@ export default function HomeScreen({
           onPress={handleTracking}
           disabled={contactCount === 0}
         >
-          <Text style={styles.trackingIcon}>📍</Text>
+          <View style={styles.trackingIcon}><Icon name="pin" size={22} color="#E65100" /></View>
           <View style={{ flex: 1 }}>
             <Text style={styles.trackingTitle}>실시간 위치 추적</Text>
             <Text style={styles.trackingSubtitle}>
@@ -274,7 +275,7 @@ export default function HomeScreen({
           style={[styles.trackingButton, styles.checkInButton]}
           onPress={onOpenCheckIn}
         >
-          <Text style={styles.trackingIcon}>⏰</Text>
+          <View style={styles.trackingIcon}><Icon name="timer" size={22} color="#4527A0" /></View>
           <View style={{ flex: 1 }}>
             <Text style={styles.checkInTitle}>자동 체크인</Text>
             <Text style={styles.checkInSubtitle}>
@@ -288,11 +289,11 @@ export default function HomeScreen({
 
         <View style={styles.secondaryRow}>
           <Pressable style={styles.secondaryButton} onPress={onOpenHistory}>
-            <Text style={styles.secondaryIcon}>🕘</Text>
+            <Icon name="clock" size={17} color="#555" />
             <Text style={styles.secondaryText}>기록</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={onOpenWatch}>
-            <Text style={styles.secondaryIcon}>👀</Text>
+            <Icon name="eye" size={17} color="#555" />
             <Text style={styles.secondaryText}>지켜보기</Text>
           </Pressable>
         </View>
@@ -382,7 +383,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   trackingButtonDisabled: { opacity: 0.5 },
-  trackingIcon: { fontSize: 24, marginRight: 12 },
+  trackingIcon: { marginRight: 12 },
   trackingTitle: { fontSize: 15, fontWeight: '600', color: '#E65100' },
   trackingSubtitle: { fontSize: 12, color: '#8D6E63', marginTop: 2 },
   trackingArrow: { fontSize: 24, color: '#E65100' },
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     gap: 6,
   },
-  secondaryIcon: { fontSize: 16 },
+  
   secondaryText: { fontSize: 14, fontWeight: '600', color: '#555' },
   interruptedBox: {
     marginHorizontal: 20,

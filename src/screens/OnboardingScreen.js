@@ -1,12 +1,13 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Icon from '../components/Icon';
 
 export default function OnboardingScreen({ onStart }) {
   return (
     <View style={styles.container}>
       <View style={styles.logoWrap}>
         <View style={styles.logoCircle}>
-          <Text style={styles.logoText}>SOS</Text>
+          <Text style={styles.logoText}>h</Text>
         </View>
       </View>
 
@@ -15,17 +16,17 @@ export default function OnboardingScreen({ onStart }) {
 
       <View style={styles.features}>
         <FeatureRow
-          emoji="📍"
+          icon="pin"
           title="GPS 위치 자동 첨부"
           desc="구글맵 링크로 현재 위치를 전달합니다"
         />
         <FeatureRow
-          emoji="💬"
+          icon="chat"
           title="긴급 연락처에 문자 전송"
           desc="저장한 연락처에 한 번에 보냅니다"
         />
         <FeatureRow
-          emoji="🔒"
+          icon="lock"
           title="실수 방지"
           desc="2초 길게 누르기로 오작동을 막습니다"
         />
@@ -38,10 +39,12 @@ export default function OnboardingScreen({ onStart }) {
   );
 }
 
-function FeatureRow({ emoji, title, desc }) {
+function FeatureRow({ icon, title, desc }) {
   return (
     <View style={styles.featureRow}>
-      <Text style={styles.featureEmoji}>{emoji}</Text>
+      <View style={styles.featureIcon}>
+        <Icon name={icon} size={22} color="#1A1A1E" />
+      </View>
       <View style={styles.featureText}>
         <Text style={styles.featureTitle}>{title}</Text>
         <Text style={styles.featureDesc}>{desc}</Text>
@@ -62,18 +65,18 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#E53935',
+    width: 108,
+    height: 108,
+    borderRadius: 28,
+    backgroundColor: '#1A1A1E',
     alignItems: 'center',
     justifyContent: 'center',
   },
   logoText: {
     color: '#fff',
-    fontSize: 32,
-    fontWeight: 'bold',
-    letterSpacing: 3,
+    fontSize: 60,
+    fontWeight: '600',
+    lineHeight: 70,
   },
   title: {
     textAlign: 'center',
@@ -97,9 +100,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  featureEmoji: {
-    fontSize: 32,
-    marginRight: 16,
+  featureIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F1F3F5',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 14,
   },
   featureText: {
     flex: 1,

@@ -81,7 +81,7 @@ export function toSummaryText(session) {
   const s = session.stats || {};
   const when = new Date(session.startedAt).toLocaleString('ko-KR');
   const lines = [
-    `📍 ${session.userName ? `${session.userName} · ` : ''}${when}`,
+    `${session.userName ? `${session.userName} · ` : ''}${when}`,
     `이동 ${formatDistance(s.distanceKm || 0)} · ${formatDuration(s.durationMs || 0)}`,
   ];
   if (Number.isFinite(s.avgSpeedKmh)) {

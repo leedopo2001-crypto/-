@@ -4,6 +4,7 @@ import Svg, { Circle, Polyline } from 'react-native-svg';
 
 import { buildTrack, positionAtProgress } from '../lib/replay';
 import { formatDistance } from '../lib/geo';
+import Icon from './Icon';
 
 const VIEW_W = 320;
 const VIEW_H = 180;
@@ -205,15 +206,16 @@ export default function PathPreview({ points, stays = [] }) {
 
       {stays.length > 0 && (
         <Text style={styles.legend}>
-          ⬤ 출발 · ⬤ 도착 · ⭘ 점선 원은 머문 곳
+          회색 점 출발 · 빨간 점 도착 · 점선 원은 머문 곳
         </Text>
       )}
 
       <Pressable style={styles.playButton} onPress={play}>
+        <Icon name={playing ? 'stop' : 'play'} size={14} color="#555" />
         <Text style={styles.playText}>
           {playing
-            ? `⏹ 재생 중지 · ${Math.round(progress * 100)}% · ${formatDistance(at?.distanceKm || 0)}`
-            : '▶ 경로 재생'}
+            ? `재생 중지 · ${Math.round(progress * 100)}% · ${formatDistance(at?.distanceKm || 0)}`
+            : '경로 재생'}
         </Text>
       </Pressable>
     </View>
@@ -237,7 +239,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5',
     paddingVertical: 12,
     borderRadius: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
   },
   playText: { color: '#555', fontSize: 14, fontWeight: '600' },
   legend: {
