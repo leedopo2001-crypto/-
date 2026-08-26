@@ -71,12 +71,30 @@ REVOKE ALL ON public.locations FROM anon, authenticated;
 -- 인자나 반환 타입이 바뀐 함수는 CREATE OR REPLACE 로 못 고친다. 그냥 두면
 -- v1 시그니처가 오버로드로 남아 호출이 모호해지므로, 먼저 확실히 지운다.
 
-DROP FUNCTION IF EXISTS public.here_create_session(TEXT);
-DROP FUNCTION IF EXISTS public.here_create_session(TEXT, SMALLINT);
-DROP FUNCTION IF EXISTS public.here_push_location(TEXT, UUID, DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION);
-DROP FUNCTION IF EXISTS public.here_push_location(TEXT, UUID, DOUBLE PRECISION, DOUBLE PRECISION, DOUBLE PRECISION, SMALLINT, SMALLINT);
-DROP FUNCTION IF EXISTS public.here_get_session(TEXT);
-DROP FUNCTION IF EXISTS public.here_get_locations(TEXT, TIMESTAMPTZ);
+-- 이 파일이 새로 만드는 함수들의 기존 정의를 이름으로 찾아 모두 지운다.
+--
+-- 예전에는 시그니처를 손으로 나열했는데, 인자가 하나 늘어나면 목록에서
+-- 빠뜨리기 쉽고 그러면 두 번째 실행이 "already exists" 로 막힌다.
+-- 실제로 here_push_location 에 p_recorded_at 을 추가했을 때 그렇게 됐다.
+-- 이름으로 찾아 지우면 시그니처가 어떻게 바뀌어도 어긋나지 않는다.
+--
+-- 대신 이름으로 지우니 뒤 파일이 덮어쓴 정의까지 같이 없어진다. 예를 들어
+-- here_create_session 은 v3 에서 인자 4개짜리로 바뀌는데, 이 파일을 다시
+-- 돌리면 그게 2개짜리로 되돌아간다. 그래서 이 파일을 다시 실행할 때는
+-- v3, v4 도 순서대로 같이 실행해야 한다.
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_create_session', 'here_push_location', 'here_get_session', 'here_get_locations'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 -- 헷갈리는 글자(0/o, 1/l, i)를 뺀 알파벳으로 8자리 코드를 만든다.
 -- 31^8 ≈ 8.5e11 이라 추측으로 남의 세션을 찾기는 사실상 불가능하다.

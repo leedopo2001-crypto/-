@@ -73,12 +73,20 @@ REVOKE ALL ON public.links    FROM anon, authenticated;
 
 -- ===== 3) 함수 =====
 
-DROP FUNCTION IF EXISTS public.here_create_profile(TEXT, TEXT);
-DROP FUNCTION IF EXISTS public.here_update_profile(UUID, UUID, TEXT, TEXT);
-DROP FUNCTION IF EXISTS public.here_create_invite(UUID, UUID);
-DROP FUNCTION IF EXISTS public.here_accept_invite(UUID, UUID, TEXT, TEXT);
-DROP FUNCTION IF EXISTS public.here_list_links(UUID, UUID);
-DROP FUNCTION IF EXISTS public.here_unlink(UUID, UUID, UUID);
+-- 이 파일이 만드는 함수들의 기존 정의를 이름으로 찾아 지운다. (설명은 schema.sql 참고)
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_create_profile', 'here_update_profile', 'here_create_invite', 'here_accept_invite', 'here_list_links', 'here_unlink'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 /* 호출자가 정말 그 기기인지 확인한다. 모든 쓰기의 첫 줄. */
 CREATE OR REPLACE FUNCTION public.here_assert_owner(p_user_id UUID, p_owner_token UUID)
@@ -309,8 +317,20 @@ $$;
 -- v2 시그니처를 대체한다. p_user_id 를 주면 그 사람의 세션으로 기록되어
 -- 연결된 사람들이 코드 없이도 찾을 수 있다.
 
-DROP FUNCTION IF EXISTS public.here_create_session(TEXT, SMALLINT);
-DROP FUNCTION IF EXISTS public.here_create_session(TEXT, SMALLINT, UUID, UUID);
+-- 이 파일이 만드는 함수들의 기존 정의를 이름으로 찾아 지운다. (설명은 schema.sql 참고)
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_create_session'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 CREATE FUNCTION public.here_create_session(
   p_user_name TEXT DEFAULT NULL,

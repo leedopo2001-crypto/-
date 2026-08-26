@@ -30,6 +30,24 @@ WHERE table_schema = 'public'
   AND table_name IN ('alerts', 'watchdog_config')
 
 UNION ALL SELECT
+  '최신 함수',
+  count(*)::text || ' / 4',
+  CASE WHEN count(*) = 4 THEN 'OK'
+       ELSE '이름은 맞지만 옛 버전입니다 — 세 파일을 순서대로 다시 실행하세요' END
+FROM pg_proc p
+JOIN pg_namespace n ON n.oid = p.pronamespace
+WHERE n.nspname = 'public'
+  AND (
+    -- v3: 세션을 계정에 묶으려면 인자가 4개여야 한다 (schema.sql 것은 2개)
+    (p.oid::regprocedure::text = 'here_create_session(text,smallint,uuid,uuid)')
+    -- 오프라인 큐가 recorded_at 을 같이 보내므로 인자가 8개여야 한다
+    OR (p.oid::regprocedure::text = 'here_push_location(text,uuid,double precision,double precision,double precision,smallint,smallint,timestamp with time zone)')
+    -- v4: 신호 끊김을 보려면 overdue 를 돌려줘야 한다
+    OR (p.proname IN ('here_get_session', 'here_list_links')
+        AND pg_get_function_result(p.oid) LIKE '%overdue boolean%')
+  )
+
+UNION ALL SELECT
   'RLS 잠금',
   count(*)::text || ' / 7',
   CASE WHEN count(*) = 7 THEN 'OK — 테이블 직접 접근이 막혀 있습니다'
@@ -53,7 +71,9 @@ UNION ALL SELECT
        ELSE 'OK' END;
 
 -- 빠진 함수가 있으면 여기서 드러납니다 (20개 전부 나와야 정상)
-SELECT p.proname AS 함수
+-- 인자까지 같이 보여주므로 "최신 함수" 가 부족할 때 어느 것이 옛 버전인지도
+-- 여기서 확인할 수 있습니다.
+SELECT p.oid::regprocedure::text AS 함수
 FROM pg_proc p
 JOIN pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname = 'public' AND p.proname LIKE 'here\_%'

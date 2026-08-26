@@ -64,7 +64,20 @@ $$;
 
 -- ===== 3) 조회 함수에 지연 상태를 얹는다 =====
 
-DROP FUNCTION IF EXISTS public.here_get_session(TEXT);
+-- 이 파일이 만드는 함수들의 기존 정의를 이름으로 찾아 지운다. (설명은 schema.sql 참고)
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_get_session'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 CREATE FUNCTION public.here_get_session(p_code TEXT)
 RETURNS TABLE (
@@ -104,7 +117,20 @@ AS $$
    WHERE s.short_code = p_code;
 $$;
 
-DROP FUNCTION IF EXISTS public.here_list_links(UUID, UUID);
+-- 이 파일이 만드는 함수들의 기존 정의를 이름으로 찾아 지운다. (설명은 schema.sql 참고)
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_list_links'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 CREATE FUNCTION public.here_list_links(p_user_id UUID, p_owner_token UUID)
 RETURNS TABLE (
@@ -169,8 +195,20 @@ $$;
 
 -- ===== 4) 발송 설정 =====
 
-DROP FUNCTION IF EXISTS public.here_set_webhook(UUID, UUID, TEXT, BOOLEAN);
-DROP FUNCTION IF EXISTS public.here_get_webhook(UUID, UUID);
+-- 이 파일이 만드는 함수들의 기존 정의를 이름으로 찾아 지운다. (설명은 schema.sql 참고)
+DO $drop$
+DECLARE r RECORD;
+BEGIN
+  FOR r IN
+    SELECT p.oid::regprocedure AS sig
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'public'
+       AND p.proname = ANY (ARRAY['here_set_webhook', 'here_get_webhook'])
+  LOOP
+    EXECUTE format('DROP FUNCTION IF EXISTS %s CASCADE', r.sig);
+  END LOOP;
+END $drop$;
 
 CREATE FUNCTION public.here_set_webhook(
   p_user_id UUID,
