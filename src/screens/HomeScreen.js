@@ -32,6 +32,8 @@ export default function HomeScreen({
   onStartTracking,
   onOpenHistory,
   onOpenWatch,
+  onOpenCheckIn,
+  checkInRemaining,
   interrupted,
   onResume,
   onDiscard,
@@ -267,6 +269,22 @@ export default function HomeScreen({
           <Text style={styles.trackingArrow}>›</Text>
         </Pressable>
 
+        <Pressable
+          style={[styles.trackingButton, styles.checkInButton]}
+          onPress={onOpenCheckIn}
+        >
+          <Text style={styles.trackingIcon}>⏰</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.checkInTitle}>자동 체크인</Text>
+            <Text style={styles.checkInSubtitle}>
+              {checkInRemaining
+                ? `${checkInRemaining} 남음 · 누르면 해제할 수 있습니다`
+                : '시간 안에 응답 없으면 자동으로 알립니다'}
+            </Text>
+          </View>
+          <Text style={styles.checkInArrow}>›</Text>
+        </Pressable>
+
         <View style={styles.secondaryRow}>
           <Pressable style={styles.secondaryButton} onPress={onOpenHistory}>
             <Text style={styles.secondaryIcon}>🕘</Text>
@@ -367,6 +385,10 @@ const styles = StyleSheet.create({
   trackingTitle: { fontSize: 15, fontWeight: '600', color: '#E65100' },
   trackingSubtitle: { fontSize: 12, color: '#8D6E63', marginTop: 2 },
   trackingArrow: { fontSize: 24, color: '#E65100' },
+  checkInButton: { backgroundColor: '#EDE7F6', marginTop: 10 },
+  checkInTitle: { fontSize: 15, fontWeight: '600', color: '#4527A0' },
+  checkInSubtitle: { fontSize: 12, color: '#7E57C2', marginTop: 2 },
+  checkInArrow: { fontSize: 24, color: '#4527A0' },
   secondaryRow: {
     flexDirection: 'row',
     gap: 10,

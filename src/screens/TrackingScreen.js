@@ -25,6 +25,9 @@ import { formatDistance, haversineKm } from '../lib/geo';
 import { saveSession } from '../lib/history';
 import { shakeLabel, startShakeMonitor } from '../lib/shake';
 import { clearActive, loadActive, saveActive } from '../lib/activeSession';
+import { checkStillness, pruneShakeSamples } from '../lib/anomaly';
+import { PREFIX_STILLNESS, sendEmergencySms } from '../lib/alert';
+import CountdownPrompt from '../components/CountdownPrompt';
 
 function formatElapsed(secondsAgo) {
   if (secondsAgo < 5) return '방금';
@@ -61,6 +64,8 @@ export default function TrackingScreen({ settings, onStop, resume }) {
   const [shakeIndex, setShakeIndex] = useState(null);
   const [batteryPct, setBatteryPct] = useState(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [stillnessPrompt, setStillnessPrompt] = useState(false);
+  const [anomalyNote, setAnomalyNote] = useState(null);
 
   const tickTimerRef = useRef(null);
   const pushTimerRef = useRef(null);
@@ -70,6 +75,11 @@ export default function TrackingScreen({ settings, onStop, resume }) {
   const queueRef = useRef([]);
   const shakeRef = useRef(null);
   const batteryRef = useRef(null);
+  // 흔들림은 위치보다 촘촘히 표본을 남긴다. 5분 주기 위치만으로는 "움직였는가"를
+  // 판단할 표본이 두세 개뿐이라 근거가 너무 얇다.
+  const shakeSamplesRef = useRef([]);
+  const snoozeUntilRef = useRef(0);
+  const promptOpenRef = useRef(false);
   const startedAtRef = useRef(
     (resume && resume.startedAt) || new Date().toISOString(),
   );
@@ -80,9 +90,22 @@ export default function TrackingScreen({ settings, onStop, resume }) {
   }, []);
 
   useEffect(() => {
+    let lastSampleAt = 0;
     const stop = startShakeMonitor((index) => {
       shakeRef.current = index;
       setShakeIndex(index);
+
+      // 센서는 0.2초마다 오지만 판정에는 30초 간격이면 충분하다.
+      // 그 구간의 최댓값을 남겨야 짧은 움직임을 놓치지 않는다.
+      const now = Date.now();
+      const samples = shakeSamplesRef.current;
+      if (now - lastSampleAt >= 30_000) {
+        lastSampleAt = now;
+        samples.push({ t: now, index });
+        shakeSamplesRef.current = pruneShakeSamples(samples, now);
+      } else if (samples.length > 0 && index > samples[samples.length - 1].index) {
+        samples[samples.length - 1].index = index;
+      }
     });
     return stop;
   }, []);
@@ -125,6 +148,56 @@ export default function TrackingScreen({ settings, onStop, resume }) {
     }, 1000);
     return () => clearInterval(tickTimerRef.current);
   }, []);
+
+  // 이상 감지: 30초마다 최근 창을 다시 판정한다.
+  useEffect(() => {
+    const anomaly = settings.anomaly;
+    if (!anomaly?.enabled) return undefined;
+
+    const timer = setInterval(() => {
+      if (stoppedRef.current || promptOpenRef.current) return;
+      if (Date.now() < snoozeUntilRef.current) return;
+
+      const verdict = checkStillness({
+        points: pointsRef.current,
+        shakeSamples: shakeSamplesRef.current,
+        config: anomaly,
+        nowMs: Date.now(),
+      });
+
+      if (verdict.still) {
+        promptOpenRef.current = true;
+        setStillnessPrompt(true);
+      }
+    }, 30_000);
+
+    return () => clearInterval(timer);
+  }, [settings.anomaly]);
+
+  function handleStillnessSafe() {
+    promptOpenRef.current = false;
+    setStillnessPrompt(false);
+    // 같은 자리에 계속 있으면 곧바로 다시 뜨므로, 한 창만큼 쉬어준다.
+    const windowMs = (settings.anomaly?.windowMinutes || 10) * 60_000;
+    snoozeUntilRef.current = Date.now() + windowMs;
+    setAnomalyNote(null);
+  }
+
+  async function handleStillnessTimeout() {
+    promptOpenRef.current = false;
+    setStillnessPrompt(false);
+    snoozeUntilRef.current = Date.now() + 30 * 60_000;
+
+    const { result } = await sendEmergencySms({
+      settings,
+      prefix: PREFIX_STILLNESS,
+    });
+    setAnomalyNote(
+      result === 'no-contacts'
+        ? '움직임이 없어 알리려 했지만 등록된 연락처가 없습니다.'
+        : '움직임이 없어 긴급 연락처에 알렸습니다.',
+    );
+  }
 
   useEffect(() => {
     const sub = AppState.addEventListener('change', (next) => {
@@ -449,10 +522,25 @@ export default function TrackingScreen({ settings, onStop, resume }) {
           Expo Go에서는 앱을 켜둔 상태여야 합니다.
         </Text>
 
+        {anomalyNote && (
+          <View style={styles.anomalyBox}>
+            <Text style={styles.anomalyText}>{anomalyNote}</Text>
+          </View>
+        )}
+
         <Pressable style={styles.stopButton} onPress={handleStop}>
           <Text style={styles.stopText}>🛑 추적 종료</Text>
         </Pressable>
       </ScrollView>
+
+      <CountdownPrompt
+        visible={stillnessPrompt}
+        title="괜찮으세요?"
+        description={`${settings.anomaly?.windowMinutes || 10}분 동안 위치와 움직임이 모두 없었습니다.\n응답이 없으면 긴급 연락처에 자동으로 알립니다.`}
+        seconds={60}
+        onSafe={handleStillnessSafe}
+        onTimeout={handleStillnessTimeout}
+      />
 
       <MessagePreviewModal
         visible={previewMessage !== null}
@@ -567,6 +655,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   batteryText: { color: '#B71C1C', fontSize: 13, lineHeight: 19 },
+  anomalyBox: {
+    backgroundColor: '#E8F5E9',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  anomalyText: { color: '#2E7D32', fontSize: 13, lineHeight: 19 },
   hint: {
     fontSize: 12,
     color: '#888',

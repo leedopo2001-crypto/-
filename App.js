@@ -13,6 +13,8 @@ import TrackingScreen from './src/screens/TrackingScreen';
 import HistoryScreen from './src/screens/HistoryScreen';
 import HistoryDetailScreen from './src/screens/HistoryDetailScreen';
 import WatchScreen from './src/screens/WatchScreen';
+import CheckInScreen from './src/screens/CheckInScreen';
+import { formatRemaining, loadCheckIn, remainingMs } from './src/lib/checkin';
 
 export default function App() {
   const [screen, setScreen] = useState('loading');
@@ -21,6 +23,8 @@ export default function App() {
   // 앱이 강제 종료되어 끝맺지 못한 추적. 있으면 홈에 복구 배너가 뜬다.
   const [interrupted, setInterrupted] = useState(null);
   const [resumeFrom, setResumeFrom] = useState(null);
+  const [checkIn, setCheckIn] = useState(null);
+  const [, setClock] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -28,10 +32,23 @@ export default function App() {
       setSettings(loaded);
       if (loaded.onboarded) {
         setInterrupted(await loadActive());
+        setCheckIn(await loadCheckIn());
       }
       setScreen(loaded.onboarded ? 'home' : 'onboarding');
     })();
   }, []);
+
+  // 홈의 체크인 남은 시간 표시를 갱신한다.
+  useEffect(() => {
+    if (screen !== 'home') return undefined;
+    const timer = setInterval(() => setClock((v) => v + 1), 1000);
+    return () => clearInterval(timer);
+  }, [screen]);
+
+  const checkInRemaining =
+    checkIn && remainingMs(checkIn) > 0
+      ? formatRemaining(remainingMs(checkIn))
+      : null;
 
   const handleResume = () => {
     setResumeFrom(interrupted);
@@ -115,6 +132,8 @@ export default function App() {
           }}
           onOpenHistory={() => setScreen('history')}
           onOpenWatch={() => setScreen('watch')}
+          onOpenCheckIn={() => setScreen('checkin')}
+          checkInRemaining={checkInRemaining}
           interrupted={interrupted}
           onResume={handleResume}
           onDiscard={handleDiscard}
@@ -141,6 +160,16 @@ export default function App() {
         />
       )}
       {screen === 'watch' && <WatchScreen onBack={goHome} />}
+      {screen === 'checkin' && (
+        <CheckInScreen
+          settings={settings}
+          onBack={async () => {
+            // 체크인 화면에서 시작/해제한 결과를 홈 표시에 반영한다.
+            setCheckIn(await loadCheckIn());
+            goHome();
+          }}
+        />
+      )}
     </View>
   );
 }

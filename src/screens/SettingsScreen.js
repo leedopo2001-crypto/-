@@ -17,6 +17,7 @@ import {
   formatPhoneDisplay,
   normalizePhone,
 } from '../storage';
+import { DEFAULT_ANOMALY, SENSITIVITY_PRESETS } from '../lib/anomaly';
 
 export default function SettingsScreen({
   initialSettings,
@@ -37,6 +38,10 @@ export default function SettingsScreen({
   );
   const [newName, setNewName] = useState('');
   const [newPhone, setNewPhone] = useState('');
+  const [anomaly, setAnomaly] = useState({
+    ...DEFAULT_ANOMALY,
+    ...(initialSettings.anomaly || {}),
+  });
 
   const addContact = () => {
     const name = newName.trim();
@@ -76,9 +81,16 @@ export default function SettingsScreen({
       trackingMessageTemplate:
         trackingMessageTemplate.trim() || DEFAULT_TRACKING_MESSAGE_TEMPLATE,
       trackingIntervalMinutes: intervalMinutes,
+      anomaly,
       onboarded: true,
     });
   };
+
+  const matchedPreset = SENSITIVITY_PRESETS.find(
+    (p) =>
+      p.windowMinutes === anomaly.windowMinutes &&
+      p.maxShake === anomaly.maxShake,
+  );
 
   return (
     <KeyboardAvoidingView
@@ -229,6 +241,64 @@ export default function SettingsScreen({
           짧을수록 배터리 소모가 커집니다. 5분이 권장값입니다.
         </Text>
 
+        <View style={styles.separator} />
+
+        <Text style={styles.sectionLabel}>이상 감지</Text>
+        <Pressable
+          style={styles.toggleRow}
+          onPress={() => setAnomaly({ ...anomaly, enabled: !anomaly.enabled })}
+        >
+          <View style={{ flex: 1 }}>
+            <Text style={styles.toggleTitle}>움직임이 없으면 확인하기</Text>
+            <Text style={styles.toggleDesc}>
+              추적 중 위치와 흔들림이 동시에 멈추면 확인창을 띄우고,
+              응답이 없으면 긴급 연락처에 자동으로 알립니다.
+            </Text>
+          </View>
+          <View style={[styles.switchTrack, anomaly.enabled && styles.switchOn]}>
+            <View style={[styles.switchKnob, anomaly.enabled && styles.knobOn]} />
+          </View>
+        </Pressable>
+
+        {anomaly.enabled && (
+          <>
+            <View style={styles.intervalRow}>
+              {SENSITIVITY_PRESETS.map((preset) => {
+                const active = matchedPreset?.key === preset.key;
+                return (
+                  <Pressable
+                    key={preset.key}
+                    onPress={() =>
+                      setAnomaly({
+                        ...anomaly,
+                        windowMinutes: preset.windowMinutes,
+                        maxMoveMeters: preset.maxMoveMeters,
+                        maxShake: preset.maxShake,
+                      })
+                    }
+                    style={[styles.intervalPill, active && styles.intervalPillActive]}
+                  >
+                    <Text
+                      style={[styles.intervalText, active && styles.intervalTextActive]}
+                    >
+                      {preset.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            <Text style={styles.hint}>
+              현재: {anomaly.windowMinutes}분 동안 {anomaly.maxMoveMeters}m 이내에
+              머물고 흔들림이 없으면 확인합니다.
+              {'\n'}전송 주기보다 창이 짧으면 판정할 근거가 부족해 잘 뜨지 않습니다.
+              전송 주기의 2배 이상을 권장합니다.
+              {'\n\n'}폰을 책상에 두고 앉아 있어도 같게 보이므로, 바로 알리지 않고
+              먼저 확인창을 띄웁니다. 자동 발송 시에도 iOS 는 마지막 "보내기"를
+              사람이 눌러야 합니다.
+            </Text>
+          </>
+        )}
+
         <View style={{ height: 60 }} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -339,4 +409,31 @@ const styles = StyleSheet.create({
   intervalPillActive: { backgroundColor: '#E53935', borderColor: '#E53935' },
   intervalText: { fontSize: 15, fontWeight: '600', color: '#555' },
   intervalTextActive: { color: '#fff' },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 10,
+    gap: 12,
+  },
+  toggleTitle: { fontSize: 15, fontWeight: '600', color: '#222' },
+  toggleDesc: { fontSize: 12, color: '#888', marginTop: 4, lineHeight: 18 },
+  switchTrack: {
+    width: 48,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#ddd',
+    padding: 3,
+    justifyContent: 'center',
+  },
+  switchOn: { backgroundColor: '#E53935' },
+  switchKnob: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#fff',
+  },
+  knobOn: { alignSelf: 'flex-end' },
 });

@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { DEFAULT_ANOMALY } from './lib/anomaly';
 
 const KEY_SETTINGS = '@here:settings:v2';
 
@@ -17,6 +18,7 @@ const defaultSettings = {
   messageTemplate: DEFAULT_MESSAGE_TEMPLATE,
   trackingMessageTemplate: DEFAULT_TRACKING_MESSAGE_TEMPLATE,
   trackingIntervalMinutes: 5,
+  anomaly: DEFAULT_ANOMALY,
 };
 
 export async function loadSettings() {
@@ -24,7 +26,12 @@ export async function loadSettings() {
     const raw = await AsyncStorage.getItem(KEY_SETTINGS);
     if (!raw) return { ...defaultSettings };
     const parsed = JSON.parse(raw);
-    return { ...defaultSettings, ...parsed };
+    return {
+      ...defaultSettings,
+      ...parsed,
+      // 중첩 객체는 얕은 병합으로 덮이면 새로 추가된 항목이 사라진다.
+      anomaly: { ...DEFAULT_ANOMALY, ...(parsed.anomaly || {}) },
+    };
   } catch {
     return { ...defaultSettings };
   }
