@@ -18,7 +18,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.here.sos",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "긴급 상황 시 현재 위치를 공유하기 위해 위치 권한이 필요합니다."
+        "NSLocationWhenInUseUsageDescription": "긴급 상황 시 현재 위치를 공유하기 위해 위치 권한이 필요합니다.",
+        "NSMotionUsageDescription": "흔들림이 멈춘 것을 알아차리기 위해 움직임 정보를 씁니다. 기기 밖으로 내보내지 않습니다."
       }
     },
     "android": {
@@ -29,8 +30,7 @@
       "package": "com.here.sos",
       "permissions": [
         "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "SEND_SMS"
+        "ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
@@ -43,10 +43,19 @@
       "themeColor": "#1A1A1E"
     },
     "plugins": [
+      "expo-dev-client",
       [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "긴급 상황 시 현재 위치를 공유하기 위해 위치 권한이 필요합니다."
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "그날의 동선에 사진을 겹쳐 보기 위해 사진 접근이 필요합니다. 사진은 기기 밖으로 나가지 않습니다.",
+          "savePhotosPermission": "그날의 동선에 사진을 겹쳐 보기 위해 사진 접근이 필요합니다. 사진은 기기 밖으로 나가지 않습니다.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ]

@@ -106,6 +106,50 @@ SQL Editor 에서 **순서대로** 실행합니다.
 
 ---
 
+## 4. 빌드 걸기
+
+```powershell
+cd C:\dev\here
+git pull
+npm install
+npx eas-cli build --profile development --platform android
+```
+
+`npm install` 을 꼭 같이 하세요. 개발 빌드에 필요한 `expo-dev-client` 가
+새로 들어갔습니다.
+
+**중간에 물어보는 것들** — 다 기본값으로 넘어가면 됩니다.
+
+| 질문 | 답 | 무슨 뜻인가 |
+|---|---|---|
+| `Would you like to create a project for @아이디/here?` | **Yes** | Expo 서버에 프로젝트를 만들고 `app.json` 에 `projectId` 를 적어줍니다 |
+| `Generate a new Android Keystore?` | **Yes** | 앱 서명 열쇠. Expo 가 만들어 보관합니다. 신경 안 쓰셔도 됩니다 |
+| `Commit and continue?` (커밋 안 된 변경이 있을 때) | **Yes** | EAS 는 git 에 올라간 것만 빌드 서버로 보냅니다. `projectId` 가 방금 추가돼서 뜹니다 |
+
+그다음 업로드 → 대기열 → 빌드. **10~30분** 걸립니다. 창을 닫아도 되고,
+https://expo.dev/accounts/[아이디]/projects/here/builds 에서 진행 상황을
+볼 수 있습니다.
+
+끝나면 터미널에 링크와 QR 이 뜹니다. **폰 카메라로 QR 을 찍으면** 바로
+APK 를 받습니다. "알 수 없는 앱 설치" 를 허용하라고 나오면 허용하시면 됩니다.
+
+### 설치한 뒤
+
+```powershell
+npx expo start --dev-client -c
+```
+
+Expo Go 가 아니라 방금 설치한 **`here` 앱**을 열면 개발 서버에 붙습니다.
+`-c` 는 캐시를 비우는 옵션인데, `.env` 값이 바뀌었을 때 이게 없으면 옛
+값이 그대로 박혀 나옵니다.
+
+### 빌드가 실패하면
+
+터미널에 뜨는 **로그 링크를 그대로 주세요.** 어느 단계에서 깨졌는지 보고
+고치겠습니다. 대부분은 의존성 버전이나 설정 문제라 금방 잡힙니다.
+
+---
+
 ## 무엇이 달라지나
 
 | | Expo Go (지금) | 개발 빌드 |
@@ -146,6 +190,11 @@ SQL Editor 에서 **순서대로** 실행합니다.
 | **볼륨키 트리거** | 네이티브 모듈 | 폰을 보지 않고 발동. 납치 상황을 상정한 기능 |
 | **문자 자동 발송** | `SEND_SMS` + 네이티브 모듈 | **Android 만.** iOS 는 정책상 영구 불가. 개인용 빌드는 문제없지만 Play 출시는 별도 심사 |
 | **위젯** | `react-native-android-widget` | 잠금화면에서 바로 |
+
+> `SEND_SMS` 권한은 지금은 **빼놨습니다.** 현재 문자 보내기는 기본 메시지
+> 앱을 열어주는 방식이라 이 권한이 필요 없는데, 선언만 해두면 설치할 때
+> "문자 메시지 전송" 이라는 무서운 안내가 뜹니다. 실제로 자동 발송을 만들
+> 때 다시 넣겠습니다.
 
 ---
 
