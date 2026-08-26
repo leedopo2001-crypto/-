@@ -190,8 +190,10 @@ here/
 │   └── serve-viewer.mjs         ← npm run viewer (로컬에서 뷰어 띄우기)
 ├── supabase/
 │   └── schema.sql               ← Supabase SQL Editor 에 실행
+├── eas.json                     ← EAS 빌드 프로필
 ├── .env.example
-└── SETUP.md                     ← 전체 배포 가이드 (여기 먼저 읽기)
+├── SETUP.md                     ← 전체 배포 가이드 (여기 먼저 읽기)
+└── EAS.md                       ← 개발 빌드 준비물 (백그라운드·위젯 하려면)
 ```
 
 ## 빠른 시작
