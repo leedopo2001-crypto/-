@@ -20,6 +20,9 @@ import {
 import { renderTemplate } from '../storage';
 import { SMS_WEB_FALLBACK, sendSms } from '../sms';
 import MessagePreviewModal from '../components/MessagePreviewModal';
+import { formatDistance, haversineKm } from '../lib/geo';
+import { saveSession } from '../lib/history';
+import { shakeLabel, startShakeMonitor } from '../lib/shake';
 
 function formatElapsed(secondsAgo) {
   if (secondsAgo < 5) return '방금';
@@ -50,15 +53,29 @@ export default function TrackingScreen({ settings, onStop }) {
   const [error, setError] = useState(null);
   const [tick, setTick] = useState(0);
   const [previewMessage, setPreviewMessage] = useState(null);
+  const [distanceKm, setDistanceKm] = useState(0);
+  const [speedKmh, setSpeedKmh] = useState(null);
+  const [shakeIndex, setShakeIndex] = useState(null);
 
   const tickTimerRef = useRef(null);
   const pushTimerRef = useRef(null);
   const stoppedRef = useRef(false);
   const sessionRef = useRef(null);
+  const pointsRef = useRef([]);
+  const shakeRef = useRef(null);
+  const startedAtRef = useRef(new Date().toISOString());
 
   useEffect(() => {
     activateKeepAwakeAsync('tracking');
     return () => deactivateKeepAwake('tracking');
+  }, []);
+
+  useEffect(() => {
+    const stop = startShakeMonitor((index) => {
+      shakeRef.current = index;
+      setShakeIndex(index);
+    });
+    return stop;
   }, []);
 
   useEffect(() => {
@@ -152,6 +169,25 @@ export default function TrackingScreen({ settings, onStop }) {
         longitude: loc.coords.longitude,
         accuracy: loc.coords.accuracy,
       });
+
+      // 로컬 기록: 종료 후에도 이 기기에서 동선/통계를 볼 수 있게 쌓아둔다.
+      const point = {
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+        accuracy: loc.coords.accuracy ?? null,
+        t: new Date().toISOString(),
+        shake: shakeRef.current,
+      };
+      const previous = pointsRef.current.at(-1);
+      pointsRef.current.push(point);
+
+      if (previous) {
+        const legKm = haversineKm(previous, point);
+        setDistanceKm((km) => km + legKm);
+        const dtMs = new Date(point.t) - new Date(previous.t);
+        setSpeedKmh(dtMs > 0 ? legKm / (dtMs / 3_600_000) : null);
+      }
+
       setUpdateCount((c) => c + 1);
       setLastSentAt(new Date());
     } catch (e) {
@@ -191,6 +227,19 @@ export default function TrackingScreen({ settings, onStop }) {
                   sessionRef.current.shortCode,
                   sessionRef.current.ownerToken,
                 );
+              } catch {}
+
+              // 앱을 강제 종료하면 여기까지 못 오므로, 정상 종료했을 때만 남는다.
+              try {
+                await saveSession({
+                  shortCode: sessionRef.current.shortCode,
+                  url: sessionRef.current.url,
+                  userName: settings.userName || '',
+                  startedAt: startedAtRef.current,
+                  endedAt: new Date().toISOString(),
+                  intervalMinutes,
+                  points: pointsRef.current,
+                });
               } catch {}
             }
             onStop();
@@ -243,6 +292,22 @@ export default function TrackingScreen({ settings, onStop }) {
           <Stat label="업데이트" value={`${updateCount}회`} />
           <Stat label="마지막" value={lastSentLabel} />
           <Stat label="다음" value={nextLabel} />
+        </View>
+
+        <View style={styles.statsRow}>
+          <Stat label="이동 거리" value={formatDistance(distanceKm)} />
+          <Stat
+            label="최근 속도"
+            value={Number.isFinite(speedKmh) ? `${speedKmh.toFixed(1)} km/h` : '—'}
+          />
+          <Stat
+            label="흔들림"
+            value={
+              Number.isFinite(shakeIndex)
+                ? `${shakeIndex} · ${shakeLabel(shakeIndex)}`
+                : '—'
+            }
+          />
         </View>
 
         <Text style={styles.hint}>

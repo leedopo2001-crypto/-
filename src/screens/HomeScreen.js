@@ -30,6 +30,8 @@ export default function HomeScreen({
   settings,
   onOpenSettings,
   onStartTracking,
+  onOpenHistory,
+  onOpenWatch,
 }) {
   const [locationGranted, setLocationGranted] = useState(false);
   const [permissionMessage, setPermissionMessage] = useState('');
@@ -245,6 +247,17 @@ export default function HomeScreen({
           <Text style={styles.trackingArrow}>›</Text>
         </Pressable>
 
+        <View style={styles.secondaryRow}>
+          <Pressable style={styles.secondaryButton} onPress={onOpenHistory}>
+            <Text style={styles.secondaryIcon}>🕘</Text>
+            <Text style={styles.secondaryText}>기록</Text>
+          </Pressable>
+          <Pressable style={styles.secondaryButton} onPress={onOpenWatch}>
+            <Text style={styles.secondaryIcon}>👀</Text>
+            <Text style={styles.secondaryText}>지켜보기</Text>
+          </Pressable>
+        </View>
+
         {permissionMessage ? (
           <Text style={styles.permissionText}>{permissionMessage}</Text>
         ) : null}
@@ -334,6 +347,24 @@ const styles = StyleSheet.create({
   trackingTitle: { fontSize: 15, fontWeight: '600', color: '#E65100' },
   trackingSubtitle: { fontSize: 12, color: '#8D6E63', marginTop: 2 },
   trackingArrow: { fontSize: 24, color: '#E65100' },
+  secondaryRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+    marginTop: 10,
+  },
+  secondaryButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 12,
+    borderRadius: 12,
+    gap: 6,
+  },
+  secondaryIcon: { fontSize: 16 },
+  secondaryText: { fontSize: 14, fontWeight: '600', color: '#555' },
   permissionText: {
     marginTop: 16,
     fontSize: 13,

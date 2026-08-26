@@ -22,6 +22,22 @@
   느려지지 않고 일정한 속도로 재생됨)
 - 앱에서 "추적 종료" 하면 링크도 비활성화
 
+### 🕘 기록
+- 추적을 종료하면 동선 전체와 통계가 **이 기기에 저장**됨 (서버 정리와 무관)
+- 이동 거리 · 소요 시간 · 평균/최고 속도 · 평균/최대 흔들림 · 기록 간격
+- 경로 모양을 SVG 미리보기로 표시, 서버 데이터가 남아 있으면 웹 지도 재생도 연결
+
+### 👀 지켜보기 (앱에서 수신)
+- 공유받은 링크나 코드를 입력하면 **앱 안에서** 상대 위치를 확인
+- 상태바에 추적 상태 · 이동 거리 · 마지막 업데이트, 아래에 지도 뷰어 내장 (WebView)
+- 최근 본 세션 목록 저장 (재입력 불필요)
+- 20초 폴링 — 문자를 다시 받을 필요 없음
+
+### 📳 흔들림 측정
+- 가속도계로 흔들림 지수를 계산 (5초 창의 |a| 표준편차 × 100)
+- 추적 화면에 실시간 표시: 안정 / 이동 중 / 흔들림 큼
+- 기록에 평균/최대값 저장 (기기별 편차가 있는 휴리스틱)
+
 ### 🌐 웹 지원
 - 앱 전체가 브라우저에서도 실행됨 (`npm run web`)
 - 웹에서는 문자 API 가 없으므로, 나갈 문구를 그대로 보여주는 미리보기 + 복사 버튼 제공
@@ -40,16 +56,26 @@ here/
 ├── App.js                       ← 화면 라우팅
 ├── src/
 │   ├── api/
-│   │   └── supabase.js          ← Supabase 클라이언트 + 세션/위치 API
+│   │   └── supabase.js          ← Supabase RPC (세션 생성/전송/종료/조회)
 │   ├── components/
-│   │   └── MessagePreviewModal.js  ← 웹에서 문자 대신 띄우는 미리보기
+│   │   ├── MessagePreviewModal.js  ← 웹에서 문자 대신 띄우는 미리보기
+│   │   ├── PathPreview.js       ← 기록 상세의 SVG 경로 미리보기
+│   │   ├── ViewerFrame.native.js ← 지켜보기용 WebView (iOS/Android)
+│   │   └── ViewerFrame.web.js   ← 지켜보기용 iframe (웹)
+│   ├── lib/
+│   │   ├── geo.js               ← 거리/속도/경로 통계
+│   │   ├── shake.js             ← 가속도계 흔들림 지수
+│   │   └── history.js           ← 세션 기록 저장 (AsyncStorage)
 │   ├── sms.js                   ← 네이티브/웹 공통 문자 발송 래퍼
-│   ├── storage.js               ← AsyncStorage + 템플릿 렌더링
+│   ├── storage.js               ← 설정 저장 + 템플릿 렌더링
 │   └── screens/
 │       ├── OnboardingScreen.js
 │       ├── SettingsScreen.js
-│       ├── HomeScreen.js        ← SOS + 추적 진입
-│       └── TrackingScreen.js    ← 실시간 추적 중 화면
+│       ├── HomeScreen.js        ← SOS + 추적/기록/지켜보기 진입
+│       ├── TrackingScreen.js    ← 추적 중 (거리·속도·흔들림 실시간)
+│       ├── HistoryScreen.js     ← 기록 목록
+│       ├── HistoryDetailScreen.js ← 기록 상세 (경로 + 통계)
+│       └── WatchScreen.js       ← 앱에서 상대 위치 지켜보기
 ├── web/                         ← Vercel 에 배포하는 실시간 지도 뷰어
 │   ├── index.html
 │   ├── app.js

@@ -7,10 +7,14 @@ import OnboardingScreen from './src/screens/OnboardingScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import TrackingScreen from './src/screens/TrackingScreen';
+import HistoryScreen from './src/screens/HistoryScreen';
+import HistoryDetailScreen from './src/screens/HistoryDetailScreen';
+import WatchScreen from './src/screens/WatchScreen';
 
 export default function App() {
   const [screen, setScreen] = useState('loading');
   const [settings, setSettings] = useState(null);
+  const [selectedSession, setSelectedSession] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -28,10 +32,12 @@ export default function App() {
     setScreen('home');
   };
 
-  const handleCancelSettings = () => setScreen('home');
-  const handleOpenSettings = () => setScreen('settings');
-  const handleStartTracking = () => setScreen('tracking');
-  const handleStopTracking = () => setScreen('home');
+  const goHome = () => setScreen('home');
+
+  const handleOpenSession = (session) => {
+    setSelectedSession(session);
+    setScreen('history-detail');
+  };
 
   if (screen === 'loading' || !settings) {
     return (
@@ -50,20 +56,33 @@ export default function App() {
         <SettingsScreen
           initialSettings={settings}
           onSave={handleSaveSettings}
-          onCancel={handleCancelSettings}
+          onCancel={goHome}
           isFirstRun={screen === 'settings-first'}
         />
       )}
       {screen === 'home' && (
         <HomeScreen
           settings={settings}
-          onOpenSettings={handleOpenSettings}
-          onStartTracking={handleStartTracking}
+          onOpenSettings={() => setScreen('settings')}
+          onStartTracking={() => setScreen('tracking')}
+          onOpenHistory={() => setScreen('history')}
+          onOpenWatch={() => setScreen('watch')}
         />
       )}
       {screen === 'tracking' && (
-        <TrackingScreen settings={settings} onStop={handleStopTracking} />
+        <TrackingScreen settings={settings} onStop={goHome} />
       )}
+      {screen === 'history' && (
+        <HistoryScreen onBack={goHome} onOpenSession={handleOpenSession} />
+      )}
+      {screen === 'history-detail' && selectedSession && (
+        <HistoryDetailScreen
+          session={selectedSession}
+          onBack={() => setScreen('history')}
+          onDeleted={() => setScreen('history')}
+        />
+      )}
+      {screen === 'watch' && <WatchScreen onBack={goHome} />}
     </View>
   );
 }

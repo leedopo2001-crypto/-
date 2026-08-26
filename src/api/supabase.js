@@ -84,3 +84,26 @@ export async function endSession(shortCode, ownerToken) {
   });
   if (error) throw error;
 }
+
+/** 지켜보기용: 코드로 세션 정보 조회. 없으면 null. */
+export async function getSession(shortCode) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_get_session', {
+    p_code: shortCode,
+  });
+  if (error) throw error;
+  return firstRow(data) || null;
+}
+
+/** 지켜보기용: 코드로 위치 목록 조회. since(ISO) 이후 것만 받을 수 있다. */
+export async function getLocations(shortCode, since = null) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_get_locations', {
+    p_code: shortCode,
+    p_since: since,
+  });
+  if (error) throw error;
+  return data || [];
+}
