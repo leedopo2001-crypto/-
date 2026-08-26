@@ -20,6 +20,12 @@
 >    (배터리·흔들림·전송주기 공유)
 > 2. 이어서 `supabase/schema-v3-links.sql` 전체를 붙여넣고 **Run**
 >    (프로필·초대 코드·사람 연결)
+> 3. 이어서 `supabase/schema-v4-watchdog.sql` 전체를 붙여넣고 **Run**
+>    (신호 끊김 감지)
+>
+> **워치독 발송까지 쓰시려면** Dashboard → Database → Extensions 에서
+> `pg_cron` 과 `pg_net` 을 켠 뒤 4번 파일을 한 번 더 Run 하세요.
+> 켜지 않아도 "신호 끊김 표시" 는 그대로 동작합니다.
 >
 > 둘 다 몇 번을 다시 실행해도 안전하고, 기존 세션·위치 데이터는 그대로
 > 남습니다. v1 → v2 → v3 순으로 덮어쓰는 시나리오를 실제 PostgreSQL 로

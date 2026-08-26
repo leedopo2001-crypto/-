@@ -150,19 +150,14 @@ export default function WatchScreen({ onBack, initialCode }) {
   }
   const last = points.at(-1);
 
-  // 위치가 안 오는 게 "정지"인지 "신호 끊김"인지 구분해서 알려준다.
-  // 약속한 주기를 한 번 더 넘겼을 때만 경고한다.
-  const intervalMin = Number(session?.interval_minutes) || null;
-  let staleReason = null;
-  if (session?.active && last && intervalMin) {
-    const overdueMs =
-      Date.now() - new Date(last.updated_at).getTime() - intervalMin * 60_000;
-    if (overdueMs > intervalMin * 60_000) {
-      staleReason = Number.isFinite(last.battery) && last.battery <= 15
-        ? `위치가 늦습니다. 마지막 배터리 ${last.battery}% — 방전됐을 수 있습니다.`
-        : '약속한 주기보다 위치가 늦습니다. 네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
-    }
-  }
+  // 지연 판정은 서버가 내린다. 예전에는 앱과 웹 뷰어가 각자 계산해서
+  // 같은 세션을 보고도 서로 다르게 말할 수 있었다.
+  const battery = session?.last_battery ?? last?.battery;
+  const staleReason = session?.overdue
+    ? Number.isFinite(battery) && battery <= 15
+      ? `위치가 늦습니다. 마지막 배터리 ${battery}% — 방전됐을 수 있습니다.`
+      : '약속한 주기보다 위치가 늦습니다. 네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.'
+    : null;
 
   // ===== 지켜보는 중 화면 =====
   if (watching) {

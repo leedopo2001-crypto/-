@@ -53,6 +53,7 @@ export default function MyPageScreen({
   onBack,
   onOpenSettings,
   onOpenLink,
+  onOpenWatchdog,
   onWatchPeer,
   onIdentityChanged,
 }) {
@@ -187,17 +188,24 @@ export default function MyPageScreen({
 
         {links?.map((peer) => {
           const live = Boolean(peer.active_code);
+          // 지연은 서버가 판정한다. 공유 중인데 신호가 끊긴 상태가
+          // 가장 주의해야 할 경우라, 평범한 "공유 중"과 구분해 보여준다.
+          const overdue = live && peer.overdue;
           return (
             <Pressable
               key={peer.user_id}
-              style={[styles.peerRow, live && styles.peerRowLive]}
+              style={[
+                styles.peerRow,
+                live && styles.peerRowLive,
+                overdue && styles.peerRowOverdue,
+              ]}
               onPress={() => live && onWatchPeer(peer)}
               onLongPress={() => handleUnlink(peer)}
             >
               <Avatar
                 name={peer.display_name}
                 size={40}
-                tone={live ? '#2E7D32' : '#9AA0A6'}
+                tone={overdue ? '#B71C1C' : live ? '#2E7D32' : '#9AA0A6'}
               />
               <View style={{ flex: 1 }}>
                 <Text style={styles.peerName}>
@@ -206,13 +214,27 @@ export default function MyPageScreen({
                     <Text style={styles.peerRelation}> · {peer.relation}</Text>
                   ) : null}
                 </Text>
-                <Text style={[styles.peerStatus, live && styles.peerStatusLive]}>
-                  {live
-                    ? `공유 중 · ${agoLabel(peer.last_location_at) || '위치 대기'}`
-                    : '지금은 공유 중이 아닙니다'}
+                <Text
+                  style={[
+                    styles.peerStatus,
+                    live && styles.peerStatusLive,
+                    overdue && styles.peerStatusOverdue,
+                  ]}
+                >
+                  {overdue
+                    ? `신호 끊김 · ${agoLabel(peer.last_location_at) || '위치 없음'}${
+                        Number.isFinite(peer.last_battery)
+                          ? ` · 배터리 ${peer.last_battery}%`
+                          : ''
+                      }`
+                    : live
+                      ? `공유 중 · ${agoLabel(peer.last_location_at) || '위치 대기'}`
+                      : '지금은 공유 중이 아닙니다'}
                 </Text>
               </View>
-              {live && <View style={styles.liveDot} />}
+              {live && (
+                <View style={[styles.liveDot, overdue && styles.overdueDot]} />
+              )}
               <Text style={styles.peerArrow}>{live ? '›' : ''}</Text>
             </Pressable>
           );
@@ -238,6 +260,22 @@ export default function MyPageScreen({
           앱을 쓰지 않는 사람에게는 문자로 나갑니다. 연결된 사람과 별개로
           유지하시는 편이 좋습니다.
         </Text>
+
+        {/* 신호 끊김 알림 — 헤더의 "설정"과 헷갈리지 않도록
+            라벨이 아니라 통째로 눌리는 카드로 둔다. */}
+        <View style={styles.sectionHead}>
+          <Text style={styles.sectionLabel}>서버 감시</Text>
+        </View>
+        <Pressable style={styles.navCard} onPress={onOpenWatchdog}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.navTitle}>신호 끊김 알림</Text>
+            <Text style={styles.navDesc}>
+              약속한 주기가 지나도 위치가 오지 않으면 서버가 알아차립니다.
+              폰이 꺼지거나 부서져도 동작합니다.
+            </Text>
+          </View>
+          <Text style={styles.navArrow}>›</Text>
+        </Pressable>
 
         {/* 기록 요약 */}
         <View style={styles.sectionHead}>
@@ -335,17 +373,32 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   peerRowLive: { backgroundColor: '#E8F5E9' },
+  peerRowOverdue: { backgroundColor: '#FFEBEE' },
   peerName: { fontSize: 16, fontWeight: '600', color: '#222' },
   peerRelation: { fontSize: 13, fontWeight: '400', color: '#999' },
   peerStatus: { fontSize: 12.5, color: '#999', marginTop: 2 },
   peerStatusLive: { color: '#2E7D32', fontWeight: '600' },
+  peerStatusOverdue: { color: '#B71C1C', fontWeight: '700' },
   liveDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     backgroundColor: '#2E7D32',
   },
+  overdueDot: { backgroundColor: '#B71C1C' },
   peerArrow: { fontSize: 20, color: '#bbb', minWidth: 10 },
+  navCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fafafa',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    gap: 10,
+  },
+  navTitle: { fontSize: 15, fontWeight: '600', color: '#222' },
+  navDesc: { fontSize: 12.5, color: '#888', marginTop: 4, lineHeight: 19 },
+  navArrow: { fontSize: 20, color: '#bbb' },
   statRow: { flexDirection: 'row', gap: 10 },
   statCell: {
     flex: 1,

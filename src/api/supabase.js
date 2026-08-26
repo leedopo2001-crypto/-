@@ -197,6 +197,30 @@ export async function listLinks(identity) {
   return data || [];
 }
 
+/** 워치독 알림을 밀어낼 웹훅 주소. 없으면 null. */
+export async function getWebhook(identity) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_get_webhook', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+  });
+  if (error) throw error;
+  return firstRow(data) || null;
+}
+
+export async function setWebhook(identity, { url, enabled = true }) {
+  requireConfigured();
+
+  const { error } = await supabase.rpc('here_set_webhook', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+    p_webhook_url: url || null,
+    p_enabled: enabled,
+  });
+  if (error) throw error;
+}
+
 export async function unlink(identity, otherUserId) {
   requireConfigured();
 

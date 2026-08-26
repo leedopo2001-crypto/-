@@ -143,6 +143,8 @@ function start(code) {
   let pollTimer = null;
   let intervalMinutes = null;
   let sessionActive = true;
+  // 서버가 내린 지연 판정. 데모 모드에서는 서버가 없으므로 항상 false.
+  let serverOverdue = false;
 
   followButton.addEventListener('click', () => {
     setFollow(!followMode);
@@ -292,19 +294,11 @@ function start(code) {
 
   /**
    * "위치가 안 바뀐다"는 두 가지 뜻일 수 있다 — 신호가 끊겼거나, 정말로
-   * 멈춰 있거나. 예상 주기를 넘겼는데도 새 위치가 없으면 그 사실을 명시한다.
-   * 배터리를 알면 방전 가능성까지 같이 알려준다.
+   * 멈춰 있거나. 어느 쪽인지의 판정은 서버가 내린다(here_get_session.overdue).
+   * 예전에는 여기와 앱이 각자 계산해서 같은 세션을 다르게 말할 수 있었다.
    */
   function renderStale() {
-    if (!sessionActive || !lastTimestamp || !intervalMinutes) {
-      staleNote.classList.add('hidden');
-      return;
-    }
-
-    const overdueMs =
-      Date.now() - lastTimestamp.getTime() - intervalMinutes * 60_000;
-    // 한 주기를 통째로 더 넘겼을 때만 경고한다. GPS 취득이 조금 늦는 건 흔하다.
-    if (overdueMs < intervalMinutes * 60_000) {
+    if (!serverOverdue) {
       staleNote.classList.add('hidden');
       return;
     }
@@ -315,7 +309,8 @@ function start(code) {
         ? `마지막 배터리가 ${battery}% 였습니다. 방전됐을 수 있습니다.`
         : '네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
 
-    staleNote.textContent = `⚠️ ${intervalMinutes}분마다 오기로 한 위치가 ${formatAgo(lastTimestamp)} 이후로 없습니다. ${reason}`;
+    const cadence = intervalMinutes ? `${intervalMinutes}분마다 오기로 한 ` : '';
+    staleNote.textContent = `${cadence}위치가 ${formatAgo(lastTimestamp)} 이후로 없습니다. ${reason}`;
     staleNote.classList.remove('hidden');
   }
 
@@ -434,6 +429,8 @@ function start(code) {
     if (isDemo) {
       userNameEl.textContent = `${demoSession.user_name} 경로`;
       setStatus('ended');
+      sessionActive = false;
+      serverOverdue = false;
       applyRows(demoRows(), { initial: true });
       hideOverlay();
       return;
@@ -452,6 +449,7 @@ function start(code) {
       setStatus(session.active ? 'active' : 'ended');
       sessionActive = session.active;
       intervalMinutes = Number(session.interval_minutes) || null;
+      serverOverdue = Boolean(session.overdue);
 
       const locs = await fetchLocations(null);
 
@@ -511,11 +509,16 @@ function start(code) {
         }
 
         const session = await fetchSession();
-        if (session && !session.active) {
-          setStatus('ended');
-          sessionActive = false;
+        if (session) {
+          serverOverdue = Boolean(session.overdue);
           renderStale();
-          clearInterval(pollTimer);
+          if (!session.active) {
+            setStatus('ended');
+            sessionActive = false;
+            serverOverdue = false;
+            renderStale();
+            clearInterval(pollTimer);
+          }
         }
       } catch (e) {
         // 일시적인 네트워크 오류는 다음 주기에 다시 시도한다.

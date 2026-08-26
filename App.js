@@ -16,6 +16,7 @@ import WatchScreen from './src/screens/WatchScreen';
 import CheckInScreen from './src/screens/CheckInScreen';
 import MyPageScreen from './src/screens/MyPageScreen';
 import LinkScreen from './src/screens/LinkScreen';
+import WatchdogScreen from './src/screens/WatchdogScreen';
 import { formatRemaining, loadCheckIn, remainingMs } from './src/lib/checkin';
 import { ensureIdentity, loadIdentity } from './src/lib/identity';
 
@@ -193,12 +194,16 @@ export default function App() {
           onBack={goHome}
           onOpenSettings={() => setScreen('settings')}
           onOpenLink={() => setScreen('link')}
+          onOpenWatchdog={() => setScreen('watchdog')}
           onWatchPeer={(peer) => {
             setWatchPeer(peer);
             setScreen('watch');
           }}
           onIdentityChanged={setIdentity}
         />
+      )}
+      {screen === 'watchdog' && (
+        <WatchdogScreen identity={identity} onBack={() => setScreen('mypage')} />
       )}
       {screen === 'link' && (
         <LinkScreen
