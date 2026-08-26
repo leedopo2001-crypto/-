@@ -38,11 +38,12 @@ function firstRow(data) {
  * 위치를 올리거나 추적을 끝내려면 이 토큰이 필요하므로, 링크를 받은 사람은
  * 남의 위치를 조작하거나 추적을 중단시킬 수 없다.
  */
-export async function createSession({ userName }) {
+export async function createSession({ userName, intervalMinutes }) {
   requireConfigured();
 
   const { data, error } = await supabase.rpc('here_create_session', {
     p_user_name: userName || null,
+    p_interval_minutes: intervalMinutes ?? null,
   });
   if (error) throw error;
 
@@ -56,12 +57,21 @@ export async function createSession({ userName }) {
   };
 }
 
+/**
+ * 위치 하나를 서버에 올린다.
+ *
+ * recordedAt 은 오프라인 큐 때문에 필요하다. 터널에서 못 보낸 위치를 나중에
+ * 몰아서 올릴 때 실제 측정 시각을 같이 보내야 경로와 속도가 맞는다.
+ */
 export async function pushLocation({
   shortCode,
   ownerToken,
   latitude,
   longitude,
   accuracy,
+  battery,
+  shake,
+  recordedAt,
 }) {
   requireConfigured();
 
@@ -71,6 +81,9 @@ export async function pushLocation({
     p_latitude: latitude,
     p_longitude: longitude,
     p_accuracy: accuracy ?? null,
+    p_battery: Number.isFinite(battery) ? Math.round(battery) : null,
+    p_shake: Number.isFinite(shake) ? Math.round(shake) : null,
+    p_recorded_at: recordedAt ?? null,
   });
   if (error) throw error;
 }

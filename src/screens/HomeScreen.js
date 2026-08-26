@@ -32,6 +32,9 @@ export default function HomeScreen({
   onStartTracking,
   onOpenHistory,
   onOpenWatch,
+  interrupted,
+  onResume,
+  onDiscard,
 }) {
   const [locationGranted, setLocationGranted] = useState(false);
   const [permissionMessage, setPermissionMessage] = useState('');
@@ -169,6 +172,23 @@ export default function HomeScreen({
           <Text style={styles.gearIcon}>⚙</Text>
         </Pressable>
       </View>
+
+      {interrupted && (
+        <View style={styles.interruptedBox}>
+          <Text style={styles.interruptedTitle}>진행 중이던 추적이 있습니다</Text>
+          <Text style={styles.interruptedDesc}>
+            앱이 종료되어 중단됐습니다. 공유 링크는 아직 살아 있습니다.
+          </Text>
+          <View style={styles.interruptedRow}>
+            <Pressable style={styles.interruptedPrimary} onPress={onResume}>
+              <Text style={styles.interruptedPrimaryText}>이어서 추적</Text>
+            </Pressable>
+            <Pressable style={styles.interruptedGhost} onPress={onDiscard}>
+              <Text style={styles.interruptedGhostText}>종료하기</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
 
       <View style={styles.center}>
         <View style={styles.buttonWrapper}>
@@ -365,6 +385,37 @@ const styles = StyleSheet.create({
   },
   secondaryIcon: { fontSize: 16 },
   secondaryText: { fontSize: 14, fontWeight: '600', color: '#555' },
+  interruptedBox: {
+    marginHorizontal: 20,
+    marginTop: 4,
+    backgroundColor: '#FFF3E0',
+    borderRadius: 14,
+    padding: 16,
+  },
+  interruptedTitle: { fontSize: 15, fontWeight: '700', color: '#E65100' },
+  interruptedDesc: {
+    fontSize: 13,
+    color: '#8D6E63',
+    marginTop: 4,
+    lineHeight: 19,
+  },
+  interruptedRow: { flexDirection: 'row', gap: 8, marginTop: 12 },
+  interruptedPrimary: {
+    flex: 1,
+    backgroundColor: '#E65100',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  interruptedPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  interruptedGhost: {
+    flex: 1,
+    backgroundColor: '#FFE0B2',
+    paddingVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  interruptedGhostText: { color: '#E65100', fontWeight: '600', fontSize: 14 },
   permissionText: {
     marginTop: 16,
     fontSize: 13,

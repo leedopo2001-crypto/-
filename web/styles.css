@@ -97,6 +97,20 @@ html, body {
   display: none;
 }
 
+.stale-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #FFF4E5;
+  color: #8a5a00;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.stale-note.hidden {
+  display: none;
+}
+
 .map-controls {
   position: fixed;
   top: 16px;

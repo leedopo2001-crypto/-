@@ -38,6 +38,9 @@ export function demoRows(intervalMinutes = 5) {
     latitude: entry[0],
     longitude: entry[1],
     accuracy: entry[2],
+    // 걷는 동안 배터리가 92% 에서 서서히 닳는 모습
+    battery: Math.max(20, 92 - index * 3),
+    shake: 8 + ((index * 7) % 20),
     updated_at: new Date(startMs + index * stepMs).toISOString(),
   }));
 }
@@ -46,4 +49,5 @@ export const demoSession = {
   short_code: 'demo',
   user_name: '데모',
   active: false,
+  interval_minutes: 5,
 };

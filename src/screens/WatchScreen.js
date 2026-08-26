@@ -147,6 +147,20 @@ export default function WatchScreen({ onBack }) {
   }
   const last = points.at(-1);
 
+  // 위치가 안 오는 게 "정지"인지 "신호 끊김"인지 구분해서 알려준다.
+  // 약속한 주기를 한 번 더 넘겼을 때만 경고한다.
+  const intervalMin = Number(session?.interval_minutes) || null;
+  let staleReason = null;
+  if (session?.active && last && intervalMin) {
+    const overdueMs =
+      Date.now() - new Date(last.updated_at).getTime() - intervalMin * 60_000;
+    if (overdueMs > intervalMin * 60_000) {
+      staleReason = Number.isFinite(last.battery) && last.battery <= 15
+        ? `⚠️ 위치가 늦습니다. 마지막 배터리 ${last.battery}% — 방전됐을 수 있습니다.`
+        : '⚠️ 약속한 주기보다 위치가 늦습니다. 네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
+    }
+  }
+
   // ===== 지켜보는 중 화면 =====
   if (watching) {
     return (
@@ -173,8 +187,15 @@ export default function WatchScreen({ onBack }) {
             {formatDistance(distanceKm)}
             {' · '}
             {formatAgo(last?.updated_at)}
+            {Number.isFinite(last?.battery) ? ` · 🔋${last.battery}%` : ''}
           </Text>
         </View>
+
+        {staleReason && (
+          <View style={styles.staleBar}>
+            <Text style={styles.staleText}>{staleReason}</Text>
+          </View>
+        )}
 
         <ViewerFrame url={watching.url} />
       </View>
@@ -316,4 +337,12 @@ const styles = StyleSheet.create({
   dotActive: { backgroundColor: '#2E7D32' },
   dotEnded: { backgroundColor: '#9E9E9E' },
   watchBarText: { fontSize: 13, color: '#555', fontWeight: '600' },
+  staleBar: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFF4E5',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#f0e0c0',
+  },
+  staleText: { fontSize: 12.5, color: '#8a5a00', lineHeight: 18 },
 });

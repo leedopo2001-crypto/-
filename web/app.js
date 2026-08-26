@@ -22,6 +22,8 @@ const fitButton = el('fitButton');
 const followButton = el('followButton');
 const replayButton = el('replayButton');
 const filteredNote = el('filteredNote');
+const staleNote = el('staleNote');
+const batteryEl = el('battery');
 const demoBadge = el('demoBadge');
 const lastUpdateLabel = el('lastUpdateLabel');
 const speedLabel = el('speedLabel');
@@ -139,6 +141,8 @@ function start(code) {
   let cancelReplay = null;
   let lastFetchedAt = null;
   let pollTimer = null;
+  let intervalMinutes = null;
+  let sessionActive = true;
 
   followButton.addEventListener('click', () => {
     setFollow(!followMode);
@@ -251,6 +255,8 @@ function start(code) {
       latitude,
       longitude,
       accuracy: row.accuracy == null ? null : Number(row.accuracy),
+      battery: row.battery == null ? null : Number(row.battery),
+      shake: row.shake == null ? null : Number(row.shake),
       instant: new Date(row.updated_at || Date.now()),
     };
   }
@@ -280,8 +286,38 @@ function start(code) {
     // 재생 중에는 이 칸이 진행률을 보여주고 있으므로 건드리지 않는다.
     if (cancelReplay) return;
     if (lastTimestamp) lastUpdateEl.textContent = formatAgo(lastTimestamp);
+    renderStale();
   }
   setInterval(refreshElapsed, 10_000);
+
+  /**
+   * "위치가 안 바뀐다"는 두 가지 뜻일 수 있다 — 신호가 끊겼거나, 정말로
+   * 멈춰 있거나. 예상 주기를 넘겼는데도 새 위치가 없으면 그 사실을 명시한다.
+   * 배터리를 알면 방전 가능성까지 같이 알려준다.
+   */
+  function renderStale() {
+    if (!sessionActive || !lastTimestamp || !intervalMinutes) {
+      staleNote.classList.add('hidden');
+      return;
+    }
+
+    const overdueMs =
+      Date.now() - lastTimestamp.getTime() - intervalMinutes * 60_000;
+    // 한 주기를 통째로 더 넘겼을 때만 경고한다. GPS 취득이 조금 늦는 건 흔하다.
+    if (overdueMs < intervalMinutes * 60_000) {
+      staleNote.classList.add('hidden');
+      return;
+    }
+
+    const battery = points.at(-1)?.battery;
+    const reason =
+      Number.isFinite(battery) && battery <= 15
+        ? `마지막 배터리가 ${battery}% 였습니다. 방전됐을 수 있습니다.`
+        : '네트워크가 끊겼거나 앱이 종료됐을 수 있습니다.';
+
+    staleNote.textContent = `⚠️ ${intervalMinutes}분마다 오기로 한 위치가 ${formatAgo(lastTimestamp)} 이후로 없습니다. ${reason}`;
+    staleNote.classList.remove('hidden');
+  }
 
   function renderStats() {
     replayButton.disabled = points.length < 2;
@@ -295,7 +331,14 @@ function start(code) {
       speedEl.textContent = '—';
     }
 
-    lastTimestamp = points.at(-1)?.instant ?? null;
+    const latest = points.at(-1);
+    if (Number.isFinite(latest?.battery)) {
+      batteryEl.textContent = `${latest.battery}%`;
+    } else {
+      batteryEl.textContent = '—';
+    }
+
+    lastTimestamp = latest?.instant ?? null;
     refreshElapsed();
 
     if (removedCount > 0) {
@@ -407,6 +450,8 @@ function start(code) {
         ? `${session.user_name}님의 위치`
         : '실시간 위치';
       setStatus(session.active ? 'active' : 'ended');
+      sessionActive = session.active;
+      intervalMinutes = Number(session.interval_minutes) || null;
 
       const locs = await fetchLocations(null);
 
@@ -468,6 +513,8 @@ function start(code) {
         const session = await fetchSession();
         if (session && !session.active) {
           setStatus('ended');
+          sessionActive = false;
+          renderStale();
           clearInterval(pollTimer);
         }
       } catch (e) {

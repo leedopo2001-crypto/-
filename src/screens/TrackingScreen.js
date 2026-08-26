@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import * as Location from 'expo-location';
+import * as Battery from 'expo-battery';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 
 import {
@@ -23,6 +24,7 @@ import MessagePreviewModal from '../components/MessagePreviewModal';
 import { formatDistance, haversineKm } from '../lib/geo';
 import { saveSession } from '../lib/history';
 import { shakeLabel, startShakeMonitor } from '../lib/shake';
+import { clearActive, loadActive, saveActive } from '../lib/activeSession';
 
 function formatElapsed(secondsAgo) {
   if (secondsAgo < 5) return '방금';
@@ -41,8 +43,9 @@ function formatCountdown(seconds) {
   return `${mins}분 ${secs}초 후`;
 }
 
-export default function TrackingScreen({ settings, onStop }) {
-  const intervalMinutes = settings.trackingIntervalMinutes || 5;
+export default function TrackingScreen({ settings, onStop, resume }) {
+  const intervalMinutes =
+    (resume && resume.intervalMinutes) || settings.trackingIntervalMinutes || 5;
   const intervalMs = intervalMinutes * 60 * 1000;
 
   const [status, setStatus] = useState('starting');
@@ -56,14 +59,20 @@ export default function TrackingScreen({ settings, onStop }) {
   const [distanceKm, setDistanceKm] = useState(0);
   const [speedKmh, setSpeedKmh] = useState(null);
   const [shakeIndex, setShakeIndex] = useState(null);
+  const [batteryPct, setBatteryPct] = useState(null);
+  const [pendingCount, setPendingCount] = useState(0);
 
   const tickTimerRef = useRef(null);
   const pushTimerRef = useRef(null);
   const stoppedRef = useRef(false);
   const sessionRef = useRef(null);
   const pointsRef = useRef([]);
+  const queueRef = useRef([]);
   const shakeRef = useRef(null);
-  const startedAtRef = useRef(new Date().toISOString());
+  const batteryRef = useRef(null);
+  const startedAtRef = useRef(
+    (resume && resume.startedAt) || new Date().toISOString(),
+  );
 
   useEffect(() => {
     activateKeepAwakeAsync('tracking');
@@ -76,6 +85,28 @@ export default function TrackingScreen({ settings, onStop }) {
       setShakeIndex(index);
     });
     return stop;
+  }, []);
+
+  // 배터리는 위치를 찍을 때마다 같이 보낸다. 추적이 멈췄을 때 지켜보는 쪽이
+  // 방전 때문인지 사고인지 구분할 수 있어야 한다.
+  useEffect(() => {
+    let subscription = null;
+    const apply = (level) => {
+      if (!Number.isFinite(level)) return;
+      const pct = Math.round(level * 100);
+      batteryRef.current = pct;
+      setBatteryPct(pct);
+    };
+
+    Battery.getBatteryLevelAsync().then(apply).catch(() => {});
+    try {
+      subscription = Battery.addBatteryLevelListener(({ batteryLevel }) =>
+        apply(batteryLevel),
+      );
+    } catch {
+      // 배터리 API 가 없는 환경(웹 등)에서는 값 없이 진행한다.
+    }
+    return () => subscription?.remove();
   }, []);
 
   useEffect(() => {
@@ -121,10 +152,35 @@ export default function TrackingScreen({ settings, onStop }) {
     }
 
     try {
-      const created = await createSession({ userName: settings.userName });
+      // 이어하기: 이미 만들어진 세션을 그대로 쓴다. 새로 만들면 예전 링크가
+      // 살아있는 채로 버려지고, 받은 사람은 멈춘 화면을 보게 된다.
+      if (resume) {
+        sessionRef.current = {
+          shortCode: resume.shortCode,
+          ownerToken: resume.ownerToken,
+          url: resume.url,
+        };
+        pointsRef.current = resume.points || [];
+        queueRef.current = resume.queue || [];
+        setPendingCount(queueRef.current.length);
+        setUpdateCount(pointsRef.current.length);
+        setDistanceKm(totalKmOf(pointsRef.current));
+        setSession(sessionRef.current);
+        setStatus('active');
+
+        await pushOnce();
+        scheduleNext();
+        return;
+      }
+
+      const created = await createSession({
+        userName: settings.userName,
+        intervalMinutes,
+      });
       sessionRef.current = created;
       setSession(created);
       setStatus('active');
+      await persist();
 
       await openSmsComposer(created);
       await pushOnce();
@@ -133,6 +189,30 @@ export default function TrackingScreen({ settings, onStop }) {
       setError(e.message || '세션 생성에 실패했습니다.');
       setStatus('error');
     }
+  }
+
+  function totalKmOf(points) {
+    let km = 0;
+    for (let i = 1; i < points.length; i += 1) {
+      km += haversineKm(points[i - 1], points[i]);
+    }
+    return km;
+  }
+
+  /** 진행 상태를 기기에 저장한다. 앱이 죽어도 여기까지는 남는다. */
+  async function persist() {
+    const current = sessionRef.current;
+    if (!current) return;
+    await saveActive({
+      shortCode: current.shortCode,
+      ownerToken: current.ownerToken,
+      url: current.url,
+      userName: settings.userName || '',
+      startedAt: startedAtRef.current,
+      intervalMinutes,
+      points: pointsRef.current,
+      queue: queueRef.current,
+    });
   }
 
   async function openSmsComposer(created) {
@@ -154,32 +234,35 @@ export default function TrackingScreen({ settings, onStop }) {
     }
   }
 
+  /**
+   * 위치를 한 번 찍는다.
+   *
+   * 측정한 점은 무조건 로컬에 먼저 쌓고, 서버 전송은 큐를 통해서만 한다.
+   * 그래서 지하철이나 터널처럼 네트워크가 끊긴 구간에서도 점을 잃지 않고,
+   * 신호가 돌아오면 밀린 것부터 순서대로 올라간다.
+   */
   async function pushOnce() {
     if (stoppedRef.current) return;
     const current = sessionRef.current;
     if (!current) return;
+
     try {
       const loc = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.High,
       });
-      await pushLocation({
-        shortCode: current.shortCode,
-        ownerToken: current.ownerToken,
-        latitude: loc.coords.latitude,
-        longitude: loc.coords.longitude,
-        accuracy: loc.coords.accuracy,
-      });
 
-      // 로컬 기록: 종료 후에도 이 기기에서 동선/통계를 볼 수 있게 쌓아둔다.
       const point = {
         latitude: loc.coords.latitude,
         longitude: loc.coords.longitude,
         accuracy: loc.coords.accuracy ?? null,
         t: new Date().toISOString(),
         shake: shakeRef.current,
+        battery: batteryRef.current,
       };
+
       const previous = pointsRef.current.at(-1);
       pointsRef.current.push(point);
+      queueRef.current.push(point);
 
       if (previous) {
         const legKm = haversineKm(previous, point);
@@ -187,12 +270,46 @@ export default function TrackingScreen({ settings, onStop }) {
         const dtMs = new Date(point.t) - new Date(previous.t);
         setSpeedKmh(dtMs > 0 ? legKm / (dtMs / 3_600_000) : null);
       }
+      setUpdateCount(pointsRef.current.length);
 
-      setUpdateCount((c) => c + 1);
-      setLastSentAt(new Date());
-    } catch (e) {
-      // 위치 실패는 조용히 넘어감, 다음 주기에 재시도
+      await persist();
+    } catch {
+      // 위치 자체를 못 얻은 경우. 다음 주기에 다시 시도한다.
     }
+
+    await flushQueue();
+  }
+
+  /** 큐에 밀린 위치를 오래된 것부터 올린다. 실패하면 남겨두고 다음에 재시도. */
+  async function flushQueue() {
+    const current = sessionRef.current;
+    if (!current) return;
+
+    let sentAny = false;
+    while (queueRef.current.length > 0) {
+      const point = queueRef.current[0];
+      try {
+        await pushLocation({
+          shortCode: current.shortCode,
+          ownerToken: current.ownerToken,
+          latitude: point.latitude,
+          longitude: point.longitude,
+          accuracy: point.accuracy,
+          battery: point.battery,
+          shake: point.shake,
+          recordedAt: point.t,
+        });
+        queueRef.current.shift();
+        sentAny = true;
+      } catch {
+        // 네트워크가 아직 안 돌아왔다. 순서를 지켜야 하므로 여기서 멈춘다.
+        break;
+      }
+    }
+
+    setPendingCount(queueRef.current.length);
+    if (sentAny) setLastSentAt(new Date());
+    await persist();
   }
 
   function scheduleNext() {
@@ -229,7 +346,6 @@ export default function TrackingScreen({ settings, onStop }) {
                 );
               } catch {}
 
-              // 앱을 강제 종료하면 여기까지 못 오므로, 정상 종료했을 때만 남는다.
               try {
                 await saveSession({
                   shortCode: sessionRef.current.shortCode,
@@ -241,6 +357,7 @@ export default function TrackingScreen({ settings, onStop }) {
                   points: pointsRef.current,
                 });
               } catch {}
+              await clearActive();
             }
             onStop();
           },
@@ -309,6 +426,23 @@ export default function TrackingScreen({ settings, onStop }) {
             }
           />
         </View>
+
+        {pendingCount > 0 && (
+          <View style={styles.pendingBox}>
+            <Text style={styles.pendingText}>
+              📡 전송 대기 중인 위치 {pendingCount}개 · 신호가 돌아오면 자동으로
+              올라갑니다
+            </Text>
+          </View>
+        )}
+
+        {Number.isFinite(batteryPct) && batteryPct <= 20 && (
+          <View style={styles.batteryBox}>
+            <Text style={styles.batteryText}>
+              🔋 배터리 {batteryPct}% · 방전되면 추적이 멈춥니다
+            </Text>
+          </View>
+        )}
 
         <Text style={styles.hint}>
           {intervalMinutes}분마다 자동으로 새 위치가 전송됩니다.{'\n'}
@@ -419,6 +553,20 @@ const styles = StyleSheet.create({
   },
   statLabel: { fontSize: 11, color: '#999', marginBottom: 4 },
   statValue: { fontSize: 15, fontWeight: '600', color: '#222' },
+  pendingBox: {
+    backgroundColor: '#FFF8E1',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  pendingText: { color: '#8D6E63', fontSize: 13, lineHeight: 19 },
+  batteryBox: {
+    backgroundColor: '#FFEBEE',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 10,
+  },
+  batteryText: { color: '#B71C1C', fontSize: 13, lineHeight: 19 },
   hint: {
     fontSize: 12,
     color: '#888',
