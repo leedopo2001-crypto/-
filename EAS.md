@@ -58,31 +58,45 @@ npx eas-cli login
 `.env` 는 `.gitignore` 에 있어서 **EAS 빌드 서버로 안 올라갑니다.**
 이걸 모르고 빌드하면 앱이 켜지긴 하는데 서버 기능이 전부 죽은 채로 나옵니다.
 
-두 가지 방법 중 하나를 쓰세요.
-
-**방법 A — `eas.json` 에 직접 적기 (간단)**
-
-`eas.json` 의 `env` 세 칸을 채웁니다. `anon` 키는 원래 공개되는 값이라
-커밋해도 안전합니다 (웹 뷰어의 `config.js` 와 같은 논리).
-
-```json
-"env": {
-  "EXPO_PUBLIC_SUPABASE_URL": "https://xxxx.supabase.co",
-  "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGci...",
-  "EXPO_PUBLIC_WEB_VIEWER_URL": "https://web-snowy-three-34.vercel.app"
-}
-```
-
-**방법 B — EAS 에 따로 저장 (커밋 안 됨)**
+**명령 한 줄이면 됩니다.**
 
 ```powershell
-npx eas-cli env:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://xxxx.supabase.co"
+cd C:\dev\here
+npm run eas:env
 ```
 
-### 5. Supabase SQL 3개 실행
+`.env` 를 읽어 `eas.json` 의 세 프로필에 값을 채워 넣습니다. 손으로 옮기다
+키를 잘못 붙여넣는 사고를 막으려고 스크립트로 뒀습니다.
+값이 비었거나 아직 예시 값이면 그 자리에서 알려주고 멈춥니다.
 
-아직 안 하셨다면 [SETUP.md](./SETUP.md) 를 따라 세 파일을 순서대로 실행하세요.
-빌드해봤자 서버가 안 맞으면 확인할 수 있는 게 없습니다.
+> `anon` 키가 `eas.json` 에 들어가 커밋되는데, 이 키는 원래 공개되는 값이라
+> 안전합니다. 웹 뷰어의 `config.js` 와 같은 논리이고, 실제 방어는 RLS 와
+> RPC 가 맡습니다.
+
+### 5. Supabase SQL 3개 실행 + 점검
+
+SQL Editor 에서 **순서대로** 실행합니다.
+
+1. `supabase/schema.sql`
+2. `supabase/schema-v3-links.sql`
+3. `supabase/schema-v4-watchdog.sql`
+
+그다음 `supabase/verify.sql` 을 붙여넣고 Run 하면 상태가 한 줄씩 나옵니다.
+
+```
+ 항목            | 결과    | 상태
+----------------+---------+------
+ 함수            | 20 / 20 | OK
+ 테이블          | 5 / 5   | OK
+ 워치독 테이블    | 2 / 2   | OK
+ RLS 잠금        | 7 / 7   | OK
+ pg_cron (선택)  | 없음    | 없어도 됩니다
+ pg_net (선택)   | 없음    | 없어도 됩니다
+```
+
+**함수가 20개가 아니면** 아래 목록에 어떤 게 빠졌는지 나오니, 해당 파일을
+다시 실행하세요. `pg_cron` / `pg_net` 은 없어도 됩니다 — 신호 끊김 "표시"는
+그대로 동작하고, 웹훅 자동 발송만 못 씁니다.
 
 ---
 
@@ -132,8 +146,8 @@ npx eas-cli env:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://xxxx.sup
 ## 순서
 
 1. Expo 가입 → `npx eas-cli login`
-2. `eas.json` 의 `env` 세 칸 채우기
-3. Supabase SQL 3개 실행 (아직이라면)
+2. `npm run eas:env`
+3. Supabase SQL 3개 실행 → `supabase/verify.sql` 로 점검
 4. `npx eas-cli build --profile development --platform android`
 5. 10~30분 뒤 링크로 APK 받아 폰에 설치
 6. `npx expo start --dev-client` 로 붙여서 확인
