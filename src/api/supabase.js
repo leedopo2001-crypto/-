@@ -38,12 +38,19 @@ function firstRow(data) {
  * 위치를 올리거나 추적을 끝내려면 이 토큰이 필요하므로, 링크를 받은 사람은
  * 남의 위치를 조작하거나 추적을 중단시킬 수 없다.
  */
-export async function createSession({ userName, intervalMinutes }) {
+export async function createSession({
+  userName,
+  intervalMinutes,
+  identity,
+}) {
   requireConfigured();
 
   const { data, error } = await supabase.rpc('here_create_session', {
     p_user_name: userName || null,
     p_interval_minutes: intervalMinutes ?? null,
+    // 신원을 붙이면 연결된 사람들이 링크 없이도 이 세션을 찾을 수 있다.
+    p_user_id: identity?.userId ?? null,
+    p_owner_token: identity?.ownerToken ?? null,
   });
   if (error) throw error;
 
@@ -119,4 +126,84 @@ export async function getLocations(shortCode, since = null) {
   });
   if (error) throw error;
   return data || [];
+}
+
+// ===== 프로필과 연결 =====
+
+export async function createProfile({ displayName, emoji } = {}) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_create_profile', {
+    p_display_name: displayName || null,
+    p_emoji: emoji || null,
+  });
+  if (error) throw error;
+
+  const row = firstRow(data);
+  if (!row?.user_id) throw new Error('프로필 생성에 실패했습니다.');
+  return row;
+}
+
+export async function updateProfile(identity, { displayName, emoji } = {}) {
+  requireConfigured();
+
+  const { error } = await supabase.rpc('here_update_profile', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+    p_display_name: displayName ?? null,
+    p_emoji: emoji ?? null,
+  });
+  if (error) throw error;
+}
+
+/** 초대 코드를 새로 만든다. 이전에 만든 미사용 코드는 서버에서 무효화된다. */
+export async function createInvite(identity) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_create_invite', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+  });
+  if (error) throw error;
+  return firstRow(data);
+}
+
+export async function acceptInvite(identity, code, relation) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_accept_invite', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+    p_code: code,
+    p_relation: relation || null,
+  });
+  if (error) throw error;
+  return firstRow(data);
+}
+
+/**
+ * 연결된 사람들과 각자의 현재 공유 상태.
+ * active_code 가 있으면 지금 위치를 공유 중이라는 뜻이고, 그 코드로
+ * 기존 조회 함수를 그대로 쓰면 된다.
+ */
+export async function listLinks(identity) {
+  requireConfigured();
+
+  const { data, error } = await supabase.rpc('here_list_links', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+  });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function unlink(identity, otherUserId) {
+  requireConfigured();
+
+  const { error } = await supabase.rpc('here_unlink', {
+    p_user_id: identity.userId,
+    p_owner_token: identity.ownerToken,
+    p_other_user_id: otherUserId,
+  });
+  if (error) throw error;
 }

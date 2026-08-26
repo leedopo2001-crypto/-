@@ -46,7 +46,7 @@ function formatCountdown(seconds) {
   return `${mins}분 ${secs}초 후`;
 }
 
-export default function TrackingScreen({ settings, onStop, resume }) {
+export default function TrackingScreen({ settings, onStop, resume, identity }) {
   const intervalMinutes =
     (resume && resume.intervalMinutes) || settings.trackingIntervalMinutes || 5;
   const intervalMs = intervalMinutes * 60 * 1000;
@@ -249,6 +249,8 @@ export default function TrackingScreen({ settings, onStop, resume }) {
       const created = await createSession({
         userName: settings.userName,
         intervalMinutes,
+        // 신원을 붙이면 연결된 사람들이 문자 없이도 이 세션을 볼 수 있다.
+        identity,
       });
       sessionRef.current = created;
       setSession(created);

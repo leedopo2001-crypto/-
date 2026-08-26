@@ -14,7 +14,10 @@ import HistoryScreen from './src/screens/HistoryScreen';
 import HistoryDetailScreen from './src/screens/HistoryDetailScreen';
 import WatchScreen from './src/screens/WatchScreen';
 import CheckInScreen from './src/screens/CheckInScreen';
+import MyPageScreen from './src/screens/MyPageScreen';
+import LinkScreen from './src/screens/LinkScreen';
 import { formatRemaining, loadCheckIn, remainingMs } from './src/lib/checkin';
+import { ensureIdentity, loadIdentity } from './src/lib/identity';
 
 export default function App() {
   const [screen, setScreen] = useState('loading');
@@ -24,6 +27,8 @@ export default function App() {
   const [interrupted, setInterrupted] = useState(null);
   const [resumeFrom, setResumeFrom] = useState(null);
   const [checkIn, setCheckIn] = useState(null);
+  const [identity, setIdentity] = useState(null);
+  const [watchPeer, setWatchPeer] = useState(null);
   const [, setClock] = useState(0);
 
   useEffect(() => {
@@ -33,6 +38,12 @@ export default function App() {
       if (loaded.onboarded) {
         setInterrupted(await loadActive());
         setCheckIn(await loadCheckIn());
+        // 이미 신원이 있으면 바로 쓰고, 없으면 서버에 만든다.
+        // 실패해도 null 로 두고 나머지 기능은 그대로 동작시킨다.
+        setIdentity(
+          (await loadIdentity()) ||
+            (await ensureIdentity({ displayName: loaded.userName })),
+        );
       }
       setScreen(loaded.onboarded ? 'home' : 'onboarding');
     })();
@@ -91,6 +102,10 @@ export default function App() {
   const handleSaveSettings = async (next) => {
     setSettings(next);
     await saveSettings(next);
+    // 온보딩 직후라면 이 시점에 이름이 정해지므로 신원도 여기서 만든다.
+    if (!identity) {
+      setIdentity(await ensureIdentity({ displayName: next.userName }));
+    }
     setScreen('home');
   };
 
@@ -133,6 +148,7 @@ export default function App() {
           onOpenHistory={() => setScreen('history')}
           onOpenWatch={() => setScreen('watch')}
           onOpenCheckIn={() => setScreen('checkin')}
+          onOpenMyPage={() => setScreen('mypage')}
           checkInRemaining={checkInRemaining}
           interrupted={interrupted}
           onResume={handleResume}
@@ -142,6 +158,7 @@ export default function App() {
       {screen === 'tracking' && (
         <TrackingScreen
           settings={settings}
+          identity={identity}
           resume={resumeFrom}
           onStop={() => {
             setResumeFrom(null);
@@ -159,7 +176,37 @@ export default function App() {
           onDeleted={() => setScreen('history')}
         />
       )}
-      {screen === 'watch' && <WatchScreen onBack={goHome} />}
+      {screen === 'watch' && (
+        <WatchScreen
+          identity={identity}
+          initialCode={watchPeer?.active_code}
+          onBack={() => {
+            setWatchPeer(null);
+            goHome();
+          }}
+        />
+      )}
+      {screen === 'mypage' && (
+        <MyPageScreen
+          identity={identity}
+          settings={settings}
+          onBack={goHome}
+          onOpenSettings={() => setScreen('settings')}
+          onOpenLink={() => setScreen('link')}
+          onWatchPeer={(peer) => {
+            setWatchPeer(peer);
+            setScreen('watch');
+          }}
+          onIdentityChanged={setIdentity}
+        />
+      )}
+      {screen === 'link' && (
+        <LinkScreen
+          identity={identity}
+          onBack={() => setScreen('mypage')}
+          onLinked={() => setScreen('mypage')}
+        />
+      )}
       {screen === 'checkin' && (
         <CheckInScreen
           settings={settings}

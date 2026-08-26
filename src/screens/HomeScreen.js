@@ -33,6 +33,7 @@ export default function HomeScreen({
   onOpenHistory,
   onOpenWatch,
   onOpenCheckIn,
+  onOpenMyPage,
   checkInRemaining,
   interrupted,
   onResume,
@@ -170,8 +171,8 @@ export default function HomeScreen({
     <View style={styles.container}>
       <View style={styles.topBar}>
         <Text style={styles.appName}>here</Text>
-        <Pressable onPress={onOpenSettings} hitSlop={12} style={styles.gear}>
-          <Text style={styles.gearIcon}>⚙</Text>
+        <Pressable onPress={onOpenMyPage} hitSlop={12} style={styles.gear}>
+          <Text style={styles.gearIcon}>👤</Text>
         </Pressable>
       </View>
 

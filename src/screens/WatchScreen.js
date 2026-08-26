@@ -41,7 +41,7 @@ function formatAgo(iso) {
   return `${Math.floor(mins / 60)}시간 ${mins % 60}분 전`;
 }
 
-export default function WatchScreen({ onBack }) {
+export default function WatchScreen({ onBack, initialCode }) {
   const [input, setInput] = useState('');
   const [recent, setRecent] = useState([]);
   const [watching, setWatching] = useState(null); // { code, url }
@@ -57,6 +57,8 @@ export default function WatchScreen({ onBack }) {
     AsyncStorage.getItem(RECENT_KEY)
       .then((raw) => setRecent(raw ? JSON.parse(raw) : []))
       .catch(() => {});
+    // 마이페이지에서 공유 중인 사람을 탭해 들어온 경우, 코드 입력을 건너뛴다.
+    if (initialCode) startWatching(initialCode);
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
     };
