@@ -2,6 +2,13 @@
 
 긴급 SOS + 실시간 위치 공유 React Native (Expo) 앱.
 
+| 문서 | 답하는 질문 |
+|---|---|
+| **README.md** (여기) | 뭘 할 수 있나 |
+| [`DESIGN.md`](DESIGN.md) | **왜 이렇게 만들었나** — 기획서 · 설계서 |
+| [`SETUP.md`](SETUP.md) | 어떻게 깔고 연결하나 |
+| [`EAS.md`](EAS.md) | 폰에 어떻게 올리나 |
+
 ## 기능
 
 ### 📨 즉시 SOS
